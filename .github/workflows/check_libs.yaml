@@ -37,3 +37,5 @@ jobs:
           charm-path: ${{ matrix.path }}
           credentials: "${{ secrets.CHARMHUB_TOKEN }}"
           github-token: "${{ secrets.GITHUB_TOKEN }}"
+    permissions:
+      issues: write  # Needed to edit pull request labels

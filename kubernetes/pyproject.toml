@@ -9,7 +9,7 @@ requires-poetry = ">=2.0.0"
 python = "^3.10"
 common = {path = "../common", develop = true}
 # breaking change in ops 2.10.0: https://github.com/canonical/operator/pull/1091#issuecomment-1888644075
-ops = "^2.9.0, <2.10"
+ops = "^2.15.0"
 lightkube = "^0.17.2"
 tenacity = "^9.1.2"
 charm-refresh = "^3.1.0.2"
@@ -46,7 +46,7 @@ pytest-xdist = "^3.8.0"
 pytest-forked = "^1.6.0"  # Workaround to deal with memory leaks in scenario tests
 pytest-cov = "^6.2.1"
 ops-scenario = "^6.0.3, <6.0.4"  # 6.0.4 requires ops >= 2.12
-ops = "^2.9.0"
+ops = "^2.15.0"
 
 [tool.poetry.group.integration.dependencies]
 pytest = "^8.4.1"

@@ -2,7 +2,7 @@
 [![Charmhub](https://charmhub.io/mysql-router-k8s/badge.svg)](https://charmhub.io/mysql-router-k8s)
 [![Charmhub](https://charmhub.io/mysql-router/badge.svg?channel=dpe/candidate)](https://charmhub.io/mysql-router)
 [![Release](https://github.com/canonical/mysql-router-operators/actions/workflows/release.yaml/badge.svg)](https://github.com/canonical/mysql-router-operators/actions/workflows/release.yaml)
-[![Tests](https://github.com/canonical/mysql-router-operators/actions/workflows/ci.yaml/badge.svg?branch=main)](https://github.com/canonical/mysql-router-operators/actions/workflows/ci.yaml)
+[![Tests](https://github.com/canonical/mysql-router-operators/actions/workflows/ci.yaml/badge.svg?branch=dpe)](https://github.com/canonical/mysql-router-operators/actions/workflows/ci.yaml)
 -----------------
 ## Description
 

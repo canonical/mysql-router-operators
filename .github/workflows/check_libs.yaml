@@ -38,4 +38,4 @@ jobs:
           credentials: "${{ secrets.CHARMHUB_TOKEN }}"
           github-token: "${{ secrets.GITHUB_TOKEN }}"
     permissions:
-      issues: write  # Needed to edit pull request labels
+      pull-requests: write  # Needed to edit pull request labels

@@ -3,7 +3,7 @@ name = "common"
 version = "0.1.0"
 requires-python = ">=3.10"
 dependencies = [
-    "ops>=2.23.1",
+    "ops>=2.9.0",
     "charm-refresh>=3.1.0.2",
     "charm-api>=0.1.2",
     "requests>=2.32.5",

@@ -12,6 +12,7 @@ on:
 jobs:
   integration-test:
     strategy:
+      fail-fast: false
       matrix:
         path:
           - kubernetes

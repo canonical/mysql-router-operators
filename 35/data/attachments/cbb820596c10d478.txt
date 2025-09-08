@@ -1,0 +1,85 @@
+[33mWARNING [0m juju.client.connection:connection.py:493 Receiver: Connection closed, reconnecting
+[33mWARNING [0m juju.client.connection:connection.py:493 Receiver: Connection closed, reconnecting
+[1m[31mERROR   [0m asyncio:base_events.py:1821 Task exception was never retrieved
+future: <Task finished name='Task-7340' coro=<Connection.reconnect() done, defined at /root/spread_project/.tox/integration/lib/python3.12/site-packages/juju/client/connection.py:697> exception=JujuConnectionError('Unable to connect to any endpoint: 10.134.55.227:17070')>
+Traceback (most recent call last):
+  File "/root/spread_project/.tox/integration/lib/python3.12/site-packages/juju/client/connection.py", line 709, in reconnect
+    res = await connector(
+          ^^^^^^^^^^^^^^^^
+  File "/root/spread_project/.tox/integration/lib/python3.12/site-packages/juju/client/connection.py", line 800, in _connect_with_login
+    await self._connect(endpoints)
+  File "/root/spread_project/.tox/integration/lib/python3.12/site-packages/juju/client/connection.py", line 756, in _connect
+    raise errors.JujuConnectionError(
+juju.errors.JujuConnectionError: Unable to connect to any endpoint: 10.134.55.227:17070
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller     Cloud/Region         Version  SLA          Timestamp
+testing  concierge-lxd  localhost/localhost  3.6.9    unsupported  03:07:50Z
+
+App              Version          Status  Scale  Charm            Channel        Rev  Exposed  Message
+data-integrator                   active    3/4  data-integrator  latest/stable  179  no       
+hacluster        2.1.2            error       4  hacluster        2.4/stable     131  no       hook failed: "update-status"
+mysql            8.0.42-0ubun...  active      1  mysql            8.0/edge       419  no       
+mysql-router     8.0.42           active    3/4  mysql-router                      0  no       
+
+Unit                Workload  Agent      Machine  Public address  Ports           Message
+data-integrator/0   unknown   lost       0        10.134.55.225                   agent lost, see 'juju show-status-log data-integrator/0'
+  hacluster/1       active    executing           10.134.55.225                   Unit is ready and clustered
+  mysql-router/0    unknown   lost                10.134.55.225   6446-6447/tcp   agent lost, see 'juju show-status-log mysql-router/0'
+data-integrator/1   active    idle       1        10.134.55.167                   
+  hacluster/0       waiting   idle                10.134.55.167                   Resource: res_mysql-router_3800778465b27d_vip not yet configured
+  mysql-router/2    active    idle                10.134.55.167   6446-6447/tcp   
+data-integrator/2*  active    executing  2        10.134.55.82                    (leader-elected) 
+  hacluster/2*      error     idle                10.134.55.82                    hook failed: "update-status"
+  mysql-router/3*   active    idle                10.134.55.82    6446-6447/tcp   
+data-integrator/3   active    idle       3        10.134.55.244                   
+  hacluster/4       waiting   idle                10.134.55.244                   Resource: res_mysql-router_3800778465b27d_vip not yet configured
+  mysql-router/1    active    idle                10.134.55.244   6446-6447/tcp   
+mysql/0*            active    idle       4        10.134.55.160   3306,33060/tcp  Primary
+
+Machine  State    Address        Inst id        Base          AZ               Message
+0        down     10.134.55.225  juju-208cd7-0  ubuntu@22.04  pkrvm7jw40e0xgp  Running
+1        started  10.134.55.167  juju-208cd7-1  ubuntu@22.04  pkrvm7jw40e0xgp  Running
+2        started  10.134.55.82   juju-208cd7-2  ubuntu@22.04  pkrvm7jw40e0xgp  Running
+3        started  10.134.55.244  juju-208cd7-3  ubuntu@22.04  pkrvm7jw40e0xgp  Running
+4        started  10.134.55.160  juju-208cd7-4  ubuntu@22.04  pkrvm7jw40e0xgp  Running
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+machine-0: 02:55:17 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 02:55:17 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-data-integrator-0: 02:55:18 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-mysql-router-0: 02:55:22 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+machine-3: 02:57:24 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 02:57:24 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-data-integrator-3: 02:57:24 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-mysql-router-1: 02:57:28 ERROR juju.worker.meterstatus error running "meter-status-changed": exit status 1
+machine-1: 02:57:45 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 02:57:46 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-data-integrator-1: 02:57:46 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-mysql-router-2: 02:57:51 ERROR juju.worker.meterstatus error running "meter-status-changed": exit status 1
+machine-4: 02:58:01 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-4: 02:58:01 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-mysql-0: 02:58:02 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+machine-2: 02:58:28 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 02:58:28 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-data-integrator-2: 02:58:28 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-mysql-router-3: 02:58:33 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-hacluster-1: 03:01:39 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: preparing operation "install ch:amd64/hacluster-131" for hacluster/1: failed to download charm "ch:amd64/hacluster-131" from API server: download request with archiveSha256 length 0 not valid
+unit-hacluster-0: 03:01:39 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: preparing operation "install ch:amd64/hacluster-131" for hacluster/0: failed to download charm "ch:amd64/hacluster-131" from API server: download request with archiveSha256 length 0 not valid
+unit-hacluster-2: 03:01:39 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: preparing operation "install ch:amd64/hacluster-131" for hacluster/2: failed to download charm "ch:amd64/hacluster-131" from API server: download request with archiveSha256 length 0 not valid
+unit-hacluster-4: 03:01:40 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: preparing operation "install ch:amd64/hacluster-131" for hacluster/4: failed to download charm "ch:amd64/hacluster-131" from API server: download request with archiveSha256 length 0 not valid
+unit-hacluster-4: 03:01:40 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-hacluster-1: 03:01:43 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+machine-4: 03:07:01 ERROR juju.worker.dependency "api-caller" manifold worker returned unexpected error: codec.ReadHeader error: error receiving message: read tcp 10.134.55.160:55692->10.134.55.227:17070: read: connection reset by peer
+machine-4: 03:07:01 ERROR juju.api.watcher error trying to stop watcher: write tcp 10.134.55.160:55732->10.134.55.227:17070: write: connection reset by peer
+machine-4: 03:07:01 ERROR juju.api.watcher error trying to stop watcher: write tcp 10.134.55.160:55732->10.134.55.227:17070: write: connection reset by peer
+machine-4: 03:07:01 ERROR juju.api.watcher error trying to stop watcher: write tcp 10.134.55.160:55732->10.134.55.227:17070: write: connection reset by peer
+machine-4: 03:07:04 ERROR juju.worker.dependency "api-caller" manifold worker returned unexpected error: [b803d3] "machine-4" cannot open api: unable to connect to API: dial tcp 10.134.55.227:17070: connect: connection refused
+machine-4: 03:07:07 ERROR juju.worker.dependency "api-caller" manifold worker returned unexpected error: [b803d3] "machine-4" cannot open api: unable to connect to API: dial tcp 10.134.55.227:17070: connect: connection refused
+machine-4: 03:07:12 ERROR juju.worker.dependency "api-caller" manifold worker returned unexpected error: [b803d3] "machine-4" cannot open api: unable to connect to API: dial tcp 10.134.55.227:17070: connect: connection refused
+machine-4: 03:07:17 ERROR juju.worker.dependency "api-caller" manifold worker returned unexpected error: [b803d3] "machine-4" cannot open api: unable to connect to API: dial tcp 10.134.55.227:17070: connect: connection refused
+machine-4: 03:07:24 ERROR juju.worker.dependency "api-caller" manifold worker returned unexpected error: [b803d3] "machine-4" cannot open api: unable to connect to API: dial tcp 10.134.55.227:17070: connect: connection refused
+machine-4: 03:07:32 ERROR juju.worker.dependency "api-caller" manifold worker returned unexpected error: [b803d3] "machine-4" cannot open api: unable to connect to API: dial tcp 10.134.55.227:17070: connect: connection refused
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...

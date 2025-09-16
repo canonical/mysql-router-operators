@@ -30,23 +30,10 @@ class _UnsupportedExtraUserRole(status_exception.StatusException):
 
     def __init__(self, *, app_name: str, endpoint_name: str) -> None:
         message = (
-            f"{app_name} app requested unsupported extra user role on "
-            f"{endpoint_name} endpoint"
+            f"{app_name} app requested unsupported extra user role on {endpoint_name} endpoint"
         )
         logger.warning(message)
         super().__init__(ops.BlockedStatus(message))
-
-
-class _InvalidDatabaseName(status_exception.StatusException):
-    """Application charm requested an invalid database name"""
-
-    def __init__(self, *, app_name: str, endpoint_name: str, exception_msg: str) -> None:
-        message = (
-            f"{app_name} app requested an invalid database name on "
-            f"{endpoint_name} endpoint: {exception_msg}"
-        )
-        logger.warning(message)
-        super().__init__(ops.BlockedStatus(exception_msg))
 
 
 class _Relation:
@@ -92,19 +79,9 @@ class _RelationThatRequestedUser(_Relation):
         if isinstance(event, ops.RelationBrokenEvent) and event.relation.id == self._id:
             raise _RelationBreaking
         self._database: str = self._databag["database"]
-        self._app_name: str = relation.app.name
-        self._endpoint_name: str = relation.name
-        database_dba_role = f"{mysql_shell.ROLE_DBA_PREFIX}_{self._database}"
-        if len(database_dba_role) >= mysql_shell.ROLE_MAX_LENGTH:
-            raise _InvalidDatabaseName(
-                app_name=self._app_name,
-                endpoint_name=self._endpoint_name,
-                exception_msg="Database DBA role longer than 32 characters",
-            )
         if self._databag.get("extra-user-roles"):
             raise _UnsupportedExtraUserRole(
-                app_name=self._app_name,
-                endpoint_name=self._endpoint_name,
+                app_name=relation.app.name, endpoint_name=relation.name
             )
 
     def _set_databag(

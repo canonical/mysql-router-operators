@@ -13,6 +13,7 @@ import pathlib
 import typing
 
 import jinja2
+import tenacity
 
 from .. import container, server_exceptions, utils
 
@@ -21,9 +22,7 @@ if typing.TYPE_CHECKING:
 
 _ROLE_DML = "charmed_dml"
 _ROLE_READ = "charmed_read"
-
-ROLE_DBA_PREFIX = "charmed_dba"
-ROLE_MAX_LENGTH = 32
+_ROLE_MAX_LENGTH = 32
 
 logger = logging.getLogger(__name__)
 
@@ -130,6 +129,22 @@ class Shell:
         return json.dumps(attributes)
 
     # TODO python3.10 min version: Use `set` instead of `typing.Set`
+    def _get_mysql_databases(self) -> typing.Set[str]:
+        """Returns a set with the MySQL databases."""
+        logger.debug(f"Getting MySQL databases")
+        output_file = self._container.path("/tmp/mysqlsh_output.json")
+        self._run_code(
+            _jinja_env.get_template("get_mysql_databases.py.jinja").render(
+                output_filepath=output_file.relative_to_container,
+            )
+        )
+        with output_file.open("r") as file:
+            rows = json.load(file)
+        output_file.unlink()
+        logger.debug(f"MySQL databases found: {len(rows)}")
+        return {row[0] for row in rows}
+
+    # TODO python3.10 min version: Use `set` instead of `typing.Set`
     def _get_mysql_roles(self, name_pattern: str) -> typing.Set[str]:
         """Returns a set with the MySQL roles."""
         logger.debug(f"Getting MySQL roles with {name_pattern=}")
@@ -146,11 +161,31 @@ class Shell:
         logger.debug(f"MySQL roles found for {name_pattern=}: {len(rows)}")
         return {row[0] for row in rows}
 
-    def _create_application_database(self, *, database: str, rolename: str) -> str:
+    def _build_application_database_dba_role(self, database: str) -> str:
+        """Builds the database-level DBA role, given length constraints."""
+        role_prefix = "charmed_dba"
+        role_suffix = "XX"
+
+        role_name_available = _ROLE_MAX_LENGTH - len(role_prefix) - len(role_suffix) - 2
+        role_name_description = database[:role_name_available]
+        role_name_collisions = self._get_mysql_roles(f"{role_prefix}_{role_name_description}_%")
+
+        return "_".join((
+            role_prefix,
+            role_name_description,
+            str(len(role_name_collisions)).zfill(len(role_suffix)),
+        ))
+
+    def _create_application_database(self, *, database: str) -> None:
         """Create database for related database_provides application."""
+        if database in self._get_mysql_databases():
+            return
+
+        rolename = self._build_application_database_dba_role(database)
+
         statements = [
-            f"CREATE DATABASE IF NOT EXISTS `{database}`",
-            f"CREATE ROLE IF NOT EXISTS `{rolename}`",
+            f"CREATE ROLE `{rolename}`",
+            f"CREATE DATABASE `{database}`",
             f"GRANT SELECT, INSERT, DELETE, UPDATE, EXECUTE ON `{database}`.* TO {rolename}",
             f"GRANT ALTER, ALTER ROUTINE, CREATE, CREATE ROUTINE, CREATE VIEW, DROP, INDEX, LOCK TABLES, REFERENCES, TRIGGER ON `{database}`.* TO {rolename}",
         ]
@@ -168,7 +203,6 @@ class Shell:
         logger.debug(f"Creating {database=}")
         self._run_sql(statements)
         logger.debug(f"Created {database=}")
-        return database
 
     def _create_application_user(self, *, database: str, username: str) -> str:
         """Create database user for related database_provides application."""
@@ -184,13 +218,16 @@ class Shell:
 
     def create_application_database(self, *, database: str, username: str) -> str:
         """Create both the database and the relation user, returning its password."""
-        rolename = f"{ROLE_DBA_PREFIX}_{database}"
-        if len(rolename) >= ROLE_MAX_LENGTH:
-            raise ValueError("Database DBA role longer than 32 characters")
+        for attempt in tenacity.Retrying(
+            retry=tenacity.retry_if_exception_type(ShellDBError),
+            reraise=True,
+            stop=tenacity.stop_after_delay(30),
+            wait=tenacity.wait_fixed(5),
+        ):
+            with attempt:
+                self._create_application_database(database=database)
 
-        ________ = self._create_application_database(database=database, rolename=rolename)
-        password = self._create_application_user(database=database, username=username)
-        return password
+        return self._create_application_user(database=database, username=username)
 
     def add_attributes_to_mysql_router_user(
         self, *, username: str, router_id: str, unit_name: str

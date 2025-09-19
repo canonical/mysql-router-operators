@@ -1,0 +1,44 @@
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller     Cloud/Region         Version  SLA          Timestamp
+testing  concierge-lxd  localhost/localhost  3.6.9    unsupported  02:18:55Z
+
+App             Version          Status       Scale  Charm           Channel      Rev  Exposed  Message
+mysql           8.0.42-0ubun...  active           1  mysql           8.0/edge     425  no       
+mysql-router    8.0.39           maintenance      3  mysql-router                   0  no       Refreshing. To pause refresh, run `juju config mysql-router pause-after-unit-refresh=all`
+mysql-test-app  0.0.2            active           3  mysql-test-app  latest/edge   85  no       
+
+Unit               Workload  Agent  Machine  Public address  Ports           Message
+mysql-test-app/0*  active    idle   0        10.7.62.96                      
+  mysql-router/0*  error     idle            10.7.62.96                      hook failed: "refresh-v-three-relation-changed"
+mysql-test-app/1   active    idle   1        10.7.62.248                     
+  mysql-router/2   active    idle            10.7.62.248                     Router 8.0.39 running; Snap revision 121; Charm version dpe/1.33.0
+mysql-test-app/2   active    idle   2        10.7.62.53                      
+  mysql-router/1   active    idle            10.7.62.53                      Router 8.0.39 running; Snap revision 121; Charm version dpe/1.33.0
+mysql/0*           active    idle   3        10.7.62.176     3306,33060/tcp  Primary
+
+Machine  State    Address      Inst id        Base          AZ             Message
+0        started  10.7.62.96   juju-34d067-0  ubuntu@22.04  runnervmf4ws1  Running
+1        started  10.7.62.248  juju-34d067-1  ubuntu@22.04  runnervmf4ws1  Running
+2        started  10.7.62.53   juju-34d067-2  ubuntu@22.04  runnervmf4ws1  Running
+3        started  10.7.62.176  juju-34d067-3  ubuntu@22.04  runnervmf4ws1  Running
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+machine-0: 02:09:57 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 02:09:57 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-mysql-test-app-0: 02:09:58 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-mysql-router-0: 02:10:04 ERROR juju.worker.meterstatus error running "meter-status-changed": exit status 1
+machine-2: 02:11:30 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 02:11:30 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-mysql-test-app-2: 02:11:31 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+machine-3: 02:11:31 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 02:11:31 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-mysql-0: 02:11:32 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-mysql-router-1: 02:11:35 ERROR juju.worker.meterstatus error running "meter-status-changed": exit status 1
+machine-1: 02:11:59 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 02:11:59 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-mysql-test-app-1: 02:11:59 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+unit-mysql-router-2: 02:12:03 ERROR juju.worker.meterstatus error running "meter-status-changed": charm missing from disk
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...

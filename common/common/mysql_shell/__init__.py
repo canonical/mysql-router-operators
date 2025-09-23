@@ -13,7 +13,6 @@ import pathlib
 import typing
 
 import jinja2
-import tenacity
 
 from .. import container, server_exceptions, utils
 
@@ -181,13 +180,12 @@ class Shell:
         if database in self._get_mysql_databases():
             return
 
-        rolename = self._build_application_database_dba_role(database)
-
+        role_name = self._build_application_database_dba_role(database)
         statements = [
-            f"CREATE ROLE `{rolename}`",
+            f"CREATE ROLE `{role_name}`",
             f"CREATE DATABASE `{database}`",
-            f"GRANT SELECT, INSERT, DELETE, UPDATE, EXECUTE ON `{database}`.* TO {rolename}",
-            f"GRANT ALTER, ALTER ROUTINE, CREATE, CREATE ROUTINE, CREATE VIEW, DROP, INDEX, LOCK TABLES, REFERENCES, TRIGGER ON `{database}`.* TO {rolename}",
+            f"GRANT SELECT, INSERT, DELETE, UPDATE, EXECUTE ON `{database}`.* TO {role_name}",
+            f"GRANT ALTER, ALTER ROUTINE, CREATE, CREATE ROUTINE, CREATE VIEW, DROP, INDEX, LOCK TABLES, REFERENCES, TRIGGER ON `{database}`.* TO {role_name}",
         ]
 
         mysql_roles = self._get_mysql_roles("charmed_%")
@@ -218,15 +216,7 @@ class Shell:
 
     def create_application_database(self, *, database: str, username: str) -> str:
         """Create both the database and the relation user, returning its password."""
-        for attempt in tenacity.Retrying(
-            retry=tenacity.retry_if_exception_type(ShellDBError),
-            reraise=True,
-            stop=tenacity.stop_after_delay(30),
-            wait=tenacity.wait_fixed(5),
-        ):
-            with attempt:
-                self._create_application_database(database=database)
-
+        self._create_application_database(database=database)
         return self._create_application_user(database=database, username=username)
 
     def add_attributes_to_mysql_router_user(

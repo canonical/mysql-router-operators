@@ -22,14 +22,10 @@ on:
         value: ${{ jobs.build.outputs.artifact-prefix }}
 
   build:
-    strategy:
-      matrix:
-        path:
-          - machines
-    name: Build charm | ${{ matrix.path }}
+    name: Build charm
     uses: canonical/data-platform-workflows/.github/workflows/build_charm.yaml@v35.0.2
     with:
-      path-to-charm-directory: ${{ matrix.path }}
+      path-to-charm-directory: machines
 
   integration-test:
     name: Integration test charm

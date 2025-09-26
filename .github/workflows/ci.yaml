@@ -21,6 +21,7 @@ on:
         description: build_charm.yaml `artifact-prefix` output
         value: ${{ jobs.build.outputs.artifact-prefix }}
 
+jobs:
   build:
     name: Build charm
     uses: canonical/data-platform-workflows/.github/workflows/build_charm.yaml@v35.0.2

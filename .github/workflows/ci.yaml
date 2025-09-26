@@ -25,7 +25,6 @@ on:
     strategy:
       matrix:
         path:
-          - kubernetes
           - machines
     name: Build charm | ${{ matrix.path }}
     uses: canonical/data-platform-workflows/.github/workflows/build_charm.yaml@v35.0.2

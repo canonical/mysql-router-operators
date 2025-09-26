@@ -107,14 +107,13 @@ path: /root/spread_project
 kill-timeout: 3h
 environment:
   PATH: $PATH:$(pipx environment --value PIPX_BIN_DIR)
-  CONCIERGE_JUJU_CHANNEL/juju36: 3.6/stable
-  CONCIERGE_JUJU_CHANNEL/juju29: 2.9/stable
   CHARM_UBUNTU_BASE/juju36,juju29: 22.04
 prepare: |
   snap refresh --hold
   chown -R root:root "$SPREAD_PATH"
   cd "$SPREAD_PATH"
-  snap install --classic concierge
+  snap install go --classic
+  go install github.com/canonical/concierge@latest
 
   # Install charmcraft & pipx (on lxd-vm backend)
   concierge prepare --trace

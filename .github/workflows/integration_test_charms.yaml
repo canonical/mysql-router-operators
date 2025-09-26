@@ -11,16 +11,11 @@ on:
 
 jobs:
   integration-test:
-    strategy:
-      fail-fast: false
-      matrix:
-        path:
-          - machines
-    name: Integration test | ${{ matrix.path }}
+    name: Integration test
     uses: ./.github/workflows/integration_test_charm.yaml
     with:
       artifact-prefix: ${{ inputs.artifact-prefix }}
-      path-to-charm-directory: ${{ matrix.path }}
+      path-to-charm-directory: machines
     secrets: inherit
 
   allure-report:

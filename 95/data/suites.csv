@@ -1,0 +1,30 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"Test that the exporter endpoint works when related with TLS","500284","test_exporter_endpoint","tests.integration","2025-10-01","passed","2025-10-01","","test_exporter_with_tls","",""
+"Test data integrator along with TLS operator","35671","test_external_connectivity_with_data_integrator_and_tls","tests.integration","2025-10-01","passed","2025-10-01","","test_data_integrator","",""
+"Test encryption when backend database is using TLS.","94875","test_deploy_and_relate","tests.integration","2025-10-01","passed","2025-10-01","","test_tls","",""
+"Tries deploying an amd64 charm on arm64 host.","0","test_amd_charm_on_arm_host","tests.integration","2025-10-01","skipped","2025-10-01","","test_architecture","",""
+"Test the database relation.","475308","test_database_relation","tests.integration","2025-10-01","passed","2025-10-01","","test_database","",""
+"Upgrade mysqlrouter while ensuring continuous writes incrementing.","336233","test_upgrade_from_edge","tests.integration","2025-10-01","passed","2025-10-01","","test_upgrade","",""
+"Test endpoints when mysql-router-k8s is related to a TLS operator.","140507","test_expose_external_with_tls","tests.integration","2025-10-01","passed","2025-10-01","","test_expose_external","",""
+"Test the database relation.","311216","test_database_relation","tests.integration","2025-10-01","passed","2025-10-01","","test_charm","",""
+"Upgrade to an invalid version and test rollback.
+
+    Relies on the charm built in the previous test (test_upgrade_from_edge).
+    Furthermore, the previous test will refresh the charm till revision 102.
+    This test will refresh the charm till the revision in src/snap.py, thus avoiding
+    no-ops.
+    ","176045","test_fail_and_rollback","tests.integration","2025-10-01","passed","2025-10-01","","test_upgrade","",""
+"Test the failover of the hacluster leader.","79030","test_hacluster_failover","tests.integration","2025-10-01","passed","2025-10-01","","test_hacluster","",""
+"Test external connectivity and VIP with data-integrator hacluster.","962597","test_external_connectivity_vip_with_hacluster","tests.integration","2025-10-01","passed","2025-10-01","","test_hacluster","",""
+"Ensure removal of VIP results in connection through data-integrator.","111479","test_remove_vip","tests.integration","2025-10-01","passed","2025-10-01","","test_hacluster","",""
+"Tries deploying an arm64 charm on amd64 host.","140339","test_arm_charm_on_amd_host","tests.integration","2025-10-01","passed","2025-10-01","","test_architecture","",""
+"Test the expose-external config option.","152664","test_expose_external","tests.integration","2025-10-01","passed","2025-10-01","","test_expose_external","",""
+"Test log rotation.","114515","test_log_rotation","tests.integration","2025-10-01","passed","2025-10-01","","test_log_rotation","",""
+"Simple test to ensure that mysql, mysqlrouter and application charms deploy.","482695","test_deploy_edge","tests.integration","2025-10-01","passed","2025-10-01","","test_upgrade","",""
+"Ensure that mysqlrouter is externally accessible with TLS integration.","234892","test_tls_along_with_ha_cluster","tests.integration","2025-10-01","passed","2025-10-01","","test_hacluster","",""
+"Test encryption when backend database is using TLS.","339083","test_external_connectivity_with_data_integrator","tests.integration","2025-10-01","passed","2025-10-01","","test_data_integrator","",""
+"","322466","test_ubuntu_pro","tests.integration","2025-10-01","passed","2025-10-01","","test_subordinate_charms","",""
+"Test that exporter endpoint is functional.","346054","test_exporter_endpoint","tests.integration","2025-10-01","passed","2025-10-01","","test_exporter","",""
+"Test encryption when backend database is using TLS.","47686","test_connected_encryption","tests.integration","2025-10-01","passed","2025-10-01","","test_tls","",""
+"Test encryption when backend database is using TLS.","344225","test_build_deploy_and_relate","tests.integration","2025-10-01","passed","2025-10-01","","test_tls","",""
+"","62719","test_landscape_client","tests.integration","2025-10-01","passed","2025-10-01","","test_subordinate_charms","",""

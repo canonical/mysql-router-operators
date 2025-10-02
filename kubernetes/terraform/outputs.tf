@@ -7,15 +7,15 @@ output "provides" {
   description = "Map of all the provided endpoints"
   value = {
     database          = "database"
-    grafana-dashboard = "grafana-dashboard"
-    metrics-endpoint  = "metrics-endpoint"
+    grafana_dashboard = "grafana-dashboard"
+    metrics_endpoint  = "metrics-endpoint"
   }
 }
 
 output "requires" {
   description = "Map of all the required endpoints"
   value = {
-    backend-database = "backend-database"
+    backend_database = "backend-database"
     certificates     = "certificates"
     logging          = "logging"
     tracing          = "tracing"

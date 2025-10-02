@@ -7,14 +7,14 @@ output "provides" {
   description = "Map of all the provided endpoints"
   value = {
     database  = "database"
-    cos-agent = "cos-agent"
+    cos_agent = "cos-agent"
   }
 }
 
 output "requires" {
   description = "Map of all the required endpoints"
   value = {
-    backend-database = "backend-database"
+    backend_database = "backend-database"
     certificates     = "certificates"
     tracing          = "tracing"
   }

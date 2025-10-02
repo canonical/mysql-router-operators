@@ -6,7 +6,7 @@ variable "model_name" {
 variable "app_name" {
   description = "Name of the juju application"
   type        = string
-  default     = "mysql-router"
+  default     = "mysql-router-k8s"
 }
 
 variable "base" {

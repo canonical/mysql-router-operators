@@ -24,4 +24,4 @@ charmlibs-pydeps = [
 no-binary = true
 
 [tool.uv.sources]
-common = { path = "../common", editable = true }
+common = { path = "./common", editable = true }

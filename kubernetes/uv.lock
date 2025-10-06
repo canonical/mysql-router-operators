@@ -242,7 +242,7 @@ wheels = [
 [[package]]
 name = "common"
 version = "0.1.0"
-source = { editable = "../common" }
+source = { editable = "common" }
 dependencies = [
     { name = "charm-api" },
     { name = "charm-refresh" },
@@ -1142,7 +1142,7 @@ charmlibs-pydeps = [
 [package.metadata]
 requires-dist = [
     { name = "charm-refresh", specifier = ">=3.1.0.2" },
-    { name = "common", editable = "../common" },
+    { name = "common", editable = "common" },
     { name = "lightkube", specifier = ">=0.17.2" },
     { name = "ops", specifier = ">=2.9.0,<2.10" },
     { name = "tenacity", specifier = ">=9.1.2" },

@@ -47,5 +47,3 @@ parts:
       rustup default 1.90.0  # renovate: charmcraft-rust-latest
 
       craftctl default
-      # Include requirements.txt in *.charm artifact for easier debugging
-      cp requirements.txt "$CRAFT_PART_INSTALL/requirements.txt"

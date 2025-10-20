@@ -3,7 +3,7 @@
 name: Tests
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}-1
   cancel-in-progress: true
 
 on:
@@ -72,6 +72,7 @@ jobs:
       matrix:
         path:
           - kubernetes
+          - machines
     name: Build charm | ${{ matrix.path }}
     uses: canonical/data-platform-workflows/.github/workflows/build_charm.yaml@v35.0.4
     with:
@@ -83,9 +84,9 @@ jobs:
       - build
     uses: canonical/data-platform-workflows/.github/workflows/release_charm_pr.yaml@v35.0.4
     with:
-      track: '8.0'
+      track: 'dpe'
       artifact-prefix: ${{ needs.build.outputs.artifact-prefix }}
-      path-to-charm-directory: kubernetes
+      path-to-charm-directory: machines
     secrets:
       charmhub-token: ${{ secrets.CHARMHUB_TOKEN }}
 

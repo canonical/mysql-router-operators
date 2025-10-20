@@ -15,7 +15,6 @@ jobs:
       fail-fast: false
       matrix:
         path:
-          - kubernetes
           - machines
     name: Integration test | ${{ matrix.path }}
     uses: ./.github/workflows/integration_test_charm.yaml

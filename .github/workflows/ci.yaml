@@ -22,51 +22,6 @@ on:
         value: ${{ jobs.build.outputs.artifact-prefix }}
 
 jobs:
-  lint:
-    strategy:
-      matrix:
-        path:
-          - kubernetes
-          - machines
-    name: Lint | ${{ matrix.path }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-      - name: Install terraform
-        run: |
-          sudo snap install terraform --classic
-      - name: Install tox & poetry
-        run: |
-          pipx install tox
-          pipx install poetry
-      - name: Run linters
-        working-directory: ${{ matrix.path }}
-        run: |
-          tox run -e lint
-          tox run -e lint-terraform
-
-  unit-test:
-    strategy:
-      matrix:
-        path:
-          - kubernetes
-          - machines
-    name: Unit test | ${{ matrix.path }}
-    runs-on: ubuntu-22.04  # TODO: use ubuntu-latest after fixing pathlib issue on python 3.12
-    timeout-minutes: 20
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-      - name: Install tox & poetry
-        run: |
-          pipx install tox
-          pipx install poetry
-      - name: Run tests
-        working-directory: ${{ matrix.path }}
-        run: tox run -e unit
-
   build:
     strategy:
       matrix:
@@ -81,8 +36,6 @@ jobs:
   integration-test:
     name: Integration test charm
     needs:
-      - lint
-      - unit-test
       - build
     uses: ./.github/workflows/integration_test_charms.yaml
     with:

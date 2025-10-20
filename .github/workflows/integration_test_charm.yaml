@@ -146,8 +146,7 @@ jobs:
         run: snap list
       - name: lxc image list
         timeout-minutes: 1
-        # sudo needed since spread runs scripts as root
-        run: sudo lxc image list
+        run: lxc image list
       - name: Select model
         timeout-minutes: 1
         # `!contains(matrix.job.spread_job, 'juju29')` workaround for juju 2 error:

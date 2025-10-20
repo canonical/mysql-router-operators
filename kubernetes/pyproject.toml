@@ -12,7 +12,7 @@ common = {path = "../common", develop = true}
 ops = "^2.9.0, <2.10"
 lightkube = "^0.17.2"
 tenacity = "^9.1.2"
-charm-refresh = "^3.1.0.2"
+charm-refresh = {git = "https://github.com/canonical/charm-refresh", rev = "pre-refresh-display-pause-after"}
 
 [tool.poetry.group.charm-libs.dependencies]
 # data_platform_libs/v0/data_interfaces.py

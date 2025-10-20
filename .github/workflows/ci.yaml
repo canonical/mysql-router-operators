@@ -86,6 +86,7 @@ jobs:
     with:
       track: '8.0'
       artifact-prefix: ${{ needs.build.outputs.artifact-prefix }}
+      path-to-charm-directory: kubernetes
     secrets:
       charmhub-token: ${{ secrets.CHARMHUB_TOKEN }}
 

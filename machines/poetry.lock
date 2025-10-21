@@ -398,15 +398,13 @@ charm-api = ">=0.1.1"
 
 [[package]]
 name = "charm-refresh"
-version = "3.1.0.2"
+version = "0.0.0"
 description = "In-place rolling refreshes (upgrades) of stateful charmed applications"
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
-files = [
-    {file = "charm_refresh-3.1.0.2-py3-none-any.whl", hash = "sha256:963ed20704b38af3b5f76e03e07da6e36e9f8a8cac7f49c77bf3c047cb954dea"},
-    {file = "charm_refresh-3.1.0.2.tar.gz", hash = "sha256:dce60c3fb6f237713e4365007a10db7ba363b76faf3a31577b5456ed61831cfd"},
-]
+files = []
+develop = false
 
 [package.dependencies]
 charm-api = ">=0.1.1"
@@ -417,6 +415,12 @@ ops = ">=2.9.0"
 packaging = ">=24.1"
 pyyaml = ">=6.0.2"
 tomli = ">=2.0.1"
+
+[package.source]
+type = "git"
+url = "https://github.com/canonical/charm-refresh"
+reference = "pre-refresh-display-pause-after"
+resolved_reference = "8bec23f2b2277aaf02ea593da6a23587e23dd61a"
 
 [[package]]
 name = "charm-refresh-build-version"
@@ -566,7 +570,7 @@ develop = true
 
 [package.dependencies]
 charm-api = ">=0.1.2"
-charm-refresh = ">=3.1.0.2"
+charm-refresh = {git = "https://github.com/canonical/charm-refresh", rev = "pre-refresh-display-pause-after"}
 jinja2 = ">=3.1.6"
 ops = ">=2.9.0"
 requests = ">=2.32.5"
@@ -2868,4 +2872,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "dd49f88f78b722bea2beec95b4a8c188308ae218ea23c5d716b7c703d103eff4"
+content-hash = "99d3f1365d34221b1304c2af1c11ad45cd60a969b49492e06bfa3e544db0485f"

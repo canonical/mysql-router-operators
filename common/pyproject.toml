@@ -4,7 +4,7 @@ version = "0.1.0"
 requires-python = ">=3.10"
 dependencies = [
     "ops>=2.9.0",
-    "charm-refresh>=3.1.0.2",
+    "charm-refresh @ git+https://github.com/canonical/charm-refresh@pre-refresh-display-pause-after",
     "charm-api>=0.1.2",
     "requests>=2.32.5",
     "tenacity>=9.1.2",

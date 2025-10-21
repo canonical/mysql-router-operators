@@ -78,6 +78,25 @@ jobs:
     with:
       path-to-charm-directory: ${{ matrix.path }}
 
+  release:
+    strategy:
+      matrix:
+        charm:
+          - path: kubernetes
+            track: '8.0'
+          - path: machines
+            track: ${{ needs.tag.outputs.track }}
+    name: Release charm to Charmhub branch
+    needs:
+      - build
+    uses: canonical/data-platform-workflows/.github/workflows/release_charm_pr.yaml@v35.0.4
+    with:
+      track: ${{ matrix.charm.track }}
+      artifact-prefix: ${{ needs.build.outputs.artifact-prefix }}
+      path-to-charm-directory: ${{ matrix.charm.path }}
+    secrets:
+      charmhub-token: ${{ secrets.CHARMHUB_TOKEN }}
+
   integration-test:
     name: Integration test charm
     needs:

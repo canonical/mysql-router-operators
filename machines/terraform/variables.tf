@@ -24,7 +24,7 @@ variable "config" {
 variable "constraints" {
   description = "Juju constraints for the application"
   type        = string
-  default     = "arch=amd64"
+  default     = null
 }
 
 variable "channel" {

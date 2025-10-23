@@ -1,0 +1,162 @@
+[32mINFO    [0m integration.helpers:helpers.py:563 Ensure continuous writes are incrementing
+[32mINFO    [0m integration.helpers:helpers.py:515 Retrieving primary unit
+[32mINFO    [0m integration.test_upgrade:test_upgrade.py:171 Creating invalid upgrade charm
+[32mINFO    [0m integration.test_upgrade:test_upgrade.py:174 Refreshing mysql router with an invalid charm
+[32mINFO    [0m integration.test_upgrade:test_upgrade.py:184 Wait for refresh to block as incompatible
+[32mINFO    [0m integration.test_upgrade:test_upgrade.py:192 Ensure continuous writes while in failure state
+[32mINFO    [0m integration.helpers:helpers.py:563 Ensure continuous writes are incrementing
+[32mINFO    [0m integration.helpers:helpers.py:515 Retrieving primary unit
+[32mINFO    [0m integration.test_upgrade:test_upgrade.py:195 Re-refresh the charm
+[32mINFO    [0m integration.test_upgrade:test_upgrade.py:206 Wait for blocked app status
+[32mINFO    [0m integration.test_upgrade:test_upgrade.py:214 Wait for first unit to rollback
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s/0 [idle] active: Router 8.0.42 running (restart pending); Charm version dpe/1.42.0
+  mysql-router-k8s/1 [idle] active: Router 8.0.42 running (restart pending); Charm version dpe/1.42.0
+  mysql-router-k8s/2 [idle] active: Router 8.0.42 running; Charm version dpe/1.42.0
+[32mINFO    [0m integration.test_upgrade:test_upgrade.py:218 Running resume-refresh on the mysql router leader unit
+[32mINFO    [0m integration.test_upgrade:test_upgrade.py:226 Waiting for rollback to complete on all units
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s/0 [idle] active: Router 8.0.42 running (restart pending); Charm version dpe/1.42.0
+  mysql-router-k8s/1 [executing] maintenance: 
+  mysql-router-k8s/2 [idle] active: Router 8.0.42 running; Charm version dpe/1.42.0
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s/0 [executing] maintenance: 
+  mysql-router-k8s/1 [executing] active: Router 8.0.42 running; Charm version dpe/1.42.0
+  mysql-router-k8s/2 [idle] active: Router 8.0.42 running; Charm version dpe/1.42.0
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s/0 [executing] active: 
+  mysql-router-k8s/1 [idle] active: 
+  mysql-router-k8s/2 [idle] active: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s/0 [idle] active: 
+  mysql-router-k8s/1 [idle] active: 
+  mysql-router-k8s/2 [idle] active: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s/0 [idle] active: 
+  mysql-router-k8s/1 [idle] active: 
+  mysql-router-k8s/2 [idle] active: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s/0 [idle] active: 
+  mysql-router-k8s/1 [idle] active: 
+  mysql-router-k8s/2 [idle] active: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s/0 [idle] active: 
+  mysql-router-k8s/1 [idle] active: 
+  mysql-router-k8s/2 [idle] active: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s/0 [idle] active: 
+  mysql-router-k8s/1 [idle] active: 
+  mysql-router-k8s/2 [idle] active: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s/0 [idle] active: 
+  mysql-router-k8s/1 [idle] active: 
+  mysql-router-k8s/2 [idle] active: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s/0 [idle] active: 
+  mysql-router-k8s/1 [idle] active: 
+  mysql-router-k8s/2 [idle] active: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s/0 [idle] active: 
+  mysql-router-k8s/1 [idle] active: 
+  mysql-router-k8s/2 [idle] active: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s/0 [idle] active: 
+  mysql-router-k8s/1 [idle] active: 
+  mysql-router-k8s/2 [idle] active: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s/0 [idle] active: 
+  mysql-router-k8s/1 [idle] active: 
+  mysql-router-k8s/2 [idle] active: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s/0 [idle] active: 
+  mysql-router-k8s/1 [idle] active: 
+  mysql-router-k8s/2 [idle] active: 
+[32mINFO    [0m integration.test_upgrade:test_upgrade.py:234 Ensure continuous writes after rollback procedure
+[32mINFO    [0m integration.helpers:helpers.py:563 Ensure continuous writes are incrementing
+[32mINFO    [0m integration.helpers:helpers.py:515 Retrieving primary unit
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller          Cloud/Region        Version  SLA          Timestamp
+testing  concierge-microk8s  microk8s/localhost  3.6.11   unsupported  02:18:06Z
+
+App               Version                  Status  Scale  Charm             Channel      Rev  Address         Exposed  Message
+mysql-k8s         8.0.42-0ubuntu0.22.04.2  active      1  mysql-k8s         8.0/edge     316  10.152.183.153  no       
+mysql-router-k8s  8.0.42                   active      3  mysql-router-k8s                 2  10.152.183.21   no       
+mysql-test-app    0.0.2                    active      1  mysql-test-app    latest/edge   85  10.152.183.204  no       Last written value=52176
+
+Unit                 Workload  Agent  Address       Ports  Message
+mysql-k8s/0*         active    idle   10.1.113.142         Primary
+mysql-router-k8s/0*  active    idle   10.1.113.149         
+mysql-router-k8s/1   active    idle   10.1.113.148         
+mysql-router-k8s/2   active    idle   10.1.113.147         
+mysql-test-app/0*    active    idle   10.1.113.137         Last written value=52176
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+unit-mysql-router-k8s-2: 02:09:56 ERROR unit.mysql-router-k8s/2.juju-log __main__:Unable to connect to MySQL Router
+Traceback (most recent call last):
+  File "/var/lib/juju/agents/unit-mysql-router-k8s-2/charm/src/charm.py", line 316, in wait_until_mysql_router_ready
+    for attempt in tenacity.Retrying(
+  File "/var/lib/juju/agents/unit-mysql-router-k8s-2/charm/venv/lib/python3.10/site-packages/tenacity/__init__.py", line 445, in __iter__
+    do = self.iter(retry_state=retry_state)
+  File "/var/lib/juju/agents/unit-mysql-router-k8s-2/charm/venv/lib/python3.10/site-packages/tenacity/__init__.py", line 378, in iter
+    result = action(retry_state)
+  File "/var/lib/juju/agents/unit-mysql-router-k8s-2/charm/venv/lib/python3.10/site-packages/tenacity/__init__.py", line 420, in exc_check
+    raise retry_exc.reraise()
+  File "/var/lib/juju/agents/unit-mysql-router-k8s-2/charm/venv/lib/python3.10/site-packages/tenacity/__init__.py", line 187, in reraise
+    raise self.last_attempt.result()
+  File "/usr/lib/python3.10/concurrent/futures/_base.py", line 451, in result
+    return self.__get_result()
+  File "/usr/lib/python3.10/concurrent/futures/_base.py", line 403, in __get_result
+    raise self._exception
+  File "/var/lib/juju/agents/unit-mysql-router-k8s-2/charm/src/charm.py", line 329, in wait_until_mysql_router_ready
+    assert s.connect_ex(("localhost", port)) == 0
+AssertionError
+unit-mysql-router-k8s-2: 02:09:56 ERROR unit.mysql-router-k8s/2.juju-log root:Uncaught exception while in charm code:
+Traceback (most recent call last):
+  File "/var/lib/juju/agents/unit-mysql-router-k8s-2/charm/src/charm.py", line 470, in <module>
+    ops.main.main(KubernetesRouterCharm)
+  File "/var/lib/juju/agents/unit-mysql-router-k8s-2/charm/venv/lib/python3.10/site-packages/ops/main.py", line 436, in main
+    _emit_charm_event(charm, dispatcher.event_name)
+  File "/var/lib/juju/agents/unit-mysql-router-k8s-2/charm/venv/lib/python3.10/site-packages/ops/main.py", line 144, in _emit_charm_event
+    event_to_emit.emit(*args, **kwargs)
+  File "/var/lib/juju/agents/unit-mysql-router-k8s-2/charm/venv/lib/python3.10/site-packages/ops/framework.py", line 351, in emit
+    framework._emit(event)
+  File "/var/lib/juju/agents/unit-mysql-router-k8s-2/charm/venv/lib/python3.10/site-packages/ops/framework.py", line 853, in _emit
+    self._reemit(event_path)
+  File "/var/lib/juju/agents/unit-mysql-router-k8s-2/charm/venv/lib/python3.10/site-packages/ops/framework.py", line 942, in _reemit
+    custom_handler(event)
+  File "/var/lib/juju/agents/unit-mysql-router-k8s-2/charm/lib/charms/tempo_coordinator_k8s/v0/charm_tracing.py", line 735, in wrapped_function
+    return callable(*args, **kwargs)  # type: ignore
+  File "/var/lib/juju/agents/unit-mysql-router-k8s-2/charm/venv/lib/python3.10/site-packages/common/abstract_charm.py", line 346, in reconcile
+    workload_.reconcile(
+  File "/var/lib/juju/agents/unit-mysql-router-k8s-2/charm/lib/charms/tempo_coordinator_k8s/v0/charm_tracing.py", line 735, in wrapped_function
+    return callable(*args, **kwargs)  # type: ignore
+  File "/var/lib/juju/agents/unit-mysql-router-k8s-2/charm/venv/lib/python3.10/site-packages/common/workload.py", line 425, in reconcile
+    self._enable_router(event=event, tls=tls, unit_name=unit_name)
+  File "/var/lib/juju/agents/unit-mysql-router-k8s-2/charm/lib/charms/tempo_coordinator_k8s/v0/charm_tracing.py", line 735, in wrapped_function
+    return callable(*args, **kwargs)  # type: ignore
+  File "/var/lib/juju/agents/unit-mysql-router-k8s-2/charm/venv/lib/python3.10/site-packages/common/workload.py", line 369, in _enable_router
+    self._charm.wait_until_mysql_router_ready(event=event)
+  File "/var/lib/juju/agents/unit-mysql-router-k8s-2/charm/lib/charms/tempo_coordinator_k8s/v0/charm_tracing.py", line 735, in wrapped_function
+    return callable(*args, **kwargs)  # type: ignore
+  File "/var/lib/juju/agents/unit-mysql-router-k8s-2/charm/src/charm.py", line 316, in wait_until_mysql_router_ready
+    for attempt in tenacity.Retrying(
+  File "/var/lib/juju/agents/unit-mysql-router-k8s-2/charm/venv/lib/python3.10/site-packages/tenacity/__init__.py", line 445, in __iter__
+    do = self.iter(retry_state=retry_state)
+  File "/var/lib/juju/agents/unit-mysql-router-k8s-2/charm/venv/lib/python3.10/site-packages/tenacity/__init__.py", line 378, in iter
+    result = action(retry_state)
+  File "/var/lib/juju/agents/unit-mysql-router-k8s-2/charm/venv/lib/python3.10/site-packages/tenacity/__init__.py", line 420, in exc_check
+    raise retry_exc.reraise()
+  File "/var/lib/juju/agents/unit-mysql-router-k8s-2/charm/venv/lib/python3.10/site-packages/tenacity/__init__.py", line 187, in reraise
+    raise self.last_attempt.result()
+  File "/usr/lib/python3.10/concurrent/futures/_base.py", line 451, in result
+    return self.__get_result()
+  File "/usr/lib/python3.10/concurrent/futures/_base.py", line 403, in __get_result
+    raise self._exception
+  File "/var/lib/juju/agents/unit-mysql-router-k8s-2/charm/src/charm.py", line 329, in wait_until_mysql_router_ready
+    assert s.connect_ex(("localhost", port)) == 0
+AssertionError
+unit-mysql-router-k8s-2: 02:09:56 ERROR juju.worker.uniter.operation hook "upgrade-charm" (via hook dispatching script: dispatch) failed: exit status 1
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...

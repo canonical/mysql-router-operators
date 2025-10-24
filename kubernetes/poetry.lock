@@ -568,7 +568,7 @@ develop = true
 charm-api = ">=0.1.2"
 charm-refresh = ">=3.1.0.2"
 jinja2 = ">=3.1.6"
-ops = ">=2.9.0"
+ops = ">=2.10.0"
 requests = ">=2.32.5"
 tenacity = ">=9.1.2"
 
@@ -1536,19 +1536,22 @@ files = [
 
 [[package]]
 name = "ops"
-version = "2.9.0"
+version = "2.10.0"
 description = "The Python library behind great charms"
 optional = false
 python-versions = ">=3.8"
 groups = ["main", "charm-libs", "unit"]
 files = [
-    {file = "ops-2.9.0-py3-none-any.whl", hash = "sha256:1d443e4d45e0c2443b8334d37a177287f22a12ee0cb02a30cf7c3159316cb643"},
-    {file = "ops-2.9.0.tar.gz", hash = "sha256:d3c541659eded56f42f9c18270408cc6313895968f1360b3f1de75c99cc99ada"},
+    {file = "ops-2.10.0-py3-none-any.whl", hash = "sha256:25ecac7054e53b500d1ea6cccf47de4ed69d39de4eaf9a2bc05d49a12f8651bf"},
+    {file = "ops-2.10.0.tar.gz", hash = "sha256:7b0bf23c7ae20891d3fd7943830d75f1b38e7cafb216d5b727771d9c2f69d654"},
 ]
 
 [package.dependencies]
 PyYAML = "==6.*"
 websocket-client = "==1.*"
+
+[package.extras]
+docs = ["furo", "lxd-sphinx-extensions", "sphinx (==6.2.1)", "sphinx-copybutton", "sphinx-design", "sphinx-tabs"]
 
 [[package]]
 name = "ops-scenario"
@@ -2885,4 +2888,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "d11a27c4b815cc5df25f70c8a04ecef3262f4550b47fad9aa5f926497a74090d"
+content-hash = "5e009d81faa138bebd74d1ccb367f2edba765b5f32dfc4d352aa41c7715d0a4a"

@@ -138,16 +138,20 @@ class KubernetesRouterCharm(common.abstract_charm.MySQLRouterCharm):
     def _cos_relation_type(self) -> type[common.relations.cos.COSRelation]:
         return relations.kubernetes_cos.COSRelation
 
-    def _status(self, *, event) -> ops.StatusBase | None:
+    @property
+    def _status(self) -> ops.StatusBase | None:
         if self.config.get("expose-external", "false") not in [
             "false",
             "nodeport",
             "loadbalancer",
         ]:
             return ops.BlockedStatus("Invalid expose-external config value")
-        if self._peer_data.get_value(
-            common.relations.secrets.APP_SCOPE, self._K8S_SERVICE_INITIALIZED_KEY
-        ) and not self._check_service_connectivity(event=event):
+        if (
+            self._peer_data.get_value(
+                common.relations.secrets.APP_SCOPE, self._K8S_SERVICE_INITIALIZED_KEY
+            )
+            and not self._check_service_connectivity()
+        ):
             if self._peer_data.get_value(
                 common.relations.secrets.APP_SCOPE, self._K8S_SERVICE_CREATING_KEY
             ):
@@ -155,8 +159,10 @@ class KubernetesRouterCharm(common.abstract_charm.MySQLRouterCharm):
             else:
                 return ops.BlockedStatus("K8s service not connectable")
 
-    def is_externally_accessible(self, *, event) -> bool | None:
+    @property
+    def is_externally_accessible(self) -> bool | None:
         """No-op since this charm is exposed with the expose-external config."""
+        return None
 
     def _get_service(self) -> lightkube.resources.core_v1.Service | None:
         """Get the managed k8s service."""
@@ -262,21 +268,18 @@ class KubernetesRouterCharm(common.abstract_charm.MySQLRouterCharm):
 
         logger.info(f"Request to create desired service {desired_service_type=} dispatched")
 
-    def _check_service_connectivity(self, *, event) -> bool:
+    def _check_service_connectivity(self) -> bool:
         """Check if the service is available (connectable with a socket)."""
         if not self._get_service() or not isinstance(
-            self.get_workload(event=None), common.workload.RunningWorkload
+            self.get_workload(), common.workload.RunningWorkload
         ):
             logger.debug("No service or unauthenticated workload")
             return False
 
-        for endpoints in (
-            self._read_write_endpoints(event=event),
-            self._read_only_endpoints(event=event),
-        ):
+        for endpoints in (self._read_write_endpoints, self._read_only_endpoints):
             if endpoints == "":
                 logger.debug(
-                    f"Empty endpoints {self._read_write_endpoints(event=event)=} {self._read_only_endpoints(event=event)=}"
+                    f"Empty endpoints {self._read_write_endpoints=} {self._read_only_endpoints=}"
                 )
                 return False
 
@@ -299,17 +302,17 @@ class KubernetesRouterCharm(common.abstract_charm.MySQLRouterCharm):
 
         return True
 
-    def _reconcile_ports(self, *, event) -> None:
+    def _reconcile_ports(self) -> None:
         """Needed for VM, so no-op"""
 
-    def _update_endpoints(self, *, event) -> None:
-        if self._check_service_connectivity(event=event):
+    def _update_endpoints(self) -> None:
+        if self._check_service_connectivity():
             self._database_provides.update_endpoints(
-                router_read_write_endpoints=self._read_write_endpoints(event=event),
-                router_read_only_endpoints=self._read_only_endpoints(event=event),
+                router_read_write_endpoints=self._read_write_endpoints,
+                router_read_only_endpoints=self._read_only_endpoints,
             )
 
-    def wait_until_mysql_router_ready(self, *, event=None) -> None:
+    def wait_until_mysql_router_ready(self) -> None:
         logger.debug("Waiting until MySQL Router is ready")
         self.unit.status = ops.MaintenanceStatus("MySQL Router starting")
         try:
@@ -406,13 +409,16 @@ class KubernetesRouterCharm(common.abstract_charm.MySQLRouterCharm):
 
         return ""
 
-    def _read_write_endpoints(self, *, event) -> str:
+    @property
+    def _read_write_endpoints(self) -> str:
         return self._get_hosts_ports("rw")
 
-    def _read_only_endpoints(self, *, event) -> str:
+    @property
+    def _read_only_endpoints(self) -> str:
         return self._get_hosts_ports("ro")
 
-    def tls_sans_ip(self, *, event) -> list[str] | None:
+    @property
+    def tls_sans_ip(self) -> list[str] | None:
         _, extra_ips = self.get_all_k8s_node_hostnames_and_ips()
         return [
             str(self.model.get_binding("juju-info").network.bind_address),
@@ -420,7 +426,8 @@ class KubernetesRouterCharm(common.abstract_charm.MySQLRouterCharm):
             *extra_ips,
         ]
 
-    def tls_sans_dns(self, *, event) -> list[str] | None:
+    @property
+    def tls_sans_dns(self) -> list[str] | None:
         service_name = self.service_name
         unit_name = self.unit.name.replace("/", "-")
         extra_hosts, _ = self.get_all_k8s_node_hostnames_and_ips()
@@ -440,9 +447,7 @@ class KubernetesRouterCharm(common.abstract_charm.MySQLRouterCharm):
             *extra_hosts,
         ]
 
-    def get_all_k8s_node_hostnames_and_ips(
-        self,
-    ) -> tuple[list[str], list[str]]:
+    def get_all_k8s_node_hostnames_and_ips(self) -> tuple[list[str], list[str]]:
         """Return all node hostnames and IPs registered in k8s."""
         node = self._get_node(self.unit.name)
         hostnames = []

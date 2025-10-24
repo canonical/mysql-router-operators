@@ -9,6 +9,7 @@ Uses DEPRECATED "mysql-shared" relation interface
 import logging
 import typing
 
+import charm_ as charm
 import common.mysql_shell
 import common.relations.remote_databag as remote_databag
 import common.status_exception
@@ -56,10 +57,7 @@ class _Relation:
     """Relation to one application charm"""
 
     def __init__(
-        self,
-        *,
-        relation: ops.Relation,
-        peer_relation_app_databag: ops.RelationDataContent,
+        self, *, relation: ops.Relation, peer_relation_app_databag: ops.RelationDataContent
     ) -> None:
         self._id = relation.id
         self._peer_app_databag = peer_relation_app_databag
@@ -88,11 +86,7 @@ class _UnitThatNeedsUser(_Relation):
         assert len(relation.units) == 1
         self._remote_unit_name = relation.units.copy().pop().name
 
-    def set_databag(
-        self,
-        *,
-        password: str,
-    ) -> None:
+    def set_databag(self, *, password: str) -> None:
         """Share connection information with application charm."""
         logger.debug(f"Setting unit databag {self._id=} {self._remote_unit_name=}")
         self._local_unit_databag["allowed_units"] = self._remote_unit_name
@@ -121,9 +115,8 @@ class _RelationThatRequestedUser(_UnitThatNeedsUser):
         relation: ops.Relation,
         peer_relation_app_databag: ops.RelationDataContent,
         unit: ops.Unit,
-        event,
     ) -> None:
-        if isinstance(event, ops.RelationBrokenEvent) and event.relation.id == relation.id:
+        if not relation.active:
             raise _RelationBreaking
         super().__init__(
             relation=relation, unit=unit, peer_relation_app_databag=peer_relation_app_databag
@@ -133,11 +126,7 @@ class _RelationThatRequestedUser(_UnitThatNeedsUser):
             self._peer_databag_username_key, self._remote_unit_databag["username"]
         )
 
-    def create_database_and_user(
-        self,
-        *,
-        shell: common.mysql_shell.Shell,
-    ) -> None:
+    def create_database_and_user(self, *, shell: common.mysql_shell.Shell) -> None:
         """Create database & user and update databag."""
         # Delete user if exists
         # (If the user was previously created by this charm—but the hook failed—the user will
@@ -148,8 +137,7 @@ class _RelationThatRequestedUser(_UnitThatNeedsUser):
         logger.debug("Deleted user if exists before creating user")
 
         password = shell.create_application_database(
-            database=self._database,
-            username=self._username,
+            database=self._database, username=self._username
         )
         self._peer_app_databag[self.peer_databag_password_key] = password
         self.set_databag(password=password)
@@ -163,10 +151,7 @@ class _RelationWithSharedUser(_Relation):
     """Related application charm that has been provided with a database & user"""
 
     def __init__(
-        self,
-        *,
-        relation: ops.Relation,
-        peer_relation_app_databag: ops.RelationDataContent,
+        self, *, relation: ops.Relation, peer_relation_app_databag: ops.RelationDataContent
     ) -> None:
         super().__init__(relation=relation, peer_relation_app_databag=peer_relation_app_databag)
         for key in (self._peer_databag_username_key, self.peer_databag_password_key):
@@ -200,7 +185,24 @@ class RelationEndpoint(ops.Object):
 
     def __init__(self, charm_: "common.abstract_charm.MySQLRouterCharm") -> None:
         super().__init__(charm_, self._NAME)
+
         self._relations = charm_.model.relations[self._NAME]
+        # Needed because of breaking change in ops 2.10
+        # https://github.com/canonical/operator/pull/1091
+        # Breaking relations included to clean up users during relation-broken event
+        # Recommended approach from Charm Tech team:
+        # https://github.com/canonical/operator/issues/1279#issuecomment-2921130420
+        # Use Juju event (`charm.event`) instead of ops event so that breaking relation is included
+        # in ops deferred or custom events, as recommended by Charm Tech team
+        if isinstance(
+            charm.event, charm.RelationBrokenEvent
+        ) and charm.event.endpoint == charm.Endpoint(self._NAME):
+            self._relations.append(
+                charm_.model.get_relation(
+                    relation_name=self._NAME, relation_id=charm.event.relation.id
+                )
+            )
+
         if self._relations:
             logger.warning(
                 "'mysql-shared' relation interface is DEPRECATED and will be removed in a future release. Use 'mysql_client' interface instead."
@@ -255,27 +257,21 @@ class RelationEndpoint(ops.Object):
             try:
                 shared_users.append(
                     _RelationWithSharedUser(
-                        relation=relation,
-                        peer_relation_app_databag=self._peer_app_databag,
+                        relation=relation, peer_relation_app_databag=self._peer_app_databag
                     )
                 )
             except _UserNotShared:
                 pass
         return shared_users
 
-    def reconcile_users(
-        self,
-        *,
-        event,
-        shell: common.mysql_shell.Shell,
-    ) -> None:
+    def reconcile_users(self, *, shell: common.mysql_shell.Shell) -> None:
         """Create requested users and delete inactive users.
 
         When the relation to the MySQL charm is broken, the MySQL charm will delete all users
         created by this charm. Therefore, this charm does not need to delete users when that
         relation is broken.
         """
-        logger.debug(f"Reconciling users {event=}")
+        logger.debug("Reconciling users")
         requested_users = []
         for relation in self._relations:
             try:
@@ -284,24 +280,18 @@ class RelationEndpoint(ops.Object):
                         relation=relation,
                         unit=self._charm.unit,
                         peer_relation_app_databag=self._peer_app_databag,
-                        event=event,
                     )
                 )
-            except (
-                _RelationBreaking,
-                remote_databag.IncompleteDatabag,
-            ):
+            except (_RelationBreaking, remote_databag.IncompleteDatabag):
                 pass
         logger.debug(f"State of reconcile users {requested_users=}, {self._shared_users=}")
         for relation in requested_users:
             if relation not in self._shared_users:
-                relation.create_database_and_user(
-                    shell=shell,
-                )
+                relation.create_database_and_user(shell=shell)
         for relation in self._shared_users:
             if relation not in requested_users:
                 relation.delete_user(shell=shell)
-        logger.debug(f"Reconciled users {event=}")
+        logger.debug("Reconciled users")
 
     def delete_all_databags(self) -> None:
         """Remove connection information from all databags.
@@ -317,7 +307,8 @@ class RelationEndpoint(ops.Object):
             relation.delete_databag()
         logger.debug("Deleted all application databags")
 
-    def get_status(self, event) -> ops.StatusBase | None:
+    @property
+    def status(self) -> ops.StatusBase | None:
         """Report non-active status."""
         requested_users = []
         exception_reporting_priority = (remote_databag.IncompleteDatabag,)
@@ -329,7 +320,6 @@ class RelationEndpoint(ops.Object):
                         relation=relation,
                         unit=self._charm.unit,
                         peer_relation_app_databag=self._peer_app_databag,
-                        event=event,
                     )
                 )
             except _RelationBreaking:

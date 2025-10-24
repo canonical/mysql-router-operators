@@ -6,6 +6,7 @@
 import logging
 import typing
 
+import charm_ as charm
 import ops
 
 from .. import mysql_shell, status_exception
@@ -72,11 +73,11 @@ class _RelationThatRequestedUser(_Relation):
     """Related application charm that has requested a database & user"""
 
     def __init__(
-        self, *, relation: ops.Relation, interface: data_interfaces.DatabaseProvides, event
+        self, *, relation: ops.Relation, interface: data_interfaces.DatabaseProvides
     ) -> None:
         super().__init__(relation=relation, interface=interface)
         self._interface = interface
-        if isinstance(event, ops.RelationBrokenEvent) and event.relation.id == self._id:
+        if not relation.active:
             raise _RelationBreaking
         self._database: str = self._databag["database"]
         if self._databag.get("extra-user-roles"):
@@ -121,10 +122,7 @@ class _RelationThatRequestedUser(_Relation):
         shell.delete_user(username, must_exist=False)
         logger.debug("Deleted user if exists before creating user")
 
-        password = shell.create_application_database(
-            database=self._database,
-            username=username,
-        )
+        password = shell.create_application_database(database=self._database, username=username)
         self._set_databag(
             username=username,
             password=password,
@@ -151,10 +149,7 @@ class _RelationWithSharedUser(_Relation):
                 raise _UserNotShared
 
     def update_endpoints(
-        self,
-        *,
-        router_read_write_endpoints: str,
-        router_read_only_endpoints: str,
+        self, *, router_read_write_endpoints: str, router_read_only_endpoints: str
     ) -> None:
         """Update the endpoints in the databag."""
         logger.debug(
@@ -187,13 +182,39 @@ class RelationEndpoint:
     _NAME = "database"
 
     def __init__(self, charm_: "abstract_charm.MySQLRouterCharm") -> None:
-        self._interface = data_interfaces.DatabaseProvides(charm_, relation_name=self._NAME)
-        charm_.framework.observe(self._interface.on.database_requested, charm_.reconcile)
+        self._charm = charm_
+        self._interface = data_interfaces.DatabaseProvides(self._charm, relation_name=self._NAME)
+        self._charm.framework.observe(self._interface.on.database_requested, self._charm.reconcile)
+
+    @property
+    def _relations(self) -> list[ops.Relation]:
+        """`self._interface.relations` & breaking relations
+
+        Needed because of breaking change in ops 2.10
+        https://github.com/canonical/operator/pull/1091
+
+        Breaking relations included to clean up users during relation-broken event
+        """
+        # Recommended approach from Charm Tech team:
+        # https://github.com/canonical/operator/issues/1279#issuecomment-2921130420
+
+        # Use Juju event (`charm.event`) instead of ops event so that breaking relation is included
+        # in ops deferred or custom events, as recommended by Charm Tech team
+        if isinstance(
+            charm.event, charm.RelationBrokenEvent
+        ) and charm.event.endpoint == charm.Endpoint(self._NAME):
+            return [
+                *self._interface.relations,
+                self._charm.model.get_relation(
+                    relation_name=self._NAME, relation_id=charm.event.relation.id
+                ),
+            ]
+        return self._interface.relations
 
     @property
     def _shared_users(self) -> list[_RelationWithSharedUser]:
         shared_users = []
-        for relation in self._interface.relations:
+        for relation in self._relations:
             try:
                 shared_users.append(
                     _RelationWithSharedUser(relation=relation, interface=self._interface)
@@ -202,18 +223,17 @@ class RelationEndpoint:
                 pass
         return shared_users
 
-    def external_connectivity(self, event) -> bool:
+    @property
+    def external_connectivity(self) -> bool:
         """Whether any of the relations are marked as external.
 
         Only used on machines charm
         """
         requested_users = []
-        for relation in self._interface.relations:
+        for relation in self._relations:
             try:
                 requested_users.append(
-                    _RelationThatRequestedUser(
-                        relation=relation, interface=self._interface, event=event
-                    )
+                    _RelationThatRequestedUser(relation=relation, interface=self._interface)
                 )
             except (
                 _RelationBreaking,
@@ -224,10 +244,7 @@ class RelationEndpoint:
         return any(relation.external_connectivity for relation in requested_users)
 
     def update_endpoints(
-        self,
-        *,
-        router_read_write_endpoints: str,
-        router_read_only_endpoints: str,
+        self, *, router_read_write_endpoints: str, router_read_only_endpoints: str
     ) -> None:
         """Update endpoints in the databags."""
         for relation in self._shared_users:
@@ -239,7 +256,6 @@ class RelationEndpoint:
     def reconcile_users(
         self,
         *,
-        event,
         router_read_write_endpoints: str,
         router_read_only_endpoints: str,
         shell: mysql_shell.Shell,
@@ -251,15 +267,13 @@ class RelationEndpoint:
         relation is broken.
         """
         logger.debug(
-            f"Reconciling users {event=}, {router_read_write_endpoints=}, {router_read_only_endpoints=}"
+            f"Reconciling users {router_read_write_endpoints=}, {router_read_only_endpoints=}"
         )
         requested_users = []
-        for relation in self._interface.relations:
+        for relation in self._relations:
             try:
                 requested_users.append(
-                    _RelationThatRequestedUser(
-                        relation=relation, interface=self._interface, event=event
-                    )
+                    _RelationThatRequestedUser(relation=relation, interface=self._interface)
                 )
             except (
                 _RelationBreaking,
@@ -279,7 +293,7 @@ class RelationEndpoint:
             if relation not in requested_users:
                 relation.delete_user(shell=shell)
         logger.debug(
-            f"Reconciled users {event=}, {router_read_write_endpoints=}, {router_read_only_endpoints=}"
+            f"Reconciled users {router_read_write_endpoints=}, {router_read_only_endpoints=}"
         )
 
     def delete_all_databags(self) -> None:
@@ -296,7 +310,8 @@ class RelationEndpoint:
             relation.delete_databag()
         logger.debug("Deleted all application databags")
 
-    def get_status(self, event) -> ops.StatusBase | None:
+    @property
+    def status(self) -> ops.StatusBase | None:
         """Report non-active status."""
         requested_users = []
         exception_reporting_priority = (
@@ -304,12 +319,10 @@ class RelationEndpoint:
             remote_databag.IncompleteDatabag,
         )
         exceptions: list[status_exception.StatusException] = []
-        for relation in self._interface.relations:
+        for relation in self._relations:
             try:
                 requested_users.append(
-                    _RelationThatRequestedUser(
-                        relation=relation, interface=self._interface, event=event
-                    )
+                    _RelationThatRequestedUser(relation=relation, interface=self._interface)
                 )
             except _RelationBreaking:
                 pass

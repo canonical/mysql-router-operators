@@ -108,9 +108,9 @@ class _Relation:
             self._secrets.get_value(secrets.UNIT_SCOPE, _TLS_REQUESTED_CSR),
         )
         logger.debug(f"Saved TLS certificate {event=}")
-        self._charm.reconcile(event=None)
+        self._charm.reconcile()
 
-    def _generate_csr(self, *, event, key: bytes) -> bytes:
+    def _generate_csr(self, *, key: bytes) -> bytes:
         """Generate certificate signing request (CSR)."""
         return tls_certificates.generate_csr(
             private_key=key,
@@ -118,23 +118,23 @@ class _Relation:
             # (https://github.com/pyca/cryptography/issues/10553)
             subject=socket.getfqdn()[:64],
             organization=self._charm.app.name,
-            sans_ip=self._charm.tls_sans_ip(event=event),
-            sans_dns=self._charm.tls_sans_dns(event=event),
+            sans_ip=self._charm.tls_sans_ip,
+            sans_dns=self._charm.tls_sans_dns,
         )
 
-    def request_certificate_creation(self, *, event):
+    def request_certificate_creation(self):
         """Request new TLS certificate from related provider charm."""
         logger.debug("Requesting TLS certificate creation")
-        csr = self._generate_csr(event=event, key=self.key.encode("utf-8"))
+        csr = self._generate_csr(key=self.key.encode("utf-8"))
         self._interface.request_certificate_creation(certificate_signing_request=csr)
         self._secrets.set_value(secrets.UNIT_SCOPE, _TLS_REQUESTED_CSR, csr.decode("utf-8"))
         logger.debug("Requested TLS certificate creation")
 
-    def request_certificate_renewal(self, *, event):
+    def request_certificate_renewal(self):
         """Request TLS certificate renewal from related provider charm."""
         logger.debug("Requesting TLS certificate renewal")
         old_csr = self._secrets.get_value(secrets.UNIT_SCOPE, _TLS_ACTIVE_CSR).encode("utf-8")
-        new_csr = self._generate_csr(event=event, key=self.key.encode("utf-8"))
+        new_csr = self._generate_csr(key=self.key.encode("utf-8"))
         self._interface.request_certificate_renewal(
             old_certificate_signing_request=old_csr, new_certificate_signing_request=new_csr
         )
@@ -244,7 +244,7 @@ class RelationEndpoint(ops.Object):
             logger.debug("No TLS certificate relation active. Skipped certificate request")
         else:
             try:
-                self._relation.request_certificate_creation(event=event)
+                self._relation.request_certificate_creation()
             except Exception as e:
                 event.fail(f"Failed to request certificate: {e}")
                 logger.exception(
@@ -253,16 +253,16 @@ class RelationEndpoint(ops.Object):
                 raise
         logger.debug("Handled set TLS private key action")
 
-    def _on_tls_relation_created(self, event) -> None:
+    def _on_tls_relation_created(self, _) -> None:
         """Request certificate when TLS relation created."""
-        self._relation.request_certificate_creation(event=event)
+        self._relation.request_certificate_creation()
 
     def _on_tls_relation_broken(self, _) -> None:
         """Delete TLS certificate."""
         logger.debug("Deleting TLS certificate")
         for field in _TLS_FIELDS:
             self._secrets.set_value(secrets.UNIT_SCOPE, field, None)
-        self._charm.reconcile(event=None)
+        self._charm.reconcile()
         logger.debug("Deleted TLS certificate")
 
     def _on_certificate_available(self, event: tls_certificates.CertificateAvailableEvent) -> None:
@@ -275,4 +275,4 @@ class RelationEndpoint(ops.Object):
             logger.warning("Unknown certificate expiring")
             return
 
-        self._relation.request_certificate_renewal(event=event)
+        self._relation.request_certificate_renewal()

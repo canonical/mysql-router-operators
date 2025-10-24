@@ -7,8 +7,6 @@ import abc
 import dataclasses
 import typing
 
-import ops
-
 from .. import container, utils
 from . import secrets
 
@@ -91,13 +89,3 @@ class COSRelation(abc.ABC):
     def reset_monitoring_password(self) -> None:
         """Reset the monitoring password from unit peer data."""
         self._secrets.set_value(secrets.UNIT_SCOPE, self._MONITORING_PASSWORD_KEY, None)
-
-    def is_relation_breaking(self, event) -> bool:
-        """Whether relation will be broken after the current event is handled."""
-        if not self.relation_exists:
-            return False
-
-        return (
-            isinstance(event, ops.RelationBrokenEvent)
-            and event.relation.id == self._charm.model.relations[self._METRICS_RELATION_NAME][0].id
-        )

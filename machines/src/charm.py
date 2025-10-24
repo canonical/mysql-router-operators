@@ -49,15 +49,13 @@ class _MachinesRouterRefresh(
     def refresh_snap(
         self, *, snap_name: str, snap_revision: str, refresh: charm_refresh.Machines
     ) -> None:
-        # TODO: issue on relation-broken event since event not passed? mitigated by regular event handler?
-        self._charm.get_workload(event=None, refresh=refresh).refresh(
-            event=None,
+        self._charm.get_workload(refresh=refresh).refresh(
             unit=self._charm.unit,
             model_uuid=self._charm.model.uuid,
             snap_revision=snap_revision,
             refresh=refresh,
             tls=self._charm._tls_certificate_saved,
-            exporter_config=self._charm._cos_exporter_config(event=None),
+            exporter_config=self._charm._cos_exporter_config,
         )
         # `reconcile()` will run on every event, which will set
         # `refresh.next_unit_allowed_to_refresh = True`
@@ -125,8 +123,9 @@ class MachineSubordinateRouterCharm(common.abstract_charm.MySQLRouterCharm):
     def _container(self) -> snap.Snap:
         return snap.Snap(unit_name=self.unit.name)
 
-    def _status(self, *, event) -> ops.StatusBase | None:
-        pass
+    @property
+    def _status(self) -> ops.StatusBase | None:
+        return None
 
     @property
     def _logrotate(self) -> machine_logrotate.LogRotate:
@@ -136,20 +135,22 @@ class MachineSubordinateRouterCharm(common.abstract_charm.MySQLRouterCharm):
     def _cos_relation_type(self) -> type[common.relations.cos.COSRelation]:
         return relations.machines_cos.COSRelation
 
-    def tls_sans_ip(self, *, event) -> list[str] | None:
+    @property
+    def tls_sans_ip(self) -> list[str] | None:
         sans_ip = ["127.0.0.1"]  # needed for the HTTP server when related with COS
-        if self.is_externally_accessible(event=event):
+        if self.is_externally_accessible:
             sans_ip.append(self.host_address)
         return sans_ip
 
-    def tls_sans_dns(self, *, event) -> list[str] | None:
+    @property
+    def tls_sans_dns(self) -> list[str] | None:
         return None
 
     @property
     def host_address(self) -> str:
         """The host address for the machine."""
         if (
-            not self.is_externally_accessible(event=None)
+            not self.is_externally_accessible
             or not self.config.get("vip")
             or (self._ha_cluster and not self._ha_cluster.is_clustered())
         ):
@@ -157,43 +158,46 @@ class MachineSubordinateRouterCharm(common.abstract_charm.MySQLRouterCharm):
 
         return self.config["vip"]
 
-    def _read_write_endpoints(self, *, event) -> str:
-        if self.is_externally_accessible(event=event):
+    @property
+    def _read_write_endpoints(self) -> str:
+        if self.is_externally_accessible:
             return f"{self.host_address}:{self._READ_WRITE_PORT}"
         else:
             return f"file://{self._container.path('/run/mysqlrouter/mysql.sock')}"
 
-    def _read_only_endpoints(self, *, event) -> str:
-        if self.is_externally_accessible(event=event):
+    @property
+    def _read_only_endpoints(self) -> str:
+        if self.is_externally_accessible:
             return f"{self.host_address}:{self._READ_ONLY_PORT}"
         else:
             return f"file://{self._container.path('/run/mysqlrouter/mysqlro.sock')}"
 
-    def is_externally_accessible(self, *, event) -> bool | None:
-        return self._database_provides.external_connectivity(event)
+    @property
+    def is_externally_accessible(self) -> bool | None:
+        return self._database_provides.external_connectivity
 
     def _reconcile_service(self) -> None:
         """Only applies to Kubernetes charm, so no-op."""
         pass
 
-    def _reconcile_ports(self, *, event) -> None:
-        if self.is_externally_accessible(event=event):
+    def _reconcile_ports(self) -> None:
+        if self.is_externally_accessible:
             ports = [self._READ_WRITE_PORT, self._READ_ONLY_PORT]
         else:
             ports = []
         self.unit.set_ports(*ports)
 
-    def _update_endpoints(self, *, event) -> None:
+    def _update_endpoints(self) -> None:
         self._database_provides.update_endpoints(
-            router_read_write_endpoints=self._read_write_endpoints(event=event),
-            router_read_only_endpoints=self._read_only_endpoints(event=event),
+            router_read_write_endpoints=self._read_write_endpoints,
+            router_read_only_endpoints=self._read_only_endpoints,
         )
 
     def _wait_until_service_reconciled(self) -> None:
         """Only applies to Kubernetes charm, so no-op."""
         pass
 
-    def wait_until_mysql_router_ready(self, *, event) -> None:
+    def wait_until_mysql_router_ready(self) -> None:
         logger.debug("Waiting until MySQL Router is ready")
         self.unit.status = ops.MaintenanceStatus("MySQL Router starting")
         try:
@@ -203,7 +207,7 @@ class MachineSubordinateRouterCharm(common.abstract_charm.MySQLRouterCharm):
                 wait=tenacity.wait_fixed(5),
             ):
                 with attempt:
-                    if self.is_externally_accessible(event=event):
+                    if self.is_externally_accessible:
                         for port in (
                             self._READ_WRITE_PORT,
                             self._READ_ONLY_PORT,

@@ -88,7 +88,7 @@ def patch(monkeypatch):
         if key == "JUJU_HOOK_NAME":
             if dispatch_path := self.get("JUJU_DISPATCH_PATH"):
                 _, hook_name = dispatch_path.split("/")
-                return hook_name
+                return hook_name.replace("_", "-")
         return original_getitem(key)
 
     monkeypatch.setattr("os._Environ.__getitem__", getitem)

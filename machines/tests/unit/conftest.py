@@ -93,6 +93,8 @@ def patch(monkeypatch):
 
     monkeypatch.setattr("os._Environ.__getitem__", getitem)
 
+    monkeypatch.setattr("charm_._main.Relation._other_app", lambda: os.environ["JUJU_REMOTE_APP"])
+
 
 # flake8: noqa: C901
 @pytest.fixture(autouse=True)

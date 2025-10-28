@@ -69,14 +69,35 @@ class CompleteConnectionInformation(ConnectionInformation):
     (Different from user that MySQL Router runs with after bootstrap.)
     """
 
-    def __init__(self, *, interface: data_interfaces.DatabaseRequires, event) -> None:
-        relations = interface.relations
+    def __init__(
+        self, *, interface: data_interfaces.DatabaseRequires, charm_: ops.CharmBase
+    ) -> None:
         endpoint_name = interface.relation_name
+
+        # Needed because of breaking change in ops 2.10
+        # https://github.com/canonical/operator/pull/1091
+        # Breaking relations included to clean up users during relation-broken event
+        # Recommended approach from Charm Tech team:
+        # https://github.com/canonical/operator/issues/1279#issuecomment-2921130420
+        # Use Juju event (`charm.event`) instead of ops event so that breaking relation is included
+        # in ops deferred or custom events, as recommended by Charm Tech team
+        if isinstance(
+            charm.event, charm.RelationBrokenEvent
+        ) and charm.event.endpoint == charm.Endpoint(endpoint_name):
+            relations = [
+                *interface.relations,
+                charm_.model.get_relation(
+                    relation_name=endpoint_name, relation_id=charm.event.relation.id
+                ),
+            ]
+        else:
+            relations = interface.relations
+
         if not relations:
             raise _MissingRelation(endpoint_name=endpoint_name)
         assert len(relations) == 1
         relation = relations[0]
-        if isinstance(event, ops.RelationBrokenEvent) and event.relation.id == relation.id:
+        if not relation.active:
             # Relation will be broken after the current event is handled
             raise _RelationBreaking(endpoint_name=endpoint_name)
         # MySQL charm databag
@@ -103,37 +124,41 @@ class RelationEndpoint:
     _NAME = "backend-database"
 
     def __init__(self, charm_: "abstract_charm.MySQLRouterCharm") -> None:
+        self._charm = charm_
         self._interface = data_interfaces.DatabaseRequires(
-            charm_,
+            self._charm,
             relation_name=self._NAME,
             # Database name disregarded by MySQL charm if "mysqlrouter" extra user role requested
             database_name="mysql_innodb_cluster_metadata",
             extra_user_roles="mysqlrouter",
         )
-        charm_.framework.observe(self._interface.on.database_created, charm_.reconcile)
-        charm_.framework.observe(self._interface.on.endpoints_changed, charm_.reconcile)
+        self._charm.framework.observe(self._interface.on.database_created, self._charm.reconcile)
+        self._charm.framework.observe(self._interface.on.endpoints_changed, self._charm.reconcile)
 
-    def get_connection_info(self, *, event) -> CompleteConnectionInformation | None:
+    @property
+    def connection_info(self) -> CompleteConnectionInformation | None:
         """Information for connection to MySQL cluster"""
         try:
-            return CompleteConnectionInformation(interface=self._interface, event=event)
+            return CompleteConnectionInformation(interface=self._interface, charm_=self._charm)
         except (_MissingRelation, remote_databag.IncompleteDatabag):
-            return
+            return None
 
-    def is_relation_breaking(self, event) -> bool:
+    @property
+    def is_relation_breaking(self) -> bool:
         """Whether relation will be broken after the current event is handled"""
         try:
-            CompleteConnectionInformation(interface=self._interface, event=event)
+            CompleteConnectionInformation(interface=self._interface, charm_=self._charm)
         except _RelationBreaking:
             return True
         except (_MissingRelation, remote_databag.IncompleteDatabag):
             pass
         return False
 
-    def get_status(self, event) -> ops.StatusBase | None:
+    @property
+    def status(self) -> ops.StatusBase | None:
         """Report non-active status."""
         try:
-            CompleteConnectionInformation(interface=self._interface, event=event)
+            CompleteConnectionInformation(interface=self._interface, charm_=self._charm)
         except (_MissingRelation, remote_databag.IncompleteDatabag) as exception:
             return exception.status
 

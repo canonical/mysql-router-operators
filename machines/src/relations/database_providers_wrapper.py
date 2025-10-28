@@ -37,15 +37,13 @@ class RelationEndpoint:
             charm_
         )
 
-    def external_connectivity(self, event) -> bool:
+    @property
+    def external_connectivity(self) -> bool:
         """Whether any of the relations are marked as external."""
-        return self._database_provides.external_connectivity(event)
+        return self._database_provides.external_connectivity
 
     def update_endpoints(
-        self,
-        *,
-        router_read_write_endpoints: str,
-        router_read_only_endpoints: str,
+        self, *, router_read_write_endpoints: str, router_read_only_endpoints: str
     ) -> None:
         """Update the endpoints in the provides relationship databags."""
         self._database_provides.update_endpoints(
@@ -56,7 +54,6 @@ class RelationEndpoint:
     def reconcile_users(
         self,
         *,
-        event,
         router_read_write_endpoints: str,
         router_read_only_endpoints: str,
         shell: common.mysql_shell.Shell,
@@ -68,12 +65,11 @@ class RelationEndpoint:
         relation is broken.
         """
         self._database_provides.reconcile_users(
-            event=event,
             router_read_write_endpoints=router_read_write_endpoints,
             router_read_only_endpoints=router_read_only_endpoints,
             shell=shell,
         )
-        self._deprecated_shared_db.reconcile_users(event=event, shell=shell)
+        self._deprecated_shared_db.reconcile_users(shell=shell)
 
     def delete_all_databags(self) -> None:
         """Remove connection information from all databags.
@@ -86,10 +82,11 @@ class RelationEndpoint:
         self._database_provides.delete_all_databags()
         self._deprecated_shared_db.delete_all_databags()
 
-    def get_status(self, event) -> ops.StatusBase | None:
+    @property
+    def status(self) -> ops.StatusBase | None:
         """Report non-active status."""
-        database_provides_status = self._database_provides.get_status(event)
-        deprecated_shared_db_status = self._deprecated_shared_db.get_status(event)
+        database_provides_status = self._database_provides.status
+        deprecated_shared_db_status = self._deprecated_shared_db.status
         if (
             isinstance(deprecated_shared_db_status, ops.ActiveStatus)
             and isinstance(database_provides_status, ops.BlockedStatus)

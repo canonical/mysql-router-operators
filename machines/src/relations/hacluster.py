@@ -4,10 +4,14 @@
 
 import json
 import logging
+import typing
 from hashlib import shake_128
 from ipaddress import IPv4Address, ip_address
 
 import ops
+
+if typing.TYPE_CHECKING:
+    import common.abstract_charm
 
 HACLUSTER_RELATION_NAME = "ha"
 
@@ -17,7 +21,7 @@ logger = logging.getLogger(__name__)
 class HACluster(ops.Object):
     """Defines hacluster functionality."""
 
-    def __init__(self, charm: ops.CharmBase):
+    def __init__(self, charm: "common.abstract_charm.MySQLRouterCharm"):
         super().__init__(charm, HACLUSTER_RELATION_NAME)
 
         self.charm = charm
@@ -41,17 +45,19 @@ class HACluster(ops.Object):
                 return True
         return False
 
-    def get_unit_juju_status(self) -> ops.StatusBase:
+    def get_unit_juju_status(self) -> ops.StatusBase | None:
         """Returns the status of the hacluster if relation exists."""
-        if self.relation and not self.charm.is_externally_accessible(event=None):
+        if self.relation and not self.charm.is_externally_accessible:
             return ops.BlockedStatus("ha integration used without data-integrator")
 
         vip = self.charm.config.get("vip")
         if self.relation and not vip:
             return ops.BlockedStatus("ha integration used without vip configuration")
 
-        if vip and not self.charm.is_externally_accessible(event=None):
+        if vip and not self.charm.is_externally_accessible:
             return ops.BlockedStatus("vip configuration without data-integrator")
+
+        return None
 
     def set_vip(self, vip: str | None) -> None:
         """Adds the requested virtual IP to the integration."""

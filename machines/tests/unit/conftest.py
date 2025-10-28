@@ -1,6 +1,6 @@
 # Copyright 2023 Canonical Ltd.
 # See LICENSE file for licensing details.
-
+import os
 import pathlib
 import platform
 
@@ -79,6 +79,21 @@ def patch(monkeypatch):
         "common.relations.database_requires.RelationEndpoint.does_relation_exist",
         lambda *args, **kwargs: True,
     )
+
+    # Can be removed when ops-scenario is updated to 8.3.0/ops[testing] 3.3.0
+    # (https://github.com/canonical/operator/pull/1996)
+    original_getitem = os.environ.__getitem__
+
+    def getitem(self, key):
+        if key == "JUJU_HOOK_NAME":
+            if dispatch_path := self.get("JUJU_DISPATCH_PATH"):
+                _, hook_name = dispatch_path.split("/")
+                return hook_name.replace("_", "-")
+        return original_getitem(key)
+
+    monkeypatch.setattr("os._Environ.__getitem__", getitem)
+
+    monkeypatch.setattr("charm_._main.Relation._other_app", lambda: os.environ["JUJU_REMOTE_APP"])
 
 
 # flake8: noqa: C901

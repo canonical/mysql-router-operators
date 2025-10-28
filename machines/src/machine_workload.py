@@ -21,10 +21,10 @@ class RunningMachineWorkload(common.workload.RunningWorkload):
     """Workload with connection to MySQL cluster and with Unix sockets enabled"""
 
     def _get_bootstrap_command(
-        self, *, event, connection_info: "common.relations.database_requires.ConnectionInformation"
+        self, *, connection_info: "common.relations.database_requires.ConnectionInformation"
     ) -> list[str]:
-        command = super()._get_bootstrap_command(event=event, connection_info=connection_info)
-        if self._charm.is_externally_accessible(event=event):
+        command = super()._get_bootstrap_command(connection_info=connection_info)
+        if self._charm.is_externally_accessible:
             command.extend([
                 "--conf-bind-address",
                 "0.0.0.0",
@@ -65,7 +65,7 @@ class RunningMachineWorkload(common.workload.RunningWorkload):
             self._container.router_config_file.write_text(output.getvalue())
         logger.debug("Updated configured socket file locations")
 
-    def _bootstrap_router(self, *, event, tls: bool) -> None:
-        super()._bootstrap_router(event=event, tls=tls)
-        if not self._charm.is_externally_accessible(event=event):
+    def _bootstrap_router(self, *, tls: bool) -> None:
+        super()._bootstrap_router(tls=tls)
+        if not self._charm.is_externally_accessible:
             self._update_configured_socket_file_locations()

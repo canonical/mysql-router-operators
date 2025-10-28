@@ -120,31 +120,37 @@ class MySQLRouterCharm(ops.CharmBase, abc.ABC):
     def _cos_relation_type(self) -> type[cos.COSRelation]:
         """COSRelation type"""
 
+    @property
     @abc.abstractmethod
-    def _read_write_endpoints(self, *, event) -> str:
+    def _read_write_endpoints(self) -> str:
         """MySQL Router read-write endpoint"""
 
+    @property
     @abc.abstractmethod
-    def _read_only_endpoints(self, *, event) -> str:
+    def _read_only_endpoints(self) -> str:
         """MySQL Router read-only endpoint"""
 
+    @property
     @abc.abstractmethod
-    def is_externally_accessible(self, *, event) -> bool | None:
+    def is_externally_accessible(self) -> bool | None:
         """Whether endpoints should be externally accessible.
 
         Only defined in vm charm to return True/False. In k8s charm, returns None.
         """
 
+    @property
     @abc.abstractmethod
-    def tls_sans_ip(self, *, event) -> list[str] | None:
+    def tls_sans_ip(self) -> list[str] | None:
         """TLS IP subject alternative names"""
 
+    @property
     @abc.abstractmethod
-    def tls_sans_dns(self, *, event) -> list[str] | None:
+    def tls_sans_dns(self) -> list[str] | None:
         """TLS DNS subject alternative names"""
 
+    @property
     @abc.abstractmethod
-    def _status(self, *, event) -> ops.StatusBase | None:
+    def _status(self) -> ops.StatusBase | None:
         """Status of the charm."""
 
     @property
@@ -172,16 +178,14 @@ class MySQLRouterCharm(ops.CharmBase, abc.ABC):
         """Otlp http endpoint for charm instrumentation."""
         return self._cos_relation.tracing_endpoint
 
-    def _cos_exporter_config(self, event) -> cos.ExporterConfig | None:
+    @property
+    def _cos_exporter_config(self) -> cos.ExporterConfig | None:
         """Returns the exporter config for MySQLRouter exporter if cos relation exists"""
-        cos_relation_exists = (
-            self._cos_relation.relation_exists
-            and not self._cos_relation.is_relation_breaking(event)
-        )
-        if cos_relation_exists:
+        if self._cos_relation.relation_exists:
             return self._cos_relation.exporter_user_config
+        return None
 
-    def get_workload(self, *, event, refresh: charm_refresh.Common = None):
+    def get_workload(self, *, refresh: charm_refresh.Common = None):
         """MySQL Router workload
 
         Pass `refresh` if `self.refresh` is not set
@@ -189,7 +193,7 @@ class MySQLRouterCharm(ops.CharmBase, abc.ABC):
         if refresh is None:
             refresh = self.refresh
         if refresh.workload_allowed_to_start and (
-            connection_info := self._database_requires.get_connection_info(event=event)
+            connection_info := self._database_requires.connection_info
         ):
             return self._running_workload_type(
                 container_=self._container,
@@ -221,24 +225,24 @@ class MySQLRouterCharm(ops.CharmBase, abc.ABC):
                     return status
         return ops.ActiveStatus()
 
-    def _determine_app_status(self, *, event) -> ops.StatusBase:
+    def _determine_app_status(self) -> ops.StatusBase:
         """Report app status."""
         if self.refresh.app_status_higher_priority:
             return self.refresh.app_status_higher_priority
         statuses = []
-        if status := self._status(event=event):
+        if status := self._status:
             statuses.append(status)
         for endpoint in (self._database_requires, self._database_provides):
-            if status := endpoint.get_status(event):
+            if status := endpoint.status:
                 statuses.append(status)
         return self._prioritize_statuses(statuses)
 
-    def _determine_unit_status(self, *, event) -> ops.StatusBase:
+    def _determine_unit_status(self) -> ops.StatusBase:
         """Report unit status."""
         if self.refresh.unit_status_higher_priority:
             return self.refresh.unit_status_higher_priority
         statuses = []
-        workload_ = self.get_workload(event=event)
+        workload_ = self.get_workload()
         if status := workload_.status:
             statuses.append(status)
         # only in machine charms
@@ -252,17 +256,17 @@ class MySQLRouterCharm(ops.CharmBase, abc.ABC):
             return refresh_lower_priority
         return self._prioritize_statuses(statuses)
 
-    def set_status(self, *, event, app=True, unit=True) -> None:
+    def set_status(self, *, app=True, unit=True) -> None:
         """Set charm status."""
         if app and self._unit_lifecycle.authorized_leader:
-            self.app.status = self._determine_app_status(event=event)
+            self.app.status = self._determine_app_status()
             logger.debug(f"Set app status to {self.app.status}")
         if unit:
-            self.unit.status = self._determine_unit_status(event=event)
+            self.unit.status = self._determine_unit_status()
             logger.debug(f"Set unit status to {self.unit.status}")
 
     @abc.abstractmethod
-    def wait_until_mysql_router_ready(self, *, event) -> None:
+    def wait_until_mysql_router_ready(self) -> None:
         """Wait until a connection to MySQL Router is possible.
 
         Retry every 5 seconds for up to 30 seconds.
@@ -276,36 +280,35 @@ class MySQLRouterCharm(ops.CharmBase, abc.ABC):
         """
 
     @abc.abstractmethod
-    def _reconcile_ports(self, *, event) -> None:
+    def _reconcile_ports(self) -> None:
         """Reconcile exposed ports.
 
         Only applies to Machine charm
         """
 
     @abc.abstractmethod
-    def _update_endpoints(self, *, event) -> None:
+    def _update_endpoints(self) -> None:
         """Update the endpoints in the provider relation if necessary."""
 
     # =======================
     #  Handlers
     # =======================
 
-    def reconcile(self, event=None) -> None:  # noqa: C901
+    def reconcile(self, _=None) -> None:  # noqa: C901
         """Handle most events."""
         if not self._reconcile_allowed:
             logger.debug("Reconcile not allowed")
             return
-        workload_ = self.get_workload(event=event)
+        workload_ = self.get_workload()
         logger.debug(
             "State of reconcile "
             f"{self._unit_lifecycle.authorized_leader=}, "
             f"{isinstance(workload_, workload.RunningWorkload)=}, "
             f"{workload_.container_ready=}, "
             f"{self.refresh.workload_allowed_to_start=}, "
-            f"{self._database_requires.is_relation_breaking(event)=}, "
+            f"{self._database_requires.is_relation_breaking=}, "
             f"{self._database_requires.does_relation_exist()=}, "
-            f"{self.refresh.in_progress=}, "
-            f"{self._cos_relation.is_relation_breaking(event)=}"
+            f"{self.refresh.in_progress=}"
         )
         if isinstance(self.refresh, charm_refresh.Machines):
             workload_.install(
@@ -321,7 +324,7 @@ class MySQLRouterCharm(ops.CharmBase, abc.ABC):
 
         try:
             if self._unit_lifecycle.authorized_leader:
-                if self._database_requires.is_relation_breaking(event):
+                if self._database_requires.is_relation_breaking:
                     if self.refresh.in_progress:
                         logger.warning(
                             "Modifying relations during a refresh is not supported. The charm may be in a broken, unrecoverable state. Re-deploy the charm"
@@ -334,19 +337,17 @@ class MySQLRouterCharm(ops.CharmBase, abc.ABC):
                 ):
                     self._reconcile_service()
                     self._database_provides.reconcile_users(
-                        event=event,
-                        router_read_write_endpoints=self._read_write_endpoints(event=event),
-                        router_read_only_endpoints=self._read_only_endpoints(event=event),
+                        router_read_write_endpoints=self._read_write_endpoints,
+                        router_read_only_endpoints=self._read_only_endpoints,
                         shell=workload_.shell,
                     )
-                    self._update_endpoints(event=event)
+                    self._update_endpoints()
 
             if workload_.container_ready:
                 workload_.reconcile(
-                    event=event,
                     tls=self._tls_certificate_saved,
                     unit_name=self.unit.name,
-                    exporter_config=self._cos_exporter_config(event),
+                    exporter_config=self._cos_exporter_config,
                     key=self._tls_key,
                     certificate=self._tls_certificate,
                     certificate_authority=self._tls_certificate_authority,
@@ -354,7 +355,7 @@ class MySQLRouterCharm(ops.CharmBase, abc.ABC):
                 if not self.refresh.in_progress and isinstance(
                     workload_, workload.RunningWorkload
                 ):
-                    self._reconcile_ports(event=event)
+                    self._reconcile_ports()
 
             logger.debug(f"{workload_.status=}")
             if not workload_.status:
@@ -371,9 +372,9 @@ class MySQLRouterCharm(ops.CharmBase, abc.ABC):
                 else:
                     # Waiting for database requires relation; refresh can continue
                     self.refresh.next_unit_allowed_to_refresh = True
-            self.set_status(event=event)
+            self.set_status()
         except server_exceptions.Error as e:
             # If not for `unit=False`, another `server_exceptions.Error` could be thrown here
-            self.set_status(event=event, unit=False)
+            self.set_status(unit=False)
             self.unit.status = e.status
             logger.debug(f"Set unit status to {self.unit.status}")

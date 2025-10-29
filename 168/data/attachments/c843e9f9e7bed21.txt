@@ -1,0 +1,26 @@
+[32mINFO    [0m integration.test_hacluster:test_hacluster.py:262 Deploying TLS
+[32mINFO    [0m juju.model:__init__.py:2301 Deploying ch:amd64/jammy/self-signed-certificates-264
+[32mINFO    [0m integration.test_hacluster:test_hacluster.py:271 Ensure auto-generated TLS cert before relation with TLS
+[32mINFO    [0m integration.helpers:helpers.py:431 Running get-credentials on data-integrator/0
+[32mINFO    [0m integration.test_hacluster:test_hacluster.py:285 Ensure router externally accessible before TLS integration
+[32mINFO    [0m integration.test_hacluster:test_hacluster.py:51 Ensure database accessible via VIP
+[32mINFO    [0m integration.helpers:helpers.py:431 Running get-credentials on data-integrator/0
+[32mINFO    [0m integration.test_hacluster:test_hacluster.py:288 Relate TLS with MySQLRouter
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  self-signed-certificates/0 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  self-signed-certificates/0 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  self-signed-certificates/0 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  self-signed-certificates/0 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  self-signed-certificates/0 [idle] active: 
+[32mINFO    [0m integration.test_hacluster:test_hacluster.py:311 Ensure router externally accessible after TLS integration
+[32mINFO    [0m integration.test_hacluster:test_hacluster.py:51 Ensure database accessible via VIP
+[32mINFO    [0m integration.helpers:helpers.py:431 Running get-credentials on data-integrator/0
+[32mINFO    [0m integration.test_hacluster:test_hacluster.py:314 Removing relation between mysqlrouter and self-signed-certificates
+[32mINFO    [0m integration.test_hacluster:test_hacluster.py:335 Ensure router externally accessible after TLS integration removed
+[32mINFO    [0m integration.test_hacluster:test_hacluster.py:51 Ensure database accessible via VIP
+[32mINFO    [0m integration.helpers:helpers.py:431 Running get-credentials on data-integrator/0

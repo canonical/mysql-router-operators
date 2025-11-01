@@ -1,0 +1,82 @@
+[32mINFO    [0m integration.test_hacluster:test_hacluster.py:343 Resetting the VIP
+[32mINFO    [0m integration.test_hacluster:test_hacluster.py:355 Removing the relation between hacluster and mysqlrouter
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router/0 [executing] blocked: ha integration used without vip configuration
+  mysql-router/1 [executing] active: 
+  mysql-router/2 [executing] active: 
+  mysql-router/3 [executing] active: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router/0 [executing] blocked: ha integration used without vip configuration
+  mysql-router/1 [executing] blocked: ha integration used without vip configuration
+  mysql-router/2 [executing] blocked: ha integration used without vip configuration
+  mysql-router/3 [executing] blocked: ha integration used without vip configuration
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router/0 [executing] active: 
+  mysql-router/1 [executing] blocked: ha integration used without vip configuration
+  mysql-router/2 [executing] active: 
+  mysql-router/3 [executing] active: 
+[32mINFO    [0m integration.test_hacluster:test_hacluster.py:363 Ensuring that VIP is not the data-integrator endpoint hostname
+[32mINFO    [0m integration.helpers:helpers.py:431 Running get-credentials on data-integrator/2
+[32mINFO    [0m integration.test_hacluster:test_hacluster.py:366 Data integrator endpoint hostname is 10.213.59.122
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller     Cloud/Region         Version  SLA          Timestamp
+testing  concierge-lxd  localhost/localhost  3.6.11   unsupported  02:10:18Z
+
+App                       Version          Status  Scale  Charm                     Channel        Rev  Exposed  Message
+data-integrator                            active      4  data-integrator           latest/stable  179  no       
+hacluster                 2.1.2            active      4  hacluster                 2.4/stable     131  no       Unit is ready and clustered
+mysql                     8.0.42-0ubun...  active      1  mysql                     8.0/edge       438  no       
+mysql-router              8.0.42           active      4  mysql-router                               0  no       
+self-signed-certificates                   active      1  self-signed-certificates  latest/stable  264  no       
+
+Unit                         Workload  Agent  Machine  Public address  Ports           Message
+data-integrator/0            active    idle   0        10.213.59.202                   
+  hacluster/3                active    idle            10.213.59.202                   Unit is ready and clustered
+  mysql-router/3             active    idle            10.213.59.202   6446-6447/tcp   
+data-integrator/1            active    idle   1        10.213.59.26                    
+  hacluster/0*               active    idle            10.213.59.26                    Unit is ready and clustered
+  mysql-router/1             active    idle            10.213.59.26    6446-6447/tcp   
+data-integrator/2*           active    idle   2        10.213.59.122                   
+  hacluster/1                active    idle            10.213.59.122                   Unit is ready and clustered
+  mysql-router/0*            active    idle            10.213.59.122   6446-6447/tcp   
+data-integrator/3            active    idle   3        10.213.59.179                   
+  hacluster/2                active    idle            10.213.59.179                   Unit is ready and clustered
+  mysql-router/2             active    idle            10.213.59.179   6446-6447/tcp   
+mysql/0*                     active    idle   4        10.213.59.196   3306,33060/tcp  Primary
+self-signed-certificates/0*  active    idle   5        10.213.59.3                     
+
+Machine  State    Address        Inst id        Base          AZ             Message
+0        started  10.213.59.202  juju-549216-0  ubuntu@22.04  runnervmf2e7y  Running
+1        started  10.213.59.26   juju-549216-1  ubuntu@22.04  runnervmf2e7y  Running
+2        started  10.213.59.122  juju-549216-2  ubuntu@22.04  runnervmf2e7y  Running
+3        started  10.213.59.179  juju-549216-3  ubuntu@22.04  runnervmf2e7y  Running
+4        started  10.213.59.196  juju-549216-4  ubuntu@22.04  runnervmf2e7y  Running
+5        started  10.213.59.3    juju-549216-5  ubuntu@22.04  runnervmf2e7y  Running
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+machine-2: 01:48:27 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 01:48:27 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-4: 01:50:46 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-4: 01:50:46 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 01:51:08 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 01:51:08 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 01:51:22 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 01:51:22 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 01:51:53 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 01:51:53 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-5: 02:07:06 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-5: 02:07:06 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-mysql-router-2: 02:08:31 ERROR juju.worker.dependency "log-sender" manifold worker returned unexpected error: sending log message: websocket: close 1005 (no status): websocket: close sent
+unit-mysql-router-3: 02:08:32 ERROR juju.worker.dependency "log-sender" manifold worker returned unexpected error: sending log message: websocket: close 1005 (no status): websocket: close sent
+unit-mysql-router-0: 02:08:33 ERROR juju.worker.dependency "log-sender" manifold worker returned unexpected error: sending log message: websocket: close 1005 (no status): websocket: close sent
+unit-data-integrator-2: 02:08:37 ERROR juju.worker.dependency "log-sender" manifold worker returned unexpected error: sending log message: websocket: close 1005 (no status): websocket: close sent
+unit-hacluster-1: 02:08:49 ERROR juju.worker.dependency "log-sender" manifold worker returned unexpected error: sending log message: websocket: close 1005 (no status): websocket: close sent
+unit-data-integrator-0: 02:08:53 ERROR juju.worker.dependency "log-sender" manifold worker returned unexpected error: sending log message: websocket: close 1005 (no status): websocket: close sent
+unit-data-integrator-3: 02:08:54 ERROR juju.worker.dependency "log-sender" manifold worker returned unexpected error: sending log message: websocket: close 1005 (no status): websocket: close sent
+unit-mysql-0: 02:09:02 ERROR juju.worker.dependency "log-sender" manifold worker returned unexpected error: sending log message: websocket: close 1005 (no status): websocket: close sent
+unit-hacluster-3: 02:09:03 ERROR juju.worker.dependency "log-sender" manifold worker returned unexpected error: sending log message: websocket: close 1005 (no status): websocket: close sent
+unit-hacluster-2: 02:09:05 ERROR juju.worker.dependency "log-sender" manifold worker returned unexpected error: sending log message: websocket: close 1005 (no status): websocket: close sent
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...

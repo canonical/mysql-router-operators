@@ -26,7 +26,7 @@ jobs:
     strategy:
       matrix:
         path:
-          - kubernetes
+          - machines
     name: Build charm | ${{ matrix.path }}
     uses: canonical/data-platform-workflows/.github/workflows/build_charm.yaml@v36.0.1
     with:
@@ -38,8 +38,8 @@ jobs:
       - build
     uses: canonical/data-platform-workflows/.github/workflows/release_charm_pr.yaml@v36.0.1
     with:
-      track: '8.0'
+      track: 'dpe'
       artifact-prefix: ${{ needs.build.outputs.artifact-prefix }}
-      path-to-charm-directory: kubernetes
+      path-to-charm-directory: machines
     secrets:
       charmhub-token: ${{ secrets.CHARMHUB_TOKEN }}

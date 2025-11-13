@@ -91,5 +91,3 @@ parts:
       - poetry-deps  # Ensure poetry is installed
     build-packages:
       - git
-    stage:
-      - refresh_versions.toml

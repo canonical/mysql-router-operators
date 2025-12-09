@@ -1,0 +1,91 @@
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller     Cloud/Region         Version  SLA          Timestamp
+testing  concierge-lxd  localhost/localhost  3.6.12   unsupported  02:13:30Z
+
+App              Version  Status       Scale  Charm            Channel        Rev  Exposed  Message
+data-integrator           blocked          4  data-integrator  latest/stable  179  no       Please relate the data-integrator with the desired product
+mysql                     maintenance      1  mysql            8.0/edge       441  no       Setting up cluster node
+mysql-router     8.0.42   waiting          4  mysql-router                      0  no       Waiting for mysql app on backend-database endpoint
+
+Unit                Workload     Agent      Machine  Public address  Ports  Message
+data-integrator/0*  blocked      idle       1        10.251.239.120         Please relate the data-integrator with the desired product
+  mysql-router/0*   waiting      idle                10.251.239.120         
+data-integrator/1   blocked      idle       2        10.251.239.45          Please relate the data-integrator with the desired product
+  mysql-router/3    waiting      idle                10.251.239.45          
+data-integrator/2   blocked      idle       3        10.251.239.219         Please relate the data-integrator with the desired product
+  mysql-router/1    waiting      idle                10.251.239.219         
+data-integrator/3   blocked      idle       4        10.251.239.156         Please relate the data-integrator with the desired product
+  mysql-router/2    waiting      idle                10.251.239.156         
+mysql/0*            maintenance  executing  0        10.251.239.46          Setting up cluster node
+
+Machine  State    Address         Inst id        Base          AZ             Message
+0        started  10.251.239.46   juju-6326d0-0  ubuntu@22.04  runnervmoqczp  Running
+1        started  10.251.239.120  juju-6326d0-1  ubuntu@22.04  runnervmoqczp  Running
+2        started  10.251.239.45   juju-6326d0-2  ubuntu@22.04  runnervmoqczp  Running
+3        started  10.251.239.219  juju-6326d0-3  ubuntu@22.04  runnervmoqczp  Running
+4        started  10.251.239.156  juju-6326d0-4  ubuntu@22.04  runnervmoqczp  Running
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+machine-0: 01:54:37 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 01:54:37 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-mysql-0: 01:56:14 ERROR unit.mysql/0.juju-log ERROR 2002 (HY000): Can't connect to local MySQL server through socket '/var/snap/charmed-mysql/common/var/run/mysqld/mysqld.sock' (2)
+unit-mysql-0: 01:56:14 ERROR unit.mysql/0.juju-log Failed to list roles
+unit-mysql-0: 01:56:15 ERROR unit.mysql/0.juju-log Uncaught exception while in charm code:
+Traceback (most recent call last):
+  File "/var/lib/juju/agents/unit-mysql-0/charm/lib/charms/mysql/v0/mysql.py", line 1335, in list_mysql_roles
+    output = self._run_mysqlcli_script(
+  File "/var/lib/juju/agents/unit-mysql-0/charm/lib/charms/tempo_coordinator_k8s/v0/charm_tracing.py", line 1065, in wrapped_function
+    return callable(*args, **kwargs)  # type: ignore
+  File "/var/lib/juju/agents/unit-mysql-0/charm/src/mysql_vm_helpers.py", line 850, in _run_mysqlcli_script
+    raise MySQLClientError
+charms.mysql.v0.mysql.MySQLClientError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/lib/juju/agents/unit-mysql-0/charm/src/charm.py", line 1022, in <module>
+    main(MySQLOperatorCharm)
+  File "/var/lib/juju/agents/unit-mysql-0/charm/venv/lib/python3.10/site-packages/ops/main.py", line 551, in main
+    manager.run()
+  File "/var/lib/juju/agents/unit-mysql-0/charm/venv/lib/python3.10/site-packages/ops/main.py", line 530, in run
+    self._emit()
+  File "/var/lib/juju/agents/unit-mysql-0/charm/venv/lib/python3.10/site-packages/ops/main.py", line 519, in _emit
+    _emit_charm_event(self.charm, self.dispatcher.event_name)
+  File "/var/lib/juju/agents/unit-mysql-0/charm/venv/lib/python3.10/site-packages/ops/main.py", line 147, in _emit_charm_event
+    event_to_emit.emit(*args, **kwargs)
+  File "/var/lib/juju/agents/unit-mysql-0/charm/venv/lib/python3.10/site-packages/ops/framework.py", line 348, in emit
+    framework._emit(event)
+  File "/var/lib/juju/agents/unit-mysql-0/charm/venv/lib/python3.10/site-packages/ops/framework.py", line 860, in _emit
+    self._reemit(event_path)
+  File "/var/lib/juju/agents/unit-mysql-0/charm/venv/lib/python3.10/site-packages/ops/framework.py", line 950, in _reemit
+    custom_handler(event)
+  File "/var/lib/juju/agents/unit-mysql-0/charm/lib/charms/tempo_coordinator_k8s/v0/charm_tracing.py", line 1065, in wrapped_function
+    return callable(*args, **kwargs)  # type: ignore
+  File "/var/lib/juju/agents/unit-mysql-0/charm/src/charm.py", line 331, in _on_start
+    self.workload_initialise()
+  File "/var/lib/juju/agents/unit-mysql-0/charm/lib/charms/tempo_coordinator_k8s/v0/charm_tracing.py", line 1065, in wrapped_function
+    return callable(*args, **kwargs)  # type: ignore
+  File "/var/lib/juju/agents/unit-mysql-0/charm/src/charm.py", line 777, in workload_initialise
+    self._mysql.configure_mysql_router_roles()
+  File "/var/lib/juju/agents/unit-mysql-0/charm/lib/charms/tempo_coordinator_k8s/v0/charm_tracing.py", line 1065, in wrapped_function
+    return callable(*args, **kwargs)  # type: ignore
+  File "/var/lib/juju/agents/unit-mysql-0/charm/lib/charms/mysql/v0/mysql.py", line 1215, in configure_mysql_router_roles
+    existing_roles = self.list_mysql_roles(role)
+  File "/var/lib/juju/agents/unit-mysql-0/charm/lib/charms/tempo_coordinator_k8s/v0/charm_tracing.py", line 1065, in wrapped_function
+    return callable(*args, **kwargs)  # type: ignore
+  File "/var/lib/juju/agents/unit-mysql-0/charm/lib/charms/mysql/v0/mysql.py", line 1343, in list_mysql_roles
+    raise MySQLListMySQLRolesError from e
+charms.mysql.v0.mysql.MySQLListMySQLRolesError
+unit-mysql-0: 01:56:15 ERROR juju.worker.uniter.operation hook "start" (via hook dispatching script: dispatch) failed: exit status 1
+machine-1: 01:56:56 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 01:56:56 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 01:57:11 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 01:57:11 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-4: 01:57:37 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-4: 01:57:37 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 01:57:55 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 01:57:55 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...

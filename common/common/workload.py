@@ -405,7 +405,7 @@ class RunningWorkload(Workload):
         socket_file_exists = self._container.path("/run/mysqlrouter/mysql.sock").exists()
         require_rebootstrap = is_charm_exposed == socket_file_exists
         # If the router is not in the cluster set, disable to restart it
-        # This can happen when the server is scalled to zero and back
+        # This can happen when the server is scaled to zero and back
         require_rebootstrap = require_rebootstrap or not self.shell.is_router_in_cluster_set(
             self._router_id
         )

@@ -49,7 +49,14 @@ Relations are defined in `metadata.yaml` are:
 
 ## Contributing
 
+To build the charms:
+
+```
+cd kubernetes && charmcraftlocal pack
+cd machines && charmcraftlocal pack
+```
+
 Please see the [Juju SDK docs](https://juju.is/docs/sdk) for guidelines on
 enhancements to this charm following best practice guidelines, and
 [CONTRIBUTING.md](./CONTRIBUTING.md)
-for developer guidance.
+for further developer guidance.

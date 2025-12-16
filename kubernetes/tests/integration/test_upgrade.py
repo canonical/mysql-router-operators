@@ -120,12 +120,16 @@ async def test_upgrade_from_edge(ops_test: OpsTest, charm) -> None:
 
     # Refresh will be incompatible on PR CI (not edge CI) since unreleased charm versions are
     # always marked as incompatible
-    if (
-        refresh_order[0].workload_status == "blocked"
-        and "incompatible" in refresh_order[0].workload_status_message
+    if refresh_order[0].workload_status == "blocked" and (
+        "incompatible" in refresh_order[0].workload_status_message
+        or "missing/incorrect OCI resource" in refresh_order[0].workload_status_message
     ):
         logger.info("Running force-refresh-start action with check-compatibility=false")
-        await run_action(refresh_order[0], "force-refresh-start", **{"check-compatibility": False})
+        await run_action(
+            refresh_order[0],
+            "force-refresh-start",
+            **{"check-compatibility": False, "check-workload-container": False},
+        )
 
     logger.info("Wait for first unit to upgrade")
     await ops_test.model.wait_for_idle([MYSQL_ROUTER_APP_NAME], idle_period=30, timeout=TIMEOUT)
@@ -184,9 +188,10 @@ async def test_fail_and_rollback(ops_test: OpsTest, charm, continuous_writes) ->
     await ops_test.model.block_until(
         lambda: refresh_order[0].workload_status == "blocked", timeout=TIMEOUT
     )
-    assert "incompatible" in refresh_order[0].workload_status_message, (
-        "mysql router application status not indicating that refresh incompatible"
-    )
+    assert (
+        "incompatible" in refresh_order[0].workload_status_message
+        or "missing/incorrect OCI resource" in refresh_order[0].workload_status_message
+    ), "mysql router application status not indicating that refresh incompatible"
 
     logger.info("Ensure continuous writes while in failure state")
     await ensure_all_units_continuous_writes_incrementing(ops_test)
@@ -242,6 +247,8 @@ def create_invalid_upgrade_charm(charm_file: str | pathlib.Path) -> None:
         with zipfile.Path(charm_zip, "refresh_versions.toml").open("rb") as file:
             versions = tomli.load(file)
 
+    # Format is not yet documented,
+    # see https://canonical-charm-refresh.readthedocs-hosted.com/latest/refresh-versions-toml/
     versions["charm"] = "8.0/0.0.0"
 
     with zipfile.ZipFile(charm_file, mode="a") as charm_zip:

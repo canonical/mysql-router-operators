@@ -1,0 +1,58 @@
+[32mINFO    [0m integration.test_data_integrator:test_data_integrator.py:108 Ensuring no data exists in the test database
+[32mINFO    [0m integration.helpers:helpers.py:431 Running get-credentials on data-integrator/0
+[32mINFO    [0m integration.test_data_integrator:test_data_integrator.py:136 Relating mysqlrouter with self-signed-certificates
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[32mINFO    [0m integration.test_data_integrator:test_data_integrator.py:182 Removing relation between mysqlrouter and self-signed-certificates
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller     Cloud/Region         Version  SLA          Timestamp
+testing  concierge-lxd  localhost/localhost  3.6.12   unsupported  02:06:32Z
+
+App                       Version          Status  Scale  Charm                     Channel        Rev  Exposed  Message
+data-integrator                            active      1  data-integrator           latest/stable  179  no       
+mysql                     8.0.42-0ubun...  active      1  mysql                     8.0/edge       441  no       
+mysql-router              8.0.42           active      1  mysql-router                               0  no       
+self-signed-certificates                   active      1  self-signed-certificates  1/stable       317  no       
+
+Unit                         Workload     Agent      Machine  Public address  Ports           Message
+data-integrator/0*           active       idle       2        10.141.19.144                   
+  mysql-router/0*            maintenance  executing           10.141.19.144   6446-6447/tcp   MySQL Router starting
+mysql/0*                     active       idle       0        10.141.19.24    3306,33060/tcp  Primary
+self-signed-certificates/0*  active       idle       1        10.141.19.217                   
+
+Machine  State    Address        Inst id        Base          AZ             Message
+0        started  10.141.19.24   juju-9be75d-0  ubuntu@22.04  runnervm6qbrg  Running
+1        started  10.141.19.217  juju-9be75d-1  ubuntu@24.04  runnervm6qbrg  Running
+2        started  10.141.19.144  juju-9be75d-2  ubuntu@22.04  runnervm6qbrg  Running
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+machine-1: 02:02:58 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 02:02:58 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-self-signed-certificates-0: 02:03:13 ERROR unit.self-signed-certificates/0.juju-log At least 1 matching relation ID not found with the relation name 'send-ca-cert'
+unit-self-signed-certificates-0: 02:03:22 ERROR unit.self-signed-certificates/0.juju-log At least 1 matching relation ID not found with the relation name 'send-ca-cert'
+unit-self-signed-certificates-0: 02:03:33 ERROR unit.self-signed-certificates/0.juju-log At least 1 matching relation ID not found with the relation name 'send-ca-cert'
+machine-0: 02:03:35 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 02:03:35 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-self-signed-certificates-0: 02:03:43 ERROR unit.self-signed-certificates/0.juju-log At least 1 matching relation ID not found with the relation name 'send-ca-cert'
+unit-self-signed-certificates-0: 02:03:54 ERROR unit.self-signed-certificates/0.juju-log At least 1 matching relation ID not found with the relation name 'send-ca-cert'
+unit-self-signed-certificates-0: 02:04:04 ERROR unit.self-signed-certificates/0.juju-log At least 1 matching relation ID not found with the relation name 'send-ca-cert'
+unit-self-signed-certificates-0: 02:04:14 ERROR unit.self-signed-certificates/0.juju-log At least 1 matching relation ID not found with the relation name 'send-ca-cert'
+unit-self-signed-certificates-0: 02:04:23 ERROR unit.self-signed-certificates/0.juju-log At least 1 matching relation ID not found with the relation name 'send-ca-cert'
+unit-mysql-0: 02:04:27 ERROR unit.mysql/0.juju-log Failed command: fuser 3306/tcp; user=None; group=None
+machine-2: 02:04:32 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 02:04:32 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-self-signed-certificates-0: 02:04:33 ERROR unit.self-signed-certificates/0.juju-log At least 1 matching relation ID not found with the relation name 'send-ca-cert'
+unit-self-signed-certificates-0: 02:04:42 ERROR unit.self-signed-certificates/0.juju-log At least 1 matching relation ID not found with the relation name 'send-ca-cert'
+unit-self-signed-certificates-0: 02:04:54 ERROR unit.self-signed-certificates/0.juju-log At least 1 matching relation ID not found with the relation name 'send-ca-cert'
+unit-self-signed-certificates-0: 02:05:05 ERROR unit.self-signed-certificates/0.juju-log At least 1 matching relation ID not found with the relation name 'send-ca-cert'
+unit-self-signed-certificates-0: 02:05:15 ERROR unit.self-signed-certificates/0.juju-log At least 1 matching relation ID not found with the relation name 'send-ca-cert'
+unit-self-signed-certificates-0: 02:05:25 ERROR unit.self-signed-certificates/0.juju-log At least 1 matching relation ID not found with the relation name 'send-ca-cert'
+unit-self-signed-certificates-0: 02:05:37 ERROR unit.self-signed-certificates/0.juju-log At least 1 matching relation ID not found with the relation name 'send-ca-cert'
+unit-self-signed-certificates-0: 02:05:46 ERROR unit.self-signed-certificates/0.juju-log At least 1 matching relation ID not found with the relation name 'send-ca-cert'
+unit-self-signed-certificates-0: 02:05:55 ERROR unit.self-signed-certificates/0.juju-log At least 1 matching relation ID not found with the relation name 'send-ca-cert'
+unit-self-signed-certificates-0: 02:06:05 ERROR unit.self-signed-certificates/0.juju-log At least 1 matching relation ID not found with the relation name 'send-ca-cert'
+unit-self-signed-certificates-0: 02:06:11 ERROR unit.self-signed-certificates/0.juju-log certificates:10: At least 1 matching relation ID not found with the relation name 'send-ca-cert'
+unit-self-signed-certificates-0: 02:06:13 ERROR unit.self-signed-certificates/0.juju-log certificates:10: At least 1 matching relation ID not found with the relation name 'send-ca-cert'
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...

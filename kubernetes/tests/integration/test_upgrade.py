@@ -243,6 +243,8 @@ def create_invalid_upgrade_charm(charm_file: str | pathlib.Path) -> None:
         with zipfile.Path(charm_zip, "refresh_versions.toml").open("rb") as file:
             versions = tomli.load(file)
 
+    # "charm" is added during pack time using the charm refresh compatibility version stored as a git tag
+    # so charm can be set after the release (when the version is determined) but before pack time
     versions["charm"] = "8.0/0.0.0"
 
     with zipfile.ZipFile(charm_file, mode="a") as charm_zip:

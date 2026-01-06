@@ -1,0 +1,60 @@
+[32mINFO    [0m integration.helpers:helpers.py:562 Ensure continuous writes are incrementing
+[32mINFO    [0m integration.helpers:helpers.py:514 Retrieving primary unit
+[32mINFO    [0m integration.test_upgrade:test_upgrade.py:171 Creating invalid upgrade charm
+[32mINFO    [0m integration.test_upgrade:test_upgrade.py:174 Refreshing mysql router with an invalid charm
+[32mINFO    [0m integration.test_upgrade:test_upgrade.py:184 Wait for refresh to block as incompatible
+[32mINFO    [0m integration.test_upgrade:test_upgrade.py:192 Ensure continuous writes while in failure state
+[32mINFO    [0m integration.helpers:helpers.py:562 Ensure continuous writes are incrementing
+[32mINFO    [0m integration.helpers:helpers.py:514 Retrieving primary unit
+[32mINFO    [0m integration.test_upgrade:test_upgrade.py:195 Re-refresh the charm
+[32mINFO    [0m integration.test_upgrade:test_upgrade.py:206 Wait for blocked app status
+[32mINFO    [0m integration.test_upgrade:test_upgrade.py:214 Wait for first unit to rollback
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s/0 [idle] active: Router 8.0.44 running (restart pending); Charm version dpe/1.56.0
+  mysql-router-k8s/1 [idle] active: Router 8.0.44 running (restart pending); Charm version dpe/1.56.0
+  mysql-router-k8s/2 [idle] active: Router 8.0.44 running; Charm version dpe/1.56.0
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s/0 [idle] active: Router 8.0.44 running (restart pending); Charm version dpe/1.56.0
+  mysql-router-k8s/1 [idle] active: Router 8.0.44 running (restart pending); Charm version dpe/1.56.0
+  mysql-router-k8s/2 [idle] active: Router 8.0.44 running; Charm version dpe/1.56.0
+[32mINFO    [0m integration.test_upgrade:test_upgrade.py:218 Running resume-refresh on the mysql router leader unit
+[32mINFO    [0m integration.test_upgrade:test_upgrade.py:226 Waiting for rollback to complete on all units
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s/0 [idle] active: Router 8.0.44 running (restart pending); Charm version dpe/1.56.0
+  mysql-router-k8s/1 [executing] maintenance: stopping charm software
+  mysql-router-k8s/2 [idle] active: Router 8.0.44 running; Charm version dpe/1.56.0
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s/0 [executing] maintenance: 
+  mysql-router-k8s/1 [idle] active: Router 8.0.44 running; Charm version dpe/1.56.0
+  mysql-router-k8s/2 [idle] active: Router 8.0.44 running; Charm version dpe/1.56.0
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s/0 [idle] active: 
+  mysql-router-k8s/1 [idle] active: 
+  mysql-router-k8s/2 [idle] active: 
+[32mINFO    [0m integration.test_upgrade:test_upgrade.py:234 Ensure continuous writes after rollback procedure
+[32mINFO    [0m integration.helpers:helpers.py:562 Ensure continuous writes are incrementing
+[32mINFO    [0m integration.helpers:helpers.py:514 Retrieving primary unit
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller          Cloud/Region        Version  SLA          Timestamp
+testing  concierge-microk8s  microk8s/localhost  3.6.12   unsupported  02:01:44Z
+
+App               Version                  Status  Scale  Charm             Channel      Rev  Address         Exposed  Message
+mysql-k8s         8.0.42-0ubuntu0.22.04.2  active      1  mysql-k8s         8.0/edge     334  10.152.183.35   no       
+mysql-router-k8s  8.0.44                   active      3  mysql-router-k8s                 2  10.152.183.118  no       
+mysql-test-app    0.0.2                    active      1  mysql-test-app    latest/edge   85  10.152.183.250  no       
+
+Unit                 Workload  Agent  Address      Ports  Message
+mysql-k8s/0*         active    idle   10.1.206.80         Primary
+mysql-router-k8s/0   active    idle   10.1.206.87         
+mysql-router-k8s/1*  active    idle   10.1.206.86         
+mysql-router-k8s/2   active    idle   10.1.206.85         
+mysql-test-app/0*    active    idle   10.1.206.78         
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+unit-mysql-router-k8s-2: 01:53:47 ERROR unit.mysql-router-k8s/2.juju-log charm_refresh:`juju refresh` was run with missing or incorrect OCI resource. Rollback by running `juju refresh mysql-router-k8s --revision 868 --resource mysql-router-image=ghcr.io/canonical/charmed-mysql@sha256:e78bdba30923ec87d67879a284d9162dfbb7600b34cbf3f84c9b4cce08648715`. If you are intentionally attempting to refresh to a Router container version that is not validated with this release, you may experience data loss and/or downtime as a result of refreshing. The refresh can be forced to continue with the `force-refresh-start` action and the `check-workload-container` parameter. Run `juju show-action mysql-router-k8s force-refresh-start` for more information
+unit-mysql-router-k8s-2: 01:53:49 ERROR unit.mysql-router-k8s/2.juju-log charm_refresh:`juju refresh` was run with missing or incorrect OCI resource. Rollback by running `juju refresh mysql-router-k8s --revision 868 --resource mysql-router-image=ghcr.io/canonical/charmed-mysql@sha256:e78bdba30923ec87d67879a284d9162dfbb7600b34cbf3f84c9b4cce08648715`. If you are intentionally attempting to refresh to a Router container version that is not validated with this release, you may experience data loss and/or downtime as a result of refreshing. The refresh can be forced to continue with the `force-refresh-start` action and the `check-workload-container` parameter. Run `juju show-action mysql-router-k8s force-refresh-start` for more information
+unit-mysql-router-k8s-2: 01:53:51 ERROR unit.mysql-router-k8s/2.juju-log charm_refresh:`juju refresh` was run with missing or incorrect OCI resource. Rollback by running `juju refresh mysql-router-k8s --revision 868 --resource mysql-router-image=ghcr.io/canonical/charmed-mysql@sha256:e78bdba30923ec87d67879a284d9162dfbb7600b34cbf3f84c9b4cce08648715`. If you are intentionally attempting to refresh to a Router container version that is not validated with this release, you may experience data loss and/or downtime as a result of refreshing. The refresh can be forced to continue with the `force-refresh-start` action and the `check-workload-container` parameter. Run `juju show-action mysql-router-k8s force-refresh-start` for more information
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...

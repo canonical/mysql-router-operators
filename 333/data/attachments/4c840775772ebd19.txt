@@ -1,0 +1,52 @@
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller     Cloud/Region         Version  SLA          Timestamp
+testing  concierge-lxd  localhost/localhost  3.6.13   unsupported  02:02:57Z
+
+App              Version          Status  Scale  Charm            Channel        Rev  Exposed  Message
+data-integrator                   active      4  data-integrator  latest/stable  179  no       
+hacluster        2.1.2            active      4  hacluster        2.4/stable     131  no       Unit is ready and clustered
+mysql            8.0.44-0ubun...  active      1  mysql            8.0/edge       447  no       
+mysql-router     8.0.44           active      4  mysql-router                      0  no       
+
+Unit                Workload  Agent      Machine  Public address  Ports           Message
+data-integrator/0   active    idle       0        10.232.23.252                   
+  hacluster/1       active    idle                10.232.23.252                   Unit is ready and clustered
+  mysql-router/3    active    idle                10.232.23.252   6446-6447/tcp   
+data-integrator/1   active    executing  1        10.232.23.142                   (start) 
+  hacluster/2*      active    executing           10.232.23.142                   (start) Unit is ready and clustered
+  mysql-router/2    error     idle                10.232.23.142   6446-6447/tcp   hook failed: "update-status"
+data-integrator/2*  active    idle       2        10.232.23.205                   
+  hacluster/3       active    idle                10.232.23.205                   Unit is ready and clustered
+  mysql-router/0*   active    idle                10.232.23.205   6446-6447/tcp   
+data-integrator/3   active    idle       3        10.232.23.11                    
+  hacluster/4       active    idle                10.232.23.11                    Unit is ready and clustered
+  mysql-router/1    active    idle                10.232.23.11    6446-6447/tcp   
+mysql/0*            active    idle       4        10.232.23.149   3306,33060/tcp  Primary
+
+Machine  State    Address        Inst id        Base          AZ             Message
+0        started  10.232.23.252  juju-871b00-0  ubuntu@22.04  runnervmmtnos  Running
+1        started  10.232.23.142  juju-871b00-1  ubuntu@22.04  runnervmmtnos  Running
+2        started  10.232.23.205  juju-871b00-2  ubuntu@22.04  runnervmmtnos  Running
+3        started  10.232.23.11   juju-871b00-3  ubuntu@22.04  runnervmmtnos  Running
+4        started  10.232.23.149  juju-871b00-4  ubuntu@22.04  runnervmmtnos  Running
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+machine-2: 01:48:47 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 01:48:47 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 01:51:04 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 01:51:04 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-4: 01:51:09 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-4: 01:51:09 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 01:51:32 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 01:51:32 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 01:51:56 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 01:51:56 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-mysql-0: 01:52:42 ERROR unit.mysql/0.juju-log Failed command: fuser 3306/tcp; user=None; group=None
+unit-hacluster-2: 01:55:23 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: preparing operation "install ch:amd64/hacluster-131" for hacluster/2: failed to download charm "ch:amd64/hacluster-131" from API server: download request with archiveSha256 length 0 not valid
+unit-hacluster-1: 01:55:23 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: preparing operation "install ch:amd64/hacluster-131" for hacluster/1: failed to download charm "ch:amd64/hacluster-131" from API server: download request with archiveSha256 length 0 not valid
+unit-hacluster-3: 01:55:23 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: preparing operation "install ch:amd64/hacluster-131" for hacluster/3: failed to download charm "ch:amd64/hacluster-131" from API server: download request with archiveSha256 length 0 not valid
+unit-hacluster-4: 01:55:23 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: preparing operation "install ch:amd64/hacluster-131" for hacluster/4: failed to download charm "ch:amd64/hacluster-131" from API server: download request with archiveSha256 length 0 not valid
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...

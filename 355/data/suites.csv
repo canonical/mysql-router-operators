@@ -1,0 +1,30 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"Test the failover of the hacluster leader.","","test_hacluster_failover","tests.integration","","unknown","","","test_hacluster","",""
+"Test the expose-external config option.","158485","test_expose_external","tests.integration","2026-02-03","passed","2026-02-03","","test_expose_external","",""
+"Test the database relation.","300264","test_database_relation","tests.integration","2026-02-03","passed","2026-02-03","","test_charm","",""
+"Test the log rotation of mysqlrouter logs.","903117","test_log_rotation","tests.integration","2026-02-03","broken","2026-02-03","","test_log_rotation","",""
+"Test data integrator along with TLS operator","27966","test_external_connectivity_with_data_integrator_and_tls","tests.integration","2026-02-03","passed","2026-02-03","","test_data_integrator","",""
+"","269691","test_ubuntu_pro","tests.integration","2026-02-03","passed","2026-02-03","","test_subordinate_charms","",""
+"","66517","test_landscape_client","tests.integration","2026-02-03","passed","2026-02-03","","test_subordinate_charms","",""
+"Test encryption when backend database is using TLS.","251102","test_build_deploy_and_relate","tests.integration","2026-02-03","passed","2026-02-03","","test_tls","",""
+"Ensure removal of VIP results in connection through data-integrator.","","test_remove_vip","tests.integration","","unknown","","","test_hacluster","",""
+"Test encryption when backend database is using TLS.","233978","test_external_connectivity_with_data_integrator","tests.integration","2026-02-03","passed","2026-02-03","","test_data_integrator","",""
+"Test that exporter endpoint is functional.","284719","test_exporter_endpoint","tests.integration","2026-02-03","passed","2026-02-03","","test_exporter","",""
+"Simple test to ensure that mysql, mysqlrouter and application charms deploy.","369323","test_deploy_edge","tests.integration","2026-02-03","passed","2026-02-03","","test_upgrade","",""
+"Tries deploying an amd64 charm on arm64 host.","0","test_amd_charm_on_arm_host","tests.integration","2026-02-03","skipped","2026-02-03","","test_architecture","",""
+"Test the database relation.","388641","test_database_relation","tests.integration","2026-02-03","passed","2026-02-03","","test_database","",""
+"Test encryption when backend database is using TLS.","114071","test_deploy_and_relate","tests.integration","2026-02-03","passed","2026-02-03","","test_tls","",""
+"Ensure that mysqlrouter is externally accessible with TLS integration.","","test_tls_along_with_ha_cluster","tests.integration","","unknown","","","test_hacluster","",""
+"Tries deploying an arm64 charm on amd64 host.","112726","test_arm_charm_on_amd_host","tests.integration","2026-02-03","passed","2026-02-03","","test_architecture","",""
+"Test encryption when backend database is using TLS.","37705","test_connected_encryption","tests.integration","2026-02-03","passed","2026-02-03","","test_tls","",""
+"Test external connectivity and VIP with data-integrator hacluster.","","test_external_connectivity_vip_with_hacluster","tests.integration","","unknown","","","test_hacluster","",""
+"Test that the exporter endpoint works when related with TLS","388028","test_exporter_endpoint","tests.integration","2026-02-03","passed","2026-02-03","","test_exporter_with_tls","",""
+"Upgrade to an invalid version and test rollback.
+
+    Relies on the charm built in the previous test (test_upgrade_from_edge).
+    Furthermore, the previous test will refresh the charm till revision 102.
+    This test will refresh the charm till the revision in src/snap.py, thus avoiding
+    no-ops.
+    ","0","test_fail_and_rollback","tests.integration","2026-02-03","skipped","2026-02-03","","test_upgrade","",""
+"Upgrade mysqlrouter while ensuring continuous writes incrementing.","22680","test_upgrade_from_edge","tests.integration","2026-02-03","failed","2026-02-03","","test_upgrade","",""
+"Test endpoints when mysql-router-k8s is related to a TLS operator.","139574","test_expose_external_with_tls","tests.integration","2026-02-03","passed","2026-02-03","","test_expose_external","",""

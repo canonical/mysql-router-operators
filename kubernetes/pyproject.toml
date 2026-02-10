@@ -12,10 +12,6 @@ charm-libs = [
     "ops>=2.0.0",
     # grafana_k8s/grafana_dashboard.py
     "cosl>=0.0.50",
-    # tempo_coordinator_k8s/v0/charm_tracing.py
-    "opentelemetry-exporter-otlp-proto-http==1.21.0",
-    # tempo_coordinator_k8s/v0/tracing.py
-    "pydantic",
     # tls_certificates_interface/v1/tls_certificates.py
     "cryptography",
     "jsonschema",
@@ -59,8 +55,7 @@ requires-poetry = ">=2.0.0"
 [tool.poetry.dependencies]
 python = "^3.10"
 common = {path = "../common", develop = true}
-# breaking change in ops 2.10.0: https://github.com/canonical/operator/pull/1091#issuecomment-1888644075
-ops = "^2.9.0, <2.10"
+ops = {version = "^2.21.0", extras = ["tracing"]}
 lightkube = "^0.17.2"
 tenacity = "^9.1.2"
 charm-refresh = "^3.1.0.2"

@@ -35,7 +35,6 @@ import lightkube.resources.core_v1
 import ops
 import ops.log
 import tenacity
-from charms.tempo_coordinator_k8s.v0.charm_tracing import trace_charm
 
 import kubernetes_logrotate
 import relations.kubernetes_cos
@@ -61,19 +60,6 @@ class _KubernetesRouterRefresh(
     """MySQL Router Kubernetes refresh callbacks & configuration"""
 
 
-@trace_charm(
-    tracing_endpoint="tracing_endpoint",
-    extra_types=(
-        common.logrotate.LogRotate,
-        common.relations.database_provides.RelationEndpoint,
-        common.relations.database_requires.RelationEndpoint,
-        common.relations.tls.RelationEndpoint,
-        common.workload.RunningWorkload,
-        common.workload.Workload,
-        relations.kubernetes_cos.COSRelation,
-        rock.Rock,
-    ),
-)
 class KubernetesRouterCharm(common.abstract_charm.MySQLRouterCharm):
     """MySQL Router Kubernetes charm"""
 
@@ -90,8 +76,6 @@ class KubernetesRouterCharm(common.abstract_charm.MySQLRouterCharm):
         for handler in root_logger.handlers:
             if isinstance(handler, ops.log.JujuLogHandler):
                 handler.setFormatter(logging.Formatter("{name}:{message}", style="{"))
-
-        self._namespace = self.model.name
 
         self.service_name = f"{self.app.name}-service"
         self._lightkube_client = lightkube.Client()

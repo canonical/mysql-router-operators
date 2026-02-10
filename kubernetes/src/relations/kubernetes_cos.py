@@ -8,10 +8,10 @@ import typing
 
 import common.container
 import common.relations.cos
+import ops
 from charms.grafana_k8s.v0.grafana_dashboard import GrafanaDashboardProvider
 from charms.loki_k8s.v1.loki_push_api import LogProxyConsumer
 from charms.prometheus_k8s.v0.prometheus_scrape import MetricsEndpointProvider
-from charms.tempo_coordinator_k8s.v0.tracing import TracingEndpointRequirer
 
 import rock
 
@@ -27,8 +27,6 @@ class COSRelation(common.relations.cos.COSRelation):
     _METRICS_RELATION_NAME = "metrics-endpoint"
     _LOGGING_RELATION_NAME = "logging"
     _ROUTER_LOG_FILES_TARGET = "/var/log/mysqlrouter/**/*log*"
-
-    _TRACING_RELATION_NAME = "tracing"
 
     def __init__(
         self, charm_: "abstract_charm.MySQLRouterCharm", container_: common.container.Container
@@ -48,13 +46,8 @@ class COSRelation(common.relations.cos.COSRelation):
                 },
             },
         )
-        self._tracing = TracingEndpointRequirer(
-            charm_, relation_name=self._TRACING_RELATION_NAME, protocols=[self._TRACING_PROTOCOL]
+        self._tracing = ops.tracing.Tracing(
+            charm_, tracing_relation_name=self._TRACING_RELATION_NAME
         )
 
         super().__init__(charm_=charm_, container_=container_)
-
-    @property
-    def tracing_endpoint(self) -> str | None:
-        if self._tracing.is_ready():
-            return self._tracing.get_endpoint(self._TRACING_PROTOCOL)

@@ -19,14 +19,10 @@ import socket
 
 import charm_refresh
 import common.abstract_charm
-import common.logrotate
 import common.relations.cos
-import common.relations.database_requires
-import common.relations.tls
 import common.workload
 import ops.log
 import tenacity
-from charms.tempo_coordinator_k8s.v0.charm_tracing import trace_charm
 
 import machine_logrotate
 import machine_workload
@@ -64,19 +60,6 @@ class _MachinesRouterRefresh(
         # (This method will run in the charm's __init__, before `reconcile()` is called by ops)
 
 
-@trace_charm(
-    tracing_endpoint="tracing_endpoint",
-    extra_types=(
-        common.logrotate.LogRotate,
-        common.workload.Workload,
-        common.relations.database_requires.RelationEndpoint,
-        common.relations.tls.RelationEndpoint,
-        machine_workload.RunningMachineWorkload,
-        relations.machines_cos.COSRelation,
-        relations.database_providers_wrapper.RelationEndpoint,
-        snap.Snap,
-    ),
-)
 class MachineSubordinateRouterCharm(common.abstract_charm.MySQLRouterCharm):
     """MySQL Router machine subordinate charm"""
 

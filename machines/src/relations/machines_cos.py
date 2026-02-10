@@ -9,7 +9,8 @@ import typing
 import charm_refresh
 import common.container
 import common.relations.cos
-from charms.grafana_agent.v0.cos_agent import COSAgentProvider, charm_tracing_config
+import ops
+from charms.grafana_agent.v0.cos_agent import COSAgentProvider
 
 if typing.TYPE_CHECKING:
     import common.abstract_charm
@@ -40,8 +41,6 @@ class COSRelation(common.relations.cos.COSRelation):
         )
         super().__init__(charm_=charm_, container_=container_)
 
-        self._tracing_endpoint, _ = charm_tracing_config(self._interface, None)
-
-    @property
-    def tracing_endpoint(self) -> str | None:
-        return self._tracing_endpoint
+        self._tracing = ops.tracing.Tracing(
+            charm_, tracing_relation_name=self._TRACING_RELATION_NAME
+        )

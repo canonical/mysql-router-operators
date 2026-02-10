@@ -7,7 +7,6 @@ import platform
 import ops
 import pytest
 import tomli
-from charms.tempo_coordinator_k8s.v0.charm_tracing import charm_tracing_disabled
 
 
 @pytest.fixture(autouse=True)
@@ -171,9 +170,3 @@ def machine_patch(monkeypatch):
 def juju_has_secrets(request, monkeypatch):
     monkeypatch.setattr("ops.JujuVersion.has_secrets", request.param)
     return request.param
-
-
-@pytest.fixture(autouse=True)
-def disable_charm_tracing():
-    with charm_tracing_disabled():
-        yield

@@ -37,6 +37,7 @@ class COSRelation(abc.ABC):
     _MONITORING_PASSWORD_KEY = "monitoring-password"
 
     _TRACING_PROTOCOL = "otlp_http"
+    _TRACING_RELATION_NAME = "tracing"
 
     @property
     @abc.abstractmethod
@@ -68,11 +69,6 @@ class COSRelation(abc.ABC):
     def relation_exists(self) -> bool:
         """Whether relation with cos exists."""
         return len(self._charm.model.relations.get(self._METRICS_RELATION_NAME, [])) == 1
-
-    @property
-    @abc.abstractmethod
-    def tracing_endpoint(self) -> str | None:
-        """The tracing endpoint."""
 
     def get_monitoring_password(self) -> str:
         """Gets the monitoring password from unit peer data, or generate and cache it."""

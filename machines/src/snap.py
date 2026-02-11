@@ -63,30 +63,29 @@ def uninstall():
 
 class _Path(pathlib.PosixPath, common.container.Path):
     def __new__(cls, *args, **kwargs):
-        path = super().__new__(cls, *args, **kwargs)
+        if args and isinstance(args[0], cls):
+            self = super().__new__(cls, *args, **kwargs)
+            self._container_parent = getattr(args[0], "_container_parent", None)
+            return self
+
         snap_name = charm_refresh.snap_name()
+        path = pathlib.PosixPath(*args)
+        parent = None
 
-        if args and isinstance(args[0], cls) and (parent_ := args[0]._container_parent):
-            path._container_parent = parent_
+        if str(path).startswith("/etc/mysqlrouter") or str(path).startswith("/var/lib/mysqlrouter"):
+            parent = f"/var/snap/{snap_name}/current"
+        elif str(path).startswith("/run/mysqlrouter") or str(path).startswith("/var/log/mysqlrouter"):
+            parent = f"/var/snap/{snap_name}/common"
+        elif str(path).startswith("/tmp"):
+            parent = f"/tmp/snap-private-tmp/snap.{snap_name}"
+
+        if parent and path.is_absolute():
+            self = super().__new__(cls, parent, path.relative_to("/"), **kwargs)
         else:
-            if str(path).startswith("/etc/mysqlrouter") or str(path).startswith(
-                "/var/lib/mysqlrouter"
-            ):
-                parent = f"/var/snap/{snap_name}/current"
-            elif str(path).startswith("/run/mysqlrouter") or str(path).startswith(
-                "/var/log/mysqlrouter"
-            ):
-                parent = f"/var/snap/{snap_name}/common"
-            elif str(path).startswith("/tmp"):
-                parent = f"/tmp/snap-private-tmp/snap.{snap_name}"
-            else:
-                parent = None
-            if parent:
-                assert str(path).startswith("/")
-                path = super().__new__(cls, parent, path.relative_to("/"), **kwargs)
-            path._container_parent = parent
+            self = super().__new__(cls, *args, **kwargs)
 
-        return path
+        self._container_parent = parent
+        return self
 
     def __truediv__(self, other):
         return type(self)(self, other)

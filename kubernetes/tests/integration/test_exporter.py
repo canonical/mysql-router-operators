@@ -56,7 +56,7 @@ async def test_exporter_endpoint(ops_test: OpsTest, charm) -> None:
         ops_test.model.deploy(
             charm,
             application_name=MYSQL_ROUTER_APP_NAME,
-            base="ubuntu@22.04",
+            base="ubuntu@24.04",
             resources=mysqlrouter_resources,
             num_units=1,
             trust=True,
@@ -65,7 +65,7 @@ async def test_exporter_endpoint(ops_test: OpsTest, charm) -> None:
             APPLICATION_APP_NAME,
             channel="latest/edge",
             application_name=APPLICATION_APP_NAME,
-            base="ubuntu@22.04",
+            base="ubuntu@24.04",
             num_units=1,
         ),
         ops_test.model.deploy(

@@ -27,7 +27,7 @@ jobs:
     name: Promote charm
     uses: canonical/data-platform-workflows/.github/workflows/_promote_charms.yaml@v36.0.1
     with:
-      track: 'dpe'
+      track: '8.4'
       from-risk: ${{ inputs.from-risk }}
       to-risk: ${{ inputs.to-risk }}
     secrets:

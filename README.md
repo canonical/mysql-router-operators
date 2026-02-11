@@ -2,17 +2,16 @@
 [![Charmhub](https://charmhub.io/mysql-router-k8s/badge.svg)](https://charmhub.io/mysql-router-k8s)
 [![Charmhub](https://charmhub.io/mysql-router/badge.svg?channel=dpe/candidate)](https://charmhub.io/mysql-router)
 [![Release](https://github.com/canonical/mysql-router-operators/actions/workflows/release.yaml/badge.svg)](https://github.com/canonical/mysql-router-operators/actions/workflows/release.yaml)
-[![Tests](https://github.com/canonical/mysql-router-operators/actions/workflows/ci.yaml/badge.svg?branch=dpe)](https://github.com/canonical/mysql-router-operators/actions/workflows/ci.yaml)
+[![Tests](https://github.com/canonical/mysql-router-operators/actions/workflows/ci.yaml/badge.svg?branch=8.4/edge)](https://github.com/canonical/mysql-router-operators/actions/workflows/ci.yaml)
 -----------------
 ## Description
 
-The Charmed MySQL Router Operator is a database proxy for [Group Replicated
-MySQL](https://dev.mysql.com/doc/refman/8.0/en/mysql-innodb-cluster-introduction.html)
+The Charmed MySQL Router Operator is a database proxy for
+[Group Replicated MySQL](https://dev.mysql.com/doc/refman/8.4/en/mysql-innodb-cluster-introduction.html)
 clusters.
 
 MySQL Router is a middleware that provides transparent routing of MySQL servers
-and client applications. More info at [MySQL
-Router](https://dev.mysql.com/doc/mysql-router/8.0/en/).
+and client applications. More info at [MySQL Router](https://dev.mysql.com/doc/mysql-router/8.4/en/).
 
 The proxy sits between the MySQL cluster and a client application, e.g.:
 
@@ -57,6 +56,5 @@ cd machines && charmcraftlocal pack
 ```
 
 Please see the [Juju SDK docs](https://juju.is/docs/sdk) for guidelines on
-enhancements to this charm following best practice guidelines, and
-[CONTRIBUTING.md](./CONTRIBUTING.md)
+enhancements to this charm following best practice guidelines, and [CONTRIBUTING.md](./CONTRIBUTING.md)
 for further developer guidance.

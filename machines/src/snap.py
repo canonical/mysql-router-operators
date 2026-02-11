@@ -62,30 +62,55 @@ def uninstall():
 
 
 class _Path(pathlib.PosixPath, common.container.Path):
-    def __new__(cls, *args, **kwargs):
-        if args and isinstance(args[0], cls):
-            self = super().__new__(cls, *args, **kwargs)
-            self._container_parent = getattr(args[0], "_container_parent", None)
-            return self
+    def __init__(self, *args, **kwargs):
+        path_str = str(pathlib.PurePosixPath(*args))
+        remapped_path_str, container_parent = self._apply_remapping(path_str)
+
+        # If no remapping was applied but the first arg is a _Path with a parent,
+        # inherit the parent (for path joining operations)
+        if container_parent is None and args and isinstance(args[0], _Path):
+            container_parent = getattr(args[0], "_container_parent", None)
+
+        super().__init__(remapped_path_str, **kwargs)
+
+        self._container_parent = container_parent
+
+    @staticmethod
+    def _apply_remapping(path_str: str) -> tuple[str, str | None]:
+        """Apply remapping rules to convert container path to snap path
+
+        Returns:
+            tuple of (remapped_path, container_parent)
+            container_parent is None if no remapping was applied
+        """
+        if not path_str.startswith("/"):
+            # Relative paths don't get remapped
+            return path_str, None
 
         snap_name = charm_refresh.snap_name()
-        path = pathlib.PosixPath(*args)
-        parent = None
 
-        if str(path).startswith("/etc/mysqlrouter") or str(path).startswith("/var/lib/mysqlrouter"):
-            parent = f"/var/snap/{snap_name}/current"
-        elif str(path).startswith("/run/mysqlrouter") or str(path).startswith("/var/log/mysqlrouter"):
-            parent = f"/var/snap/{snap_name}/common"
-        elif str(path).startswith("/tmp"):
-            parent = f"/tmp/snap-private-tmp/snap.{snap_name}"
+        snap_current = f"/var/snap/{snap_name}/current"
+        snap_common = f"/var/snap/{snap_name}/common"
+        snap_tmp = f"/tmp/snap-private-tmp/snap.{snap_name}"
 
-        if parent and path.is_absolute():
-            self = super().__new__(cls, parent, path.relative_to("/"), **kwargs)
-        else:
-            self = super().__new__(cls, *args, **kwargs)
+        # Skip remapping if path is already in the snap directory
+        # (this happens when pathlib internally creates parent paths)
+        for snap_dir in (snap_current, snap_common, snap_tmp):
+            if path_str == snap_dir or path_str.startswith(f"{snap_dir}/"):
+                return path_str, None
 
-        self._container_parent = parent
-        return self
+        if path_str.startswith("/etc/mysqlrouter") or path_str.startswith("/var/lib/mysqlrouter"):
+            return f"{snap_current}{path_str}", snap_current
+        elif path_str.startswith("/run/mysqlrouter") or path_str.startswith(
+            "/var/log/mysqlrouter"
+        ):
+            return f"{snap_common}{path_str}", snap_common
+        elif path_str == "/tmp":
+            return f"{snap_tmp}/tmp", snap_tmp
+        elif path_str.startswith("/tmp/"):
+            return f"{snap_tmp}{path_str[4:]}", snap_tmp
+
+        return path_str, None
 
     def __truediv__(self, other):
         return type(self)(self, other)
@@ -97,7 +122,7 @@ class _Path(pathlib.PosixPath, common.container.Path):
     def relative_to_container(self) -> pathlib.PurePosixPath:
         if parent := self._container_parent:
             return pathlib.PurePosixPath("/", self.relative_to(parent))
-        return self
+        return pathlib.PurePosixPath(self)
 
     def open(self, mode="r", buffering=-1, encoding="utf-8", *args, **kwargs):
         return super().open(mode, buffering, encoding, *args, **kwargs)

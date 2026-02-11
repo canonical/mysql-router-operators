@@ -3,9 +3,9 @@
 
 type: charm
 platforms:
-  ubuntu@22.04:amd64:
-  ubuntu@22.04:arm64:
-  ubuntu@22.04:s390x:
+  ubuntu@24.04:amd64:
+  ubuntu@24.04:arm64:
+  ubuntu@24.04:s390x:
 # Files implicitly created by charmcraft without a part:
 # - dispatch (https://github.com/canonical/charmcraft/pull/1898)
 # - manifest.yaml
@@ -34,7 +34,7 @@ parts:
       then
         # Use first Python version that is >=3.9 and available in an Ubuntu LTS
         # (to reduce the number of Python versions we use)
-        "$HOME/.local/bin/uv" python install 3.10.12  # renovate: charmcraft-python-ubuntu-22.04
+        "$HOME/.local/bin/uv" python install 3.10.12  # renovate: charmcraft-python-ubuntu-24.04
       fi
       "$HOME/.local/bin/uv" tool install --no-python-downloads --python '>=3.9' poetry==2.2.1 --with poetry-plugin-export==1.9.0  # renovate: charmcraft-poetry-latest
 
@@ -60,28 +60,15 @@ parts:
       - libssl-dev  # Needed to build Python dependencies with Rust from source
       - pkg-config  # Needed to build Python dependencies with Rust from source
     override-build: |
-      # Workaround for https://github.com/canonical/charmcraft/issues/2068
-      # rustup used to install rustc and cargo, which are needed to build Python dependencies with Rust from source
-      if [[ "$CRAFT_PLATFORM" == ubuntu@20.04:* || "$CRAFT_PLATFORM" == ubuntu@22.04:* ]]
-      then
-        snap install rustup --classic
-      else
-        apt-get install rustup -y
-      fi
+      apt-get install rustup -y
 
-      # If Ubuntu version < 24.04, rustup was installed from snap instead of from the Ubuntu
-      # archive—which means the rustup version could be updated at any time. Print rustup version
-      # to build log to make changes to the snap's rustup version easier to track
-      rustup --version
-
-      # rpds-py (Python package) >=0.19.0 requires rustc >=1.76, which is not available in the
-      # Ubuntu 22.04 archive. Install rustc and cargo using rustup instead of the Ubuntu archive
       rustup set profile minimal
       rustup default 1.90.0  # renovate: charmcraft-rust-latest
 
       "$HOME/.local/bin/charmcraftlocal" update-lock -v
 
       craftctl default
+      
       # Include requirements.txt in *.charm artifact for easier debugging
       cp requirements.txt "$CRAFT_PART_INSTALL/requirements.txt"
   # "files" part name is arbitrary; use for consistency

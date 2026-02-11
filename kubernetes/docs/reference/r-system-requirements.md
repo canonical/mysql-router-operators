@@ -15,7 +15,7 @@ The minimum supported Juju versions are:
 ## Minimum requirements
 
 Make sure your machine meets the following requirements:
-- Ubuntu 22.04 (Jammy) or later.
+- Ubuntu 24.04 (Jammy) or later.
 - 8GB of RAM.
 - 2 CPU threads.
 - At least 20GB of available storage.

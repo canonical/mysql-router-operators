@@ -1,4 +1,5 @@
 # https://canonical-charm-refresh.readthedocs-hosted.com/latest/refresh-versions-toml/
 
+# TODO: Bump the charm major version?
 charm_major = 1
-workload = "8.0.44"
+workload = "8.4.7"

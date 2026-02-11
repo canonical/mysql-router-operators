@@ -95,21 +95,21 @@ grafana 	active  k8s	admin/cos.grafana
 loki    	active  k8s	admin/cos.loki
 prometheus  active  k8s	admin/cos.prometheus
 
-App         	Version      	Status  Scale  Charm       	Channel 	Rev  Exposed  Message
-grafana-agent                	active  	1  grafana-agent   stable   	65  no  	 
-mysql       	8.0.34-0ubun...  active  	1  mysql       	8.0/stable  196  no  	 
-mysql-router	8.0.36-0ubun...  active  	1  mysql-router	dpe/edge	153  no  	 
-mysql-test-app  0.0.2        	active  	1  mysql-test-app  stable   	36  no  	 
+App         	Version  Status  Scale  Charm          Channel   Rev  Exposed  Message
+grafana-agent            active  	1  grafana-agent   stable     65  no
+mysql       	8.4.7    active  	1  mysql           8.4/edge  196  no 
+mysql-router	8.4.7    active  	1  mysql-router    8.4/edge	 153  no
+mysql-test-app  0.0.2    active  	1  mysql-test-app  stable     36  no
 
 Unit            	Workload  Agent  Machine  Public address  Ports       	Message
-mysql-test-app/0*   active	idle   1    	10.205.193.82              	 
-  grafana-agent/0*  active	idle        	10.205.193.82              	 
-  mysql-router/0*   active	idle        	10.205.193.82              	 
-mysql/0*        	active	idle   0    	10.205.193.13   3306,33060/tcp  Primary
+mysql-test-app/0*   active	idle           1  10.205.193.82              	 
+  grafana-agent/0*  active	idle        	  10.205.193.82              	 
+  mysql-router/0*   active	idle        	  10.205.193.82              	 
+mysql/0*        	active	idle           0  10.205.193.13   3306,33060/tcp  Primary
 
 Machine  State	Address    	Inst id    	Base      	AZ  Message
-0    	started  10.205.193.13  juju-65afbd-0  ubuntu@22.04  	Running
-1    	started  10.205.193.82  juju-65afbd-1  ubuntu@22.04  	Running
+0    	started  10.205.193.13  juju-65afbd-0  ubuntu@24.04  	Running
+1    	started  10.205.193.82  juju-65afbd-1  ubuntu@24.04  	Running
 ```
 
 Example of `juju status` on the COS K8s model:
@@ -119,12 +119,12 @@ ubuntu@localhost:~$ juju status
 Model  Controller  Cloud/Region    	Version  SLA      	Timestamp
 cos	k8s     	microk8s/localhost  3.1.8	unsupported  20:29:12Z
 
-App       	Version  Status  Scale  Charm         	Channel  Rev  Address     	Exposed  Message
+App       	  Version  Status  Scale  Charm          Channel  Rev  Address         Exposed  Message
 alertmanager  0.27.0   active  	1  alertmanager-k8s  stable   106  10.152.183.197  no  	 
-catalogue          	active  	1  catalogue-k8s 	stable	33  10.152.183.38   no  	 
-grafana   	9.5.3	active  	1  grafana-k8s   	stable   106  10.152.183.238  no  	 
-loki      	2.9.4	active  	1  loki-k8s      	stable   124  10.152.183.84   no  	 
-prometheus	2.49.1   active  	1  prometheus-k8s	stable   171  10.152.183.182  no  	 
+catalogue          	   active  	1  catalogue-k8s 	 stable	   33  10.152.183.38   no  	 
+grafana   	  9.5.3	   active  	1  grafana-k8s   	 stable   106  10.152.183.238  no  	 
+loki      	  2.9.4	   active  	1  loki-k8s      	 stable   124  10.152.183.84   no  	 
+prometheus	  2.49.1   active  	1  prometheus-k8s	 stable   171  10.152.183.182  no  	 
 ```
 ## Connect to Grafana web interface
 

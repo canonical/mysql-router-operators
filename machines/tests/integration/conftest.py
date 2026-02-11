@@ -25,6 +25,8 @@ def series(ubuntu_base):
         return "focal"
     elif ubuntu_base == "22.04":
         return "jammy"
+    elif ubuntu_base == "24.04":
+        return "noble"
     else:
         raise NotImplementedError
 

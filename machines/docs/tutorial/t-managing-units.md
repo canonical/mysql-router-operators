@@ -19,10 +19,10 @@ You can now watch the scaling process in live using: `juju status --watch 1s`. I
 Model     Controller  Cloud/Region        Version  SLA          Timestamp
 tutorial  overlord    microk8s/localhost  2.9.46   unsupported  22:48:57+01:00
 
-App               Version                  Status  Scale  Charm             Channel   Rev  Address         Exposed  Message
-data-integrator                            active      1  data-integrator   stable     13  10.152.183.142  no       
-mysql-k8s         8.0.34-0ubuntu0.22.04.1  active      1  mysql-k8s         8.0/edge  109  10.152.183.68   no       
-mysql-router-k8s  8.0.34-0ubuntu0.22.04.1  active      3  mysql-router-k8s  8.0/edge   68  10.152.183.52   no       
+App               Version  Status  Scale  Charm             Channel   Rev  Address         Exposed  Message
+data-integrator            active      1  data-integrator   stable     13  10.152.183.142  no       
+mysql-k8s         8.4.7    active      1  mysql-k8s         8.4/edge  109  10.152.183.68   no       
+mysql-router-k8s  8.4.7    active      3  mysql-router-k8s  8.4/edge   68  10.152.183.52   no       
 
 Unit                 Workload  Agent  Address     Ports  Message
 data-integrator/0*   active    idle   10.1.12.3          
@@ -38,10 +38,10 @@ juju scale-application mysql-k8s 3
 ```
 Make sure all units are active (using `juju status`):
 ```shell
-App               Version                  Status  Scale  Charm             Channel   Rev  Address         Exposed  Message
-data-integrator                            active      1  data-integrator   stable     13  10.152.183.142  no       
-mysql-k8s         8.0.34-0ubuntu0.22.04.1  active      3  mysql-k8s         8.0/edge  109  10.152.183.68   no       
-mysql-router-k8s  8.0.34-0ubuntu0.22.04.1  active      3  mysql-router-k8s  8.0/edge   68  10.152.183.52   no       
+App               Version  Status  Scale  Charm             Channel   Rev  Address         Exposed  Message
+data-integrator            active      1  data-integrator   stable     13  10.152.183.142  no       
+mysql-k8s         8.4.7    active      3  mysql-k8s         8.4/edge  109  10.152.183.68   no       
+mysql-router-k8s  8.4.7    active      3  mysql-router-k8s  8.4/edge   68  10.152.183.52   no       
 
 Unit                 Workload  Agent  Address     Ports  Message
 data-integrator/0*   active    idle   10.1.12.3          
@@ -65,10 +65,10 @@ You’ll know that the replica was successfully removed when `juju status --watc
 Model     Controller  Cloud/Region        Version  SLA          Timestamp
 tutorial  overlord    microk8s/localhost  2.9.46   unsupported  22:48:57+01:00
 
-App               Version                  Status  Scale  Charm             Channel   Rev  Address         Exposed  Message
-data-integrator                            active      1  data-integrator   stable     13  10.152.183.142  no       
-mysql-k8s         8.0.34-0ubuntu0.22.04.1  active      2  mysql-k8s         8.0/edge  109  10.152.183.68   no       
-mysql-router-k8s  8.0.34-0ubuntu0.22.04.1  active      2  mysql-router-k8s  8.0/edge   68  10.152.183.52   no       
+App               Version  Status  Scale  Charm             Channel   Rev  Address         Exposed  Message
+data-integrator            active      1  data-integrator   stable     13  10.152.183.142  no       
+mysql-k8s         8.4.7    active      2  mysql-k8s         8.4/edge  109  10.152.183.68   no       
+mysql-router-k8s  8.4.7    active      2  mysql-router-k8s  8.4/edge   68  10.152.183.52   no       
 
 Unit                 Workload  Agent  Address     Ports  Message
 data-integrator/0*   active    idle   10.1.12.3          

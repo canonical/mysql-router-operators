@@ -2,6 +2,10 @@
 
 The release notes for stable releases can be found in the charm's [GitHub releases page](https://github.com/canonical/mysql-router-operators/releases).
 
-The following revisions have been published in the `8.4/stable` [channel](https://juju.is/docs/sdk/channel):
+* **`stable`**: production-ready releases
+* **`candidate`, `beta`, `edge`** : [risk channels](https://juju.is/docs/sdk/channel#heading--risk) - new and experimental features. Not recommended for production.
 
-All other [risks](https://juju.is/docs/sdk/channel#heading--risk) (`candidate`, `beta`, `edge`) are NOT recommended for production usage.
+## Revisions:
+
+| Channel  | amd64 | arm64 | s390x |
+|:---------|:-----:|:-----:|:-----:|

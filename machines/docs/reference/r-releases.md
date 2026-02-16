@@ -7,8 +7,8 @@ Here you will find release notes for the main revisions of this charm that are a
 
 ## Revisions:
 
-| Channel  | amd64 | arm64 |
-|:---------|:-----:|:-----:|
+| Channel  | amd64 | arm64 | s390x |
+|:---------|:-----:|:-----:|:-----:|
 
 [note]
 Due to the [subordinate nature](https://juju.is/docs/sdk/charm-taxonomy#heading--subordinate-charms) of this charm, several [revisions](https://juju.is/docs/sdk/revision) have been released simultaneously to the different [bases/series](https://juju.is/docs/juju/base) using the same charm code.

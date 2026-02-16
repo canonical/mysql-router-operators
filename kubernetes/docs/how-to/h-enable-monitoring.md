@@ -1,7 +1,3 @@
-[note]
-**Note**: All commands are written for [`juju >= v3.0`](https://juju.is/docs/juju/roadmap#heading--juju-3-0-0---22-oct-2022)
-[/note]
-
 # How to enable monitoring with COS and Grafana
 
 This guide goes over the steps to integrate MySQL Router K8s deployment with COS to enable monitoring in Grafana.
@@ -53,10 +49,10 @@ juju find-offers <k8s_cos_controller>:  # Do not miss the ':' here!
 In the sample output below, `k8s` is the k8s controller name and `cos` is the model where `cos-lite` has been deployed:
 
 ```shell
-Store  URL                Access  Interfaces
-k8s	admin/cos.grafana 	  admin   grafana_dashboard:grafana-dashboard
-k8s	admin/cos.loki    	  admin   loki_push_api:logging
-k8s	admin/cos.prometheus  admin   prometheus_remote_write:receive-remote-write
+Store  URL                   Access  Interfaces
+k8s	   admin/cos.grafana 	 admin   grafana_dashboard:grafana-dashboard
+k8s	   admin/cos.loki    	 admin   loki_push_api:logging
+k8s	   admin/cos.prometheus  admin   prometheus_remote_write:receive-remote-write
 ```
 
 To consume offers to be reachable in the current model, run
@@ -92,19 +88,19 @@ An example of `juju status` on Charmed MySQL Router K8s model:
 
 ```shell
 ubuntu@localhost:~$ juju status
-Model 	Controller  Cloud/Region    	Version  SLA      	Timestamp
-database  k8s     	microk8s/localhost  3.1.8	unsupported  13:27:08Z
+Model 	  Controller  Cloud/Region    	  Version  SLA          Timestamp
+database  k8s     	  microk8s/localhost  3.1.8	   unsupported  13:27:08Z
 
 SAAS    	Status  Store  URL
-grafana 	active  k8s	admin/cos.grafana
-loki    	active  k8s	admin/cos.loki
-prometheus  active  k8s	admin/cos.prometheus
+grafana 	active  k8s	   admin/cos.grafana
+loki    	active  k8s	   admin/cos.loki
+prometheus  active  k8s	   admin/cos.prometheus
 
 App            	   Version  Status  Scale  Charm           	  Channel 	  Rev  Address     	   Exposed  Message
-grafana-agent-k8s  0.35.2   active  	1  grafana-agent-k8s  stable   	  64   10.152.183.141  no  	 
+grafana-agent-k8s  0.35.2   active  	1  grafana-agent-k8s  stable   	   64  10.152.183.141  no  	 
 mysql-k8s      	   8.4.7    active  	1  mysql-k8s      	  8.4/stable  127  10.152.183.105  no  	 
 mysql-router-k8s   8.4.7    active  	1  mysql-router-k8s   8.4/edge	  102  10.152.183.92   no  	 
-mysql-test-app 	   0.0.2    active  	1  mysql-test-app 	  stable   	  36   10.152.183.35   no  	 
+mysql-test-app 	   0.0.2    active  	1  mysql-test-app 	  stable   	   36  10.152.183.35   no  	 
 
 Unit              	  Workload  Agent  Address   	Ports  Message
 grafana-agent-k8s/0*  active	idle   10.1.241.243    	 

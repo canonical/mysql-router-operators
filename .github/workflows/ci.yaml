@@ -14,7 +14,7 @@ on:
       - '.github/renovate.json5'
   schedule:
     - cron: '53 0 * * *'  # Daily at 00:53 UTC
-  # Triggered on push to branch "dpe" by .github/workflows/release.yaml
+  # Triggered on push by .github/workflows/release.yaml
   workflow_call:
     outputs:
       artifact-prefix:
@@ -54,7 +54,7 @@ jobs:
           - kubernetes
           - machines
     name: Unit test | ${{ matrix.path }}
-    runs-on: ubuntu-22.04  # TODO: use ubuntu-latest after fixing pathlib issue on python 3.12
+    runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - name: Checkout
@@ -76,6 +76,7 @@ jobs:
     name: Build charm | ${{ matrix.path }}
     uses: canonical/data-platform-workflows/.github/workflows/build_charm.yaml@v36.0.1
     with:
+      cache: false  # TODO: cleanup
       path-to-charm-directory: ${{ matrix.path }}
 
   integration-test:

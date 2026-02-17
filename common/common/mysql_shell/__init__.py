@@ -226,6 +226,32 @@ class Shell:
         self._run_sql([f"ALTER USER `{username}` ATTRIBUTE '{attributes}'"])
         logger.debug(f"Added {attributes=} to {username=}")
 
+    def create_user_for_mysql_router(self, account_name: str, password: str) -> None:
+        """Create MySQL Router user with required permissions.
+
+        Creates a user account suitable for MySQL Router operations with all necessary
+        grants as specified in the MySQL Router documentation.
+
+        Args:
+            account_name: The MySQL username to create
+            password: Password to use
+
+        Returns:
+            The generated password for the account
+        """
+        logger.debug(f"Creating MySQL Router user {account_name=}")
+        statements = [
+            f"CREATE USER `{account_name}` IDENTIFIED BY '{password}'",
+            f"GRANT USAGE ON *.* TO `{account_name}`",
+            f"GRANT SELECT, EXECUTE ON `mysql_innodb_cluster_metadata`.* TO `{account_name}`",
+            f"GRANT INSERT, UPDATE, DELETE ON `mysql_innodb_cluster_metadata`.`routers` TO `{account_name}`",
+            f"GRANT INSERT, UPDATE, DELETE ON `mysql_innodb_cluster_metadata`.`v2_routers` TO `{account_name}`",
+            f"GRANT SELECT ON `performance_schema`.`global_variables` TO `{account_name}`",
+            f"GRANT SELECT ON `performance_schema`.`replication_group_member_stats` TO `{account_name}`",
+            f"GRANT SELECT ON `performance_schema`.`replication_group_members` TO `{account_name}`",
+        ]
+        self._run_sql(statements)
+
     def get_mysql_router_user_for_unit(self, unit_name: str) -> RouterUserInformation | None:
         """Get MySQL Router user created by a previous instance of the unit.
 

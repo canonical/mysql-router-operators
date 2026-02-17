@@ -16,7 +16,7 @@ import ops
 import requests
 import tenacity
 
-from . import container, mysql_shell, server_exceptions
+from . import container, mysql_shell, server_exceptions, utils
 
 if typing.TYPE_CHECKING:
     from . import abstract_charm, logrotate
@@ -250,7 +250,11 @@ class RunningWorkload(Workload):
             logger.debug("Cleaned up after refresh or container restart")
 
     def _get_bootstrap_command(
-        self, *, event, connection_info: "database_requires.ConnectionInformation"
+        self,
+        *,
+        event,
+        connection_info: "database_requires.ConnectionInformation",
+        account_name,
     ) -> list[str]:
         return [
             "--bootstrap",
@@ -272,6 +276,10 @@ class RunningWorkload(Workload):
             "--conf-use-gr-notifications",
             "--conf-set-option",
             "metadata_cache:bootstrap.ttl=5",
+            "--account",
+            account_name,
+            "--account-create",
+            "never",
         ]
 
     def _bootstrap_router(self, *, event, tls: bool) -> None:
@@ -279,12 +287,21 @@ class RunningWorkload(Workload):
         logger.debug(
             f"Bootstrapping router {tls=}, {self._connection_info.host=}, {self._connection_info.port=}"
         )
+
+        account_name = "mysql_router_xyz123"  # TODO: Change
+        password = utils.generate_password()
+        self.shell.create_user_for_mysql_router(account_name, password)
+
         # Redact password from log
         logged_command = self._get_bootstrap_command(
-            event=event, connection_info=self._connection_info.redacted
+            event=event,
+            connection_info=self._connection_info.redacted,
+            account_name=account_name,
         )
 
-        command = self._get_bootstrap_command(event=event, connection_info=self._connection_info)
+        command = self._get_bootstrap_command(
+            event=event, connection_info=self._connection_info, account_name=account_name
+        )
         try:
             self._container.run_mysql_router(command)
         except container.CalledProcessError as e:

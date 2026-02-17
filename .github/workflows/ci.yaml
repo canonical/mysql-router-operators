@@ -74,7 +74,7 @@ jobs:
           - kubernetes
           - machines
     name: Build charm | ${{ matrix.path }}
-    uses: canonical/data-platform-workflows/.github/workflows/build_charm.yaml@v36.0.1
+    uses: canonical/data-platform-workflows/.github/workflows/build_charm.yaml@v36.0.2
     with:
       path-to-charm-directory: ${{ matrix.path }}
 

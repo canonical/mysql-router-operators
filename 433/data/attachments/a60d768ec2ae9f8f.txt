@@ -1,0 +1,67 @@
+[32mINFO    [0m integration.test_tls:test_tls.py:116 Relating TLS with mysqlrouter
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[32mINFO    [0m integration.test_tls:test_tls.py:119 Getting certificate issuer after relating with tls operator
+[32mINFO    [0m integration.test_tls:test_tls.py:136 Removing relation TLS with mysqlrouter
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller          Cloud/Region        Version  SLA          Timestamp
+testing  concierge-microk8s  microk8s/localhost  3.6.14   unsupported  01:58:20Z
+
+App                       Version  Status  Scale  Charm                     Channel      Rev  Address         Exposed  Message
+mysql-k8s                 8.0.44   active      3  mysql-k8s                 8.0/edge     345  10.152.183.206  no       
+mysql-router-k8s          8.4.7    active      1  mysql-router-k8s                         0  10.152.183.45   no       
+mysql-test-app            0.0.2    active      1  mysql-test-app            latest/edge   95  10.152.183.170  no       Last written value=128
+self-signed-certificates           active      1  self-signed-certificates  1/stable     317  10.152.183.78   no       
+
+Unit                         Workload  Agent      Address      Ports  Message
+mysql-k8s/0*                 active    idle       10.1.119.13         Primary
+mysql-k8s/1                  active    executing  10.1.119.14         
+mysql-k8s/2                  active    executing  10.1.119.15         
+mysql-router-k8s/0*          active    idle       10.1.119.18         
+mysql-test-app/0*            active    idle       10.1.119.17         Last written value=128
+self-signed-certificates/0*  active    idle       10.1.119.16         
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+unit-mysql-k8s-0: 01:56:12 ERROR unit.mysql-k8s/0.juju-log Failed to get cluster labels
+unit-mysql-k8s-0: 01:56:13 ERROR unit.mysql-k8s/0.juju-log Failed to get cluster labels
+unit-mysql-k8s-0: 01:56:15 ERROR unit.mysql-k8s/0.juju-log Failed to get cluster labels
+unit-self-signed-certificates-0: 01:56:23 ERROR unit.self-signed-certificates/0.juju-log At least 1 matching relation ID not found with the relation name 'send-ca-cert'
+unit-self-signed-certificates-0: 01:56:33 ERROR unit.self-signed-certificates/0.juju-log At least 1 matching relation ID not found with the relation name 'send-ca-cert'
+unit-mysql-k8s-2: 01:56:38 ERROR unit.mysql-k8s/2.juju-log Failed to get cluster labels
+unit-mysql-k8s-0: 01:56:38 ERROR unit.mysql-k8s/0.juju-log Failed to get cluster labels
+unit-mysql-k8s-1: 01:56:39 ERROR unit.mysql-k8s/1.juju-log Failed to get cluster labels
+unit-self-signed-certificates-0: 01:56:45 ERROR unit.self-signed-certificates/0.juju-log At least 1 matching relation ID not found with the relation name 'send-ca-cert'
+unit-mysql-k8s-1: 01:56:51 ERROR unit.mysql-k8s/1.juju-log database-peers:0: Failed to get cluster labels
+unit-mysql-k8s-2: 01:56:51 ERROR unit.mysql-k8s/2.juju-log database-peers:0: Failed to get cluster labels
+unit-mysql-k8s-1: 01:56:51 ERROR unit.mysql-k8s/1.juju-log database-peers:0: Failed to get cluster labels
+unit-mysql-k8s-2: 01:56:51 ERROR unit.mysql-k8s/2.juju-log database-peers:0: Failed to get cluster labels
+unit-self-signed-certificates-0: 01:56:56 ERROR unit.self-signed-certificates/0.juju-log At least 1 matching relation ID not found with the relation name 'send-ca-cert'
+unit-mysql-k8s-1: 01:56:57 ERROR unit.mysql-k8s/1.juju-log upgrade:2: Failed to get cluster labels
+unit-mysql-k8s-2: 01:56:57 ERROR unit.mysql-k8s/2.juju-log upgrade:2: Failed to get cluster labels
+unit-mysql-k8s-1: 01:56:59 ERROR unit.mysql-k8s/1.juju-log database-peers:0: Failed to get cluster labels
+unit-mysql-k8s-2: 01:57:00 ERROR unit.mysql-k8s/2.juju-log database-peers:0: Failed to get cluster labels
+unit-mysql-k8s-1: 01:57:00 ERROR unit.mysql-k8s/1.juju-log database-peers:0: Failed to get cluster labels
+unit-mysql-k8s-2: 01:57:00 ERROR unit.mysql-k8s/2.juju-log database-peers:0: Failed to get cluster labels
+unit-self-signed-certificates-0: 01:57:07 ERROR unit.self-signed-certificates/0.juju-log At least 1 matching relation ID not found with the relation name 'send-ca-cert'
+unit-mysql-k8s-1: 01:57:13 ERROR unit.mysql-k8s/1.juju-log database-peers:0: Failed to get cluster labels
+unit-mysql-k8s-2: 01:57:13 ERROR unit.mysql-k8s/2.juju-log database-peers:0: Failed to get cluster labels
+unit-mysql-k8s-1: 01:57:16 ERROR unit.mysql-k8s/1.juju-log database-peers:0: Failed to stop instance replication
+unit-mysql-k8s-2: 01:57:17 ERROR unit.mysql-k8s/2.juju-log database-peers:0: Failed to stop instance replication
+unit-mysql-k8s-1: 01:57:19 ERROR unit.mysql-k8s/1.juju-log database-peers:0: Failed to attach instance mysql-k8s-1.mysql-k8s-endpoints.testing.svc.cluster.local.:3306 to cluster cluster-01300a7ac0e8e8792c421491cfb60c78
+unit-self-signed-certificates-0: 01:57:19 ERROR unit.self-signed-certificates/0.juju-log At least 1 matching relation ID not found with the relation name 'send-ca-cert'
+unit-self-signed-certificates-0: 01:57:28 ERROR unit.self-signed-certificates/0.juju-log At least 1 matching relation ID not found with the relation name 'send-ca-cert'
+unit-mysql-k8s-2: 01:57:28 ERROR unit.mysql-k8s/2.juju-log database-peers:0: Failed to get cluster labels
+unit-mysql-k8s-2: 01:57:28 ERROR unit.mysql-k8s/2.juju-log database-peers:0: Failed to get cluster labels
+unit-mysql-k8s-2: 01:57:29 ERROR unit.mysql-k8s/2.juju-log database-peers:0: Failed to get cluster labels
+unit-mysql-k8s-0: 01:57:29 ERROR unit.mysql-k8s/0.juju-log upgrade:2: Failed to search instance replication members
+unit-mysql-k8s-0: 01:57:29 ERROR unit.mysql-k8s/0.juju-log upgrade:2: Failed to search instance replication members
+unit-mysql-k8s-2: 01:57:36 ERROR unit.mysql-k8s/2.juju-log database-peers:0: Failed to get cluster labels
+unit-mysql-k8s-2: 01:57:39 ERROR unit.mysql-k8s/2.juju-log database-peers:0: Failed to stop instance replication
+unit-self-signed-certificates-0: 01:57:42 ERROR unit.self-signed-certificates/0.juju-log certificates:10: At least 1 matching relation ID not found with the relation name 'send-ca-cert'
+unit-mysql-k8s-2: 01:57:43 ERROR unit.mysql-k8s/2.juju-log database-peers:0: Failed to attach instance mysql-k8s-2.mysql-k8s-endpoints.testing.svc.cluster.local.:3306 to cluster cluster-01300a7ac0e8e8792c421491cfb60c78
+unit-self-signed-certificates-0: 01:57:46 ERROR unit.self-signed-certificates/0.juju-log certificates:10: At least 1 matching relation ID not found with the relation name 'send-ca-cert'
+unit-mysql-k8s-0: 01:57:56 ERROR unit.mysql-k8s/0.juju-log upgrade:2: Failed to search instance replication members
+unit-mysql-k8s-0: 01:57:57 ERROR unit.mysql-k8s/0.juju-log upgrade:2: Failed to search instance replication members
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...

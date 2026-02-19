@@ -1,14 +1,12 @@
 # Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-import asyncio
 import logging
 
+import jubilant_backports
 import pytest
 import tenacity
-from pytest_operator.plugin import OpsTest
 
-from . import architecture, juju_
 from .helpers import (
     MYSQL_DEFAULT_APP_NAME,
     MYSQL_ROUTER_DEFAULT_APP_NAME,
@@ -27,94 +25,81 @@ RETRY_TIMEOUT = 60
 TEST_DATABASE = "testdatabase"
 TEST_TABLE = "testtable"
 
-if juju_.is_3_or_higher:
-    tls_app_name = "self-signed-certificates"
-    tls_channel = "1/stable"
-    tls_config = {"ca-common-name": "Test CA"}
-    tls_series = "noble"
-else:
-    tls_app_name = "tls-certificates-operator"
-    tls_channel = "legacy/edge" if architecture.architecture == "arm64" else "legacy/stable"
-    tls_config = {"generate-self-signed-certificates": "true", "ca-common-name": "Test CA"}
-    tls_series = "jammy"
+# Juju 3+ configuration for TLS
+tls_app_name = "self-signed-certificates"
+tls_channel = "1/stable"
+tls_config = {"ca-common-name": "Test CA"}
+tls_base = "ubuntu@24.04"
 
 
 @pytest.mark.abort_on_fail
-async def test_external_connectivity_with_data_integrator(
-    ops_test: OpsTest, charm, series
+def test_external_connectivity_with_data_integrator(
+    juju: jubilant_backports.Juju, charm, ubuntu_base
 ) -> None:
     """Test encryption when backend database is using TLS."""
     logger.info("Deploy and relate all applications")
-    async with ops_test.fast_forward():
-        # deploy mysql first
-        await ops_test.model.deploy(
-            MYSQL_APP_NAME, channel="8.0/edge", config={"profile": "testing"}, num_units=1
-        )
-        data_integrator_config = {"database-name": TEST_DATABASE}
+    # deploy mysql first
+    juju.deploy(MYSQL_APP_NAME, channel="8.0/edge", config={"profile": "testing"}, num_units=1)
+    data_integrator_config = {"database-name": TEST_DATABASE}
 
-        # tls, data-integrator and router
-        await asyncio.gather(
-            ops_test.model.deploy(
-                charm,
-                application_name=MYSQL_ROUTER_APP_NAME,
-                num_units=None,
-                series=series,
-            ),
-            ops_test.model.deploy(
-                tls_app_name,
-                application_name=tls_app_name,
-                channel=tls_channel,
-                config=tls_config,
-                series=tls_series,
-            ),
-            ops_test.model.deploy(
-                DATA_INTEGRATOR_APP_NAME,
-                application_name=DATA_INTEGRATOR_APP_NAME,
-                channel="latest/stable",
-                series=series,
-                config=data_integrator_config,
-            ),
-        )
+    # tls, data-integrator and router
+    juju.deploy(
+        charm,
+        app=MYSQL_ROUTER_APP_NAME,
+        num_units=0,
+        base=ubuntu_base,
+    )
+    juju.deploy(
+        tls_app_name,
+        app=tls_app_name,
+        channel=tls_channel,
+        config=tls_config,
+        base=tls_base,
+    )
+    juju.deploy(
+        DATA_INTEGRATOR_APP_NAME,
+        app=DATA_INTEGRATOR_APP_NAME,
+        channel="latest/stable",
+        base=ubuntu_base,
+        config=data_integrator_config,
+    )
 
-        await ops_test.model.relate(
-            f"{MYSQL_ROUTER_APP_NAME}:backend-database", f"{MYSQL_APP_NAME}:database"
-        )
-        await ops_test.model.relate(
-            f"{DATA_INTEGRATOR_APP_NAME}:mysql", f"{MYSQL_ROUTER_APP_NAME}:database"
-        )
+    juju.integrate(f"{MYSQL_ROUTER_APP_NAME}:backend-database", f"{MYSQL_APP_NAME}:database")
+    juju.integrate(f"{DATA_INTEGRATOR_APP_NAME}:mysql", f"{MYSQL_ROUTER_APP_NAME}:database")
 
-        logger.info("Waiting for applications to become active")
-        # We can safely wait only for data-integrator to be ready,
-        # given that it will only become active once all the other
-        # applications are ready.
-        await ops_test.model.wait_for_idle(
-            [DATA_INTEGRATOR_APP_NAME], status="active", timeout=SLOW_TIMEOUT
-        )
+    logger.info("Waiting for applications to become active")
+    # We can safely wait only for data-integrator to be ready,
+    # given that it will only become active once all the other
+    # applications are ready.
+    juju.wait(
+        ready=lambda status: status.apps[DATA_INTEGRATOR_APP_NAME].app_status == "active",
+        timeout=SLOW_TIMEOUT,
+    )
 
-        credentials = await get_data_integrator_credentials(ops_test, DATA_INTEGRATOR_APP_NAME)
-        databases = await execute_queries_against_unit(
-            credentials["endpoints"].split(",")[0].split(":")[0],
-            credentials["username"],
-            credentials["password"],
-            ["SHOW DATABASES;"],
-            port=credentials["endpoints"].split(",")[0].split(":")[1],
-        )
-        assert TEST_DATABASE in databases
+    credentials = get_data_integrator_credentials(juju, DATA_INTEGRATOR_APP_NAME)
+    databases = execute_queries_against_unit(
+        credentials["endpoints"].split(",")[0].split(":")[0],
+        credentials["username"],
+        credentials["password"],
+        ["SHOW DATABASES;"],
+        port=credentials["endpoints"].split(",")[0].split(":")[1],
+    )
+    assert TEST_DATABASE in databases
 
 
 @pytest.mark.abort_on_fail
-async def test_external_connectivity_with_data_integrator_and_tls(ops_test: OpsTest) -> None:
+def test_external_connectivity_with_data_integrator_and_tls(juju: jubilant_backports.Juju) -> None:
     """Test data integrator along with TLS operator"""
     logger.info("Ensuring no data exists in the test database")
 
-    credentials = await get_data_integrator_credentials(ops_test, DATA_INTEGRATOR_APP_NAME)
+    credentials = get_data_integrator_credentials(juju, DATA_INTEGRATOR_APP_NAME)
     [database_host, database_port] = credentials["endpoints"].split(",")[0].split(":")
-    mysqlrouter_unit = ops_test.model.applications[MYSQL_ROUTER_APP_NAME].units[0]
+    mysqlrouter_unit = f"{MYSQL_ROUTER_APP_NAME}/0"
 
     show_tables_sql = [
         f"SHOW TABLES IN {TEST_DATABASE};",
     ]
-    tables = await execute_queries_against_unit(
+    tables = execute_queries_against_unit(
         database_host,
         credentials["username"],
         credentials["password"],
@@ -123,9 +108,9 @@ async def test_external_connectivity_with_data_integrator_and_tls(ops_test: OpsT
     )
     assert len(tables) == 0, f"Unexpected tables in the {TEST_DATABASE} database"
 
-    issuer = await get_tls_certificate_issuer(
-        ops_test,
-        mysqlrouter_unit.name,
+    issuer = get_tls_certificate_issuer(
+        juju,
+        mysqlrouter_unit,
         host=database_host,
         port=database_port,
     )
@@ -134,9 +119,7 @@ async def test_external_connectivity_with_data_integrator_and_tls(ops_test: OpsT
     )
 
     logger.info(f"Relating mysqlrouter with {tls_app_name}")
-    await ops_test.model.relate(
-        f"{MYSQL_ROUTER_APP_NAME}:certificates", f"{tls_app_name}:certificates"
-    )
+    juju.integrate(f"{MYSQL_ROUTER_APP_NAME}:certificates", f"{tls_app_name}:certificates")
 
     for attempt in tenacity.Retrying(
         reraise=True,
@@ -144,9 +127,9 @@ async def test_external_connectivity_with_data_integrator_and_tls(ops_test: OpsT
         wait=tenacity.wait_fixed(10),
     ):
         with attempt:
-            issuer = await get_tls_certificate_issuer(
-                ops_test,
-                mysqlrouter_unit.name,
+            issuer = get_tls_certificate_issuer(
+                juju,
+                mysqlrouter_unit,
                 host=database_host,
                 port=database_port,
             )
@@ -158,7 +141,7 @@ async def test_external_connectivity_with_data_integrator_and_tls(ops_test: OpsT
         f"CREATE TABLE {TEST_DATABASE}.{TEST_TABLE} (id int, primary key(id));",
         f"INSERT INTO {TEST_DATABASE}.{TEST_TABLE} VALUES (1), (2);",
     ]
-    await execute_queries_against_unit(
+    execute_queries_against_unit(
         database_host,
         credentials["username"],
         credentials["password"],
@@ -170,7 +153,7 @@ async def test_external_connectivity_with_data_integrator_and_tls(ops_test: OpsT
     select_data_sql = [
         f"SELECT * FROM {TEST_DATABASE}.{TEST_TABLE};",
     ]
-    data = await execute_queries_against_unit(
+    data = execute_queries_against_unit(
         database_host,
         credentials["username"],
         credentials["password"],
@@ -180,7 +163,7 @@ async def test_external_connectivity_with_data_integrator_and_tls(ops_test: OpsT
     assert data == [1, 2], f"Unexpected data in table {TEST_DATABASE}.{TEST_TABLE}"
 
     logger.info(f"Removing relation between mysqlrouter and {tls_app_name}")
-    await ops_test.model.applications[MYSQL_ROUTER_APP_NAME].remove_relation(
+    juju.remove_relation(
         f"{MYSQL_ROUTER_APP_NAME}:certificates", f"{tls_app_name}:certificates"
     )
 
@@ -190,9 +173,9 @@ async def test_external_connectivity_with_data_integrator_and_tls(ops_test: OpsT
         wait=tenacity.wait_fixed(10),
     ):
         with attempt:
-            issuer = await get_tls_certificate_issuer(
-                ops_test,
-                mysqlrouter_unit.name,
+            issuer = get_tls_certificate_issuer(
+                juju,
+                mysqlrouter_unit,
                 host=database_host,
                 port=database_port,
             )
@@ -203,7 +186,7 @@ async def test_external_connectivity_with_data_integrator_and_tls(ops_test: OpsT
     select_data_sql = [
         f"SELECT * FROM {TEST_DATABASE}.{TEST_TABLE};",
     ]
-    data = await execute_queries_against_unit(
+    data = execute_queries_against_unit(
         database_host,
         credentials["username"],
         credentials["password"],

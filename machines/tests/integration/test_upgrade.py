@@ -1,17 +1,16 @@
 # Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-import asyncio
 import logging
 import os
 import pathlib
 import shutil
 import zipfile
 
+import jubilant_backports
 import pytest
 import tomli
 import tomli_w
-from pytest_operator.plugin import OpsTest
 
 from .helpers import (
     APPLICATION_DEFAULT_APP_NAME,
@@ -33,53 +32,52 @@ TEST_APP_NAME = APPLICATION_DEFAULT_APP_NAME
 
 
 @pytest.mark.abort_on_fail
-async def test_deploy_edge(ops_test: OpsTest, series) -> None:
+def test_deploy_edge(juju: jubilant_backports.Juju, ubuntu_base) -> None:
     """Simple test to ensure that mysql, mysqlrouter and application charms deploy."""
     logger.info("Deploying all applications")
-    await asyncio.gather(
-        ops_test.model.deploy(
-            MYSQL_APP_NAME,
-            application_name=MYSQL_APP_NAME,
-            num_units=1,
-            channel="8.0/edge",
-            config={"profile": "testing"},
-            series=series,
-        ),
-        ops_test.model.deploy(
-            MYSQL_ROUTER_APP_NAME,
-            application_name=MYSQL_ROUTER_APP_NAME,
-            num_units=1,
-            channel="dpe/edge",
-            series=series,
-        ),
-        ops_test.model.deploy(
-            TEST_APP_NAME,
-            application_name=TEST_APP_NAME,
-            num_units=3,
-            channel="latest/edge",
-            series=series,
-        ),
+    juju.deploy(
+        MYSQL_APP_NAME,
+        app=MYSQL_APP_NAME,
+        num_units=1,
+        channel="8.0/edge",
+        config={"profile": "testing"},
+        base=ubuntu_base,
+    )
+    juju.deploy(
+        MYSQL_ROUTER_APP_NAME,
+        app=MYSQL_ROUTER_APP_NAME,
+        num_units=1,
+        channel="dpe/edge",
+        base=ubuntu_base,
+    )
+    juju.deploy(
+        TEST_APP_NAME,
+        app=TEST_APP_NAME,
+        num_units=3,
+        channel="latest/edge",
+        base=ubuntu_base,
     )
 
     logger.info(f"Relating {MYSQL_ROUTER_APP_NAME} to {MYSQL_APP_NAME} and {TEST_APP_NAME}")
 
-    await ops_test.model.relate(
-        f"{MYSQL_ROUTER_APP_NAME}:backend-database", f"{MYSQL_APP_NAME}:database"
-    )
-    await ops_test.model.relate(f"{TEST_APP_NAME}:database", f"{MYSQL_ROUTER_APP_NAME}:database")
+    juju.integrate(f"{MYSQL_ROUTER_APP_NAME}:backend-database", f"{MYSQL_APP_NAME}:database")
+    juju.integrate(f"{TEST_APP_NAME}:database", f"{MYSQL_ROUTER_APP_NAME}:database")
 
     logger.info("Waiting for applications to become active")
-    await ops_test.model.wait_for_idle(
-        [MYSQL_APP_NAME, MYSQL_ROUTER_APP_NAME, TEST_APP_NAME], status="active", timeout=TIMEOUT
+    juju.wait(
+        ready=lambda status: (
+            status.apps[MYSQL_APP_NAME].app_status == "active"
+            and status.apps[MYSQL_ROUTER_APP_NAME].app_status == "active"
+            and status.apps[TEST_APP_NAME].app_status == "active"
+        ),
+        timeout=TIMEOUT,
     )
 
 
 @pytest.mark.abort_on_fail
-async def test_upgrade_from_edge(ops_test: OpsTest, charm, continuous_writes) -> None:
+def test_upgrade_from_edge(juju: jubilant_backports.Juju, charm, continuous_writes) -> None:
     """Upgrade mysqlrouter while ensuring continuous writes incrementing."""
-    await ensure_all_units_continuous_writes_incrementing(ops_test)
-
-    mysql_router_application = ops_test.model.applications[MYSQL_ROUTER_APP_NAME]
+    ensure_all_units_continuous_writes_incrementing(juju)
 
     logger.info("Build charm locally")
     global temporary_charm
@@ -90,72 +88,77 @@ async def test_upgrade_from_edge(ops_test: OpsTest, charm, continuous_writes) ->
     create_valid_upgrade_charm(temporary_charm)
 
     logger.info("Refresh the charm")
-    await mysql_router_application.refresh(path=temporary_charm)
+    juju.refresh(MYSQL_ROUTER_APP_NAME, path=temporary_charm)
 
     # Refresh will always be incompatible since we are downgrading the workload
     # Refresh will additionally be incompatible on PR CI (not edge CI) since unrelease charm
     # versions are always marked as incompatible
     logger.info("Wait for refresh to block as incompatible")
-    await ops_test.model.block_until(
-        lambda: mysql_router_application.status == "blocked", timeout=TIMEOUT
+    juju.wait(
+        ready=lambda status: status.apps[MYSQL_ROUTER_APP_NAME].app_status == "blocked",
+        timeout=TIMEOUT,
     )
-    assert "incompatible" in mysql_router_application.status_message, (
+    status = juju.status()
+    assert "incompatible" in status.apps[MYSQL_ROUTER_APP_NAME].app_status.message, (
         "mysql router application status not indicating that refresh incompatible"
     )
 
     # Highest to lowest unit number
+    unit_names = list(status.apps[MYSQL_ROUTER_APP_NAME].units.keys())
     refresh_order = sorted(
-        mysql_router_application.units,
-        key=lambda unit: int(unit.name.split("/")[1]),
+        unit_names,
+        key=lambda unit: int(unit.split("/")[1]),
         reverse=True,
     )
 
     logger.info("Running force-refresh-start action with check-compatibility=false")
-    await run_action(refresh_order[0], "force-refresh-start", **{"check-compatibility": False})
+    run_action(juju, refresh_order[0], "force-refresh-start", **{"check-compatibility": False})
 
     logger.info("Wait for app status to update")
-    await ops_test.model.wait_for_idle(
-        [MYSQL_ROUTER_APP_NAME],
-        idle_period=30,
+    juju.wait(
+        ready=lambda status: (
+            status.apps[MYSQL_ROUTER_APP_NAME].app_status in ["active", "blocked", "waiting"]
+        ),
         timeout=TIMEOUT,
     )
 
     logger.info("Wait for refresh to start")
-    await ops_test.model.block_until(
-        lambda: mysql_router_application.status == "blocked", timeout=3 * 60
+    juju.wait(
+        ready=lambda status: status.apps[MYSQL_ROUTER_APP_NAME].app_status == "blocked",
+        timeout=3 * 60,
     )
-    assert "resume-refresh" in mysql_router_application.status_message, (
+    status = juju.status()
+    assert "resume-refresh" in status.apps[MYSQL_ROUTER_APP_NAME].app_status.message, (
         "mysql router application status not indicating that user should resume refresh"
     )
 
     logger.info("Wait for first unit to upgrade")
-    async with ops_test.fast_forward("60s"):
-        await ops_test.model.wait_for_idle(
-            [MYSQL_ROUTER_APP_NAME],
-            idle_period=30,
-            timeout=TIMEOUT,
-        )
+    juju.wait(
+        ready=lambda status: (
+            status.apps[MYSQL_ROUTER_APP_NAME].app_status in ["active", "blocked"]
+        ),
+        timeout=TIMEOUT,
+    )
 
     logger.info("Running resume-refresh")
-    await run_action(refresh_order[1], "resume-refresh")
+    run_action(juju, refresh_order[1], "resume-refresh")
 
     logger.info("Waiting for upgrade to complete on all units")
-    await ops_test.model.wait_for_idle(
-        [MYSQL_ROUTER_APP_NAME],
-        status="active",
-        idle_period=30,
+    juju.wait(
+        ready=lambda status: status.apps[MYSQL_ROUTER_APP_NAME].app_status == "active",
         timeout=UPGRADE_TIMEOUT,
     )
 
-    await ensure_all_units_continuous_writes_incrementing(ops_test)
+    ensure_all_units_continuous_writes_incrementing(juju)
 
-    await ops_test.model.wait_for_idle(
-        [MYSQL_ROUTER_APP_NAME], idle_period=30, status="active", timeout=TIMEOUT
+    juju.wait(
+        ready=lambda status: status.apps[MYSQL_ROUTER_APP_NAME].app_status == "active",
+        timeout=TIMEOUT,
     )
 
 
 @pytest.mark.abort_on_fail
-async def test_fail_and_rollback(ops_test: OpsTest, charm, continuous_writes) -> None:
+def test_fail_and_rollback(juju: jubilant_backports.Juju, charm, continuous_writes) -> None:
     """Upgrade to an invalid version and test rollback.
 
     Relies on the charm built in the previous test (test_upgrade_from_edge).
@@ -163,9 +166,7 @@ async def test_fail_and_rollback(ops_test: OpsTest, charm, continuous_writes) ->
     This test will refresh the charm till the revision in src/snap.py, thus avoiding
     no-ops.
     """
-    await ensure_all_units_continuous_writes_incrementing(ops_test)
-
-    mysql_router_application = ops_test.model.applications[MYSQL_ROUTER_APP_NAME]
+    ensure_all_units_continuous_writes_incrementing(juju)
 
     fault_charm = "./faulty.charm"
     shutil.copy(charm, fault_charm)
@@ -174,29 +175,32 @@ async def test_fail_and_rollback(ops_test: OpsTest, charm, continuous_writes) ->
     create_invalid_upgrade_charm(fault_charm)
 
     logger.info("Refreshing mysql router with an invalid charm")
-    await mysql_router_application.refresh(path=fault_charm)
+    juju.refresh(MYSQL_ROUTER_APP_NAME, path=fault_charm)
 
     logger.info("Wait for upgrade to fail")
-    await ops_test.model.block_until(
-        lambda: mysql_router_application.status == "blocked", timeout=TIMEOUT
+    juju.wait(
+        ready=lambda status: status.apps[MYSQL_ROUTER_APP_NAME].app_status == "blocked",
+        timeout=TIMEOUT,
     )
-    assert "incompatible" in mysql_router_application.status_message, (
+    status = juju.status()
+    assert "incompatible" in status.apps[MYSQL_ROUTER_APP_NAME].app_status.message, (
         "mysql router application status not indicating faulty charm incompatible"
     )
 
     logger.info("Ensure continuous writes while in failure state")
-    await ensure_all_units_continuous_writes_incrementing(ops_test)
+    ensure_all_units_continuous_writes_incrementing(juju)
 
     logger.info("Re-refresh the charm")
-    await mysql_router_application.refresh(path="./upgrade.charm")
+    juju.refresh(MYSQL_ROUTER_APP_NAME, path="./upgrade.charm")
 
     logger.info("Wait for the charm to be rolled back")
-    await ops_test.model.wait_for_idle(
-        apps=[MYSQL_ROUTER_APP_NAME], status="active", timeout=TIMEOUT, idle_period=30
+    juju.wait(
+        ready=lambda status: status.apps[MYSQL_ROUTER_APP_NAME].app_status == "active",
+        timeout=TIMEOUT,
     )
 
     logger.info("Ensure continuous writes after rollback procedure")
-    await ensure_all_units_continuous_writes_incrementing(ops_test)
+    ensure_all_units_continuous_writes_incrementing(juju)
 
     os.remove(fault_charm)
     os.remove(temporary_charm)

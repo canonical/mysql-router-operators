@@ -1,0 +1,65 @@
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[32mINFO    [0m pytest_operator.plugin:plugin.py:806 Connecting to existing model concierge-lxd:testing on unspecified cloud
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHSession received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHTunneler received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[32mINFO    [0m integration.test_tls:test_tls.py:32 Deploy and relate all applications
+[32mINFO    [0m juju.model:__init__.py:2301 Deploying ch:amd64/jammy/mysql-447
+[32mINFO    [0m juju.model:__init__.py:2301 Deploying ch:amd64/noble/mysql-test-app-95
+[32mINFO    [0m juju.model:__init__.py:2301 Deploying ch:amd64/noble/self-signed-certificates-317
+[32mINFO    [0m juju.model:__init__.py:2301 Deploying local:mysql-router-0
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[32mINFO    [0m integration.test_tls:test_tls.py:77 Waiting for applications to become active
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-test-app/0 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-test-app/0 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-test-app/0 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-test-app/0 [idle] waiting: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-test-app/0 [idle] waiting: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-test-app/0 [idle] waiting: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-test-app/0 [idle] waiting: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-test-app/0 [idle] waiting: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-test-app/0 [idle] waiting: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-test-app/0 [idle] waiting: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-test-app/0 [idle] waiting: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-test-app/0 [executing] active: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-test-app/0 [executing] active: Last written value=1713
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-test-app/0 [executing] active: Last written value=2281
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-test-app/0 [executing] active: Last written value=3751
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-test-app/0 [executing] active: Last written value=4609
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-test-app/0 [executing] active: Last written value=6704
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-test-app/0 [executing] active: Last written value=8154
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-test-app/0 [executing] active: Last written value=9776
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-test-app/0 [executing] active: Last written value=11321
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-test-app/0 [executing] active: Last written value=13022
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-test-app/0 [executing] active: Last written value=14626
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-test-app/0 [executing] active: Last written value=16286
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-test-app/0 [executing] active: Last written value=17722
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-test-app/0 [idle] active: Last written value=19963

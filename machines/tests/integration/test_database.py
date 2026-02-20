@@ -18,6 +18,8 @@ from .helpers import (
 )
 
 logger = logging.getLogger(__name__)
+j_logger = logging.getLogger("jubilant")
+j_logger.setLevel(logging.ERROR)
 
 MYSQL_APP_NAME = MYSQL_DEFAULT_APP_NAME
 MYSQL_ROUTER_APP_NAME = MYSQL_ROUTER_DEFAULT_APP_NAME
@@ -32,6 +34,7 @@ def test_database_relation(juju: jubilant_backports.Juju, charm, ubuntu_base) ->
     """Test the database relation."""
     # deploy mysqlrouter with num_units=None since it's a subordinate charm
     # and will be installed with the related consumer application
+    logger.info("Deploying MySQL, MySQL Router and application")
     juju.deploy(
         MYSQL_APP_NAME,
         channel="8.0/edge",
@@ -52,9 +55,11 @@ def test_database_relation(juju: jubilant_backports.Juju, charm, ubuntu_base) ->
         channel="latest/edge",
     )
 
+    logger.info("Relating mysql, mysqlrouter and application")
     juju.integrate(f"{MYSQL_ROUTER_APP_NAME}:database", f"{APPLICATION_APP_NAME}:database")
     juju.integrate(f"{MYSQL_ROUTER_APP_NAME}:backend-database", f"{MYSQL_APP_NAME}:database")
 
+    logger.info("Waiting for applications to be active")
     juju.wait(
         ready=wait_for_apps_status(
             jubilant_backports.all_active,
@@ -71,7 +76,7 @@ def test_database_relation(juju: jubilant_backports.Juju, charm, ubuntu_base) ->
 
     status = juju.status()
     mysql_unit = f"{MYSQL_APP_NAME}/0"
-    mysql_unit_address = status.apps[MYSQL_APP_NAME].units[mysql_unit].address
+    mysql_unit_address = status.apps[MYSQL_APP_NAME].units[mysql_unit].public_address
     server_config_credentials = get_server_config_credentials(juju, mysql_unit)
 
     select_inserted_data_sql = (
@@ -88,6 +93,7 @@ def test_database_relation(juju: jubilant_backports.Juju, charm, ubuntu_base) ->
 
     # Scale and ensure that all services go to active
     # (sample application tests that it can connect to its mysqlrouter service)
+    logger.info("Scaling application")
     juju.add_unit(APPLICATION_APP_NAME)
 
     juju.wait(

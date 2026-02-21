@@ -18,7 +18,6 @@ def test_arm_charm_on_amd_host(juju: jubilant_backports.Juju, charm, ubuntu_base
     juju.deploy(
         charm,
         app=MYSQL_ROUTER_APP_NAME,
-        num_units=0,
         base=ubuntu_base,
     )
     juju.deploy(
@@ -48,7 +47,6 @@ def test_amd_charm_on_arm_host(juju: jubilant_backports.Juju, charm, ubuntu_base
     juju.deploy(
         charm,
         app=MYSQL_ROUTER_APP_NAME,
-        num_units=0,
         base=ubuntu_base,
     )
     juju.deploy(

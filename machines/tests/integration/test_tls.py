@@ -45,7 +45,6 @@ def test_build_deploy_and_relate(juju: jubilant_backports.Juju, charm, ubuntu_ba
     juju.deploy(
         charm,
         app=MYSQL_ROUTER_APP_NAME,
-        num_units=0,
         base=ubuntu_base,
     )
     juju.deploy(

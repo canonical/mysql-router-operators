@@ -3,6 +3,7 @@
 # See LICENSE file for licensing details.
 
 import logging
+from time import sleep
 
 import jubilant_backports
 import pytest
@@ -32,8 +33,6 @@ SLOW_TIMEOUT = 15 * 60
 @pytest.mark.abort_on_fail
 def test_database_relation(juju: jubilant_backports.Juju, charm, ubuntu_base) -> None:
     """Test the database relation."""
-    # deploy mysqlrouter with num_units=None since it's a subordinate charm
-    # and will be installed with the related consumer application
     logger.info("Deploying MySQL, MySQL Router and application")
     juju.deploy(
         MYSQL_APP_NAME,
@@ -101,16 +100,16 @@ def test_database_relation(juju: jubilant_backports.Juju, charm, ubuntu_base) ->
         timeout=SLOW_TIMEOUT,
     )
 
+    # Allow applications to change state
+    sleep(30)
+
+    logger.info("Waiting for applications to be active")
     juju.wait(
-        ready=lambda status: all(
-            status.apps[app].app_status in ("active", "error", "blocked")
-            for app in [MYSQL_APP_NAME, MYSQL_ROUTER_APP_NAME, APPLICATION_APP_NAME]
+        ready=wait_for_apps_status(
+            jubilant_backports.all_active,
+            MYSQL_ROUTER_APP_NAME,
+            MYSQL_APP_NAME,
+            APPLICATION_APP_NAME,
         ),
         timeout=SLOW_TIMEOUT,
-    )
-    status = juju.status()
-    assert (
-        status.apps[MYSQL_APP_NAME].app_status == "active"
-        and status.apps[MYSQL_ROUTER_APP_NAME].app_status == "active"
-        and status.apps[APPLICATION_APP_NAME].app_status == "active"
     )

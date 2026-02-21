@@ -15,6 +15,7 @@ from .helpers import (
     ls_la_in_unit,
     read_contents_from_file_in_unit,
     stop_running_flush_mysqlrouter_cronjobs,
+    wait_for_apps_status,
     write_content_to_file_in_unit,
 )
 
@@ -32,8 +33,6 @@ def test_log_rotation(juju: jubilant_backports.Juju, charm, ubuntu_base) -> None
     """Test the log rotation of mysqlrouter logs."""
     logger.info("Deploying all the applications")
 
-    # deploy mysqlrouter with num_units=None since it's a subordinate charm
-    # and will be installed with the related consumer application
     juju.deploy(
         MYSQL_APP_NAME,
         channel="8.0/edge",
@@ -44,7 +43,6 @@ def test_log_rotation(juju: jubilant_backports.Juju, charm, ubuntu_base) -> None
     juju.deploy(
         charm,
         app=MYSQL_ROUTER_APP_NAME,
-        num_units=0,
     )
     juju.deploy(
         APPLICATION_APP_NAME,
@@ -64,10 +62,11 @@ def test_log_rotation(juju: jubilant_backports.Juju, charm, ubuntu_base) -> None
     juju.integrate(f"{MYSQL_ROUTER_APP_NAME}:backend-database", f"{MYSQL_APP_NAME}:database")
 
     juju.wait(
-        ready=lambda status: (
-            status.apps[MYSQL_APP_NAME].app_status == "active"
-            and status.apps[MYSQL_ROUTER_APP_NAME].app_status == "active"
-            and status.apps[APPLICATION_APP_NAME].app_status == "active"
+        ready=wait_for_apps_status(
+            jubilant_backports.all_active,
+            MYSQL_APP_NAME,
+            MYSQL_ROUTER_APP_NAME,
+            APPLICATION_APP_NAME,
         ),
         timeout=SLOW_TIMEOUT,
     )

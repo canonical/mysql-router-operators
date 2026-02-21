@@ -1,21 +1,20 @@
 # Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-import asyncio
 import logging
 from pathlib import Path
 
+import jubilant_backports
 import pytest
 import tenacity
 import yaml
-from pytest_operator.plugin import OpsTest
 
-from . import architecture, juju_
 from .helpers import (
     APPLICATION_DEFAULT_APP_NAME,
     MYSQL_DEFAULT_APP_NAME,
     MYSQL_ROUTER_DEFAULT_APP_NAME,
     get_tls_certificate_issuer,
+    wait_for_apps_status,
 )
 
 logger = logging.getLogger(__name__)
@@ -28,80 +27,71 @@ TEST_APP_NAME = APPLICATION_DEFAULT_APP_NAME
 SLOW_TIMEOUT = 15 * 60
 RETRY_TIMEOUT = 2 * 60
 
-if juju_.is_3_or_higher:
-    tls_app_name = "self-signed-certificates"
-    tls_channel = "1/stable"
-    tls_config = {"ca-common-name": "Test CA"}
-    tls_series = "noble"
-else:
-    tls_app_name = "tls-certificates-operator"
-    tls_channel = "legacy/edge" if architecture.architecture == "arm64" else "legacy/stable"
-    tls_config = {"generate-self-signed-certificates": "true", "ca-common-name": "Test CA"}
-    tls_series = "jammy"
+# Juju 3+ configuration for TLS
+tls_app_name = "self-signed-certificates"
+tls_channel = "1/stable"
+tls_config = {"ca-common-name": "Test CA"}
+tls_base = "ubuntu@24.04"
 
 
 @pytest.mark.abort_on_fail
-async def test_deploy_and_relate(ops_test: OpsTest, charm, series) -> None:
+def test_deploy_and_relate(juju: jubilant_backports.Juju, charm, ubuntu_base) -> None:
     """Test encryption when backend database is using TLS."""
     mysqlrouter_resources = {
         "mysql-router-image": METADATA["resources"]["mysql-router-image"]["upstream-source"]
     }
 
     logger.info("Deploy and relate all applications")
-    async with ops_test.fast_forward():
-        # deploy mysql first
-        await ops_test.model.deploy(
-            MYSQL_APP_NAME,
-            channel="8.0/edge",
-            application_name=MYSQL_APP_NAME,
-            config={"profile": "testing"},
-            series=series,
-            num_units=1,
-            trust=True,
-        )
+    # deploy mysql first
+    juju.deploy(
+        MYSQL_APP_NAME,
+        channel="8.0/edge",
+        app=MYSQL_APP_NAME,
+        config={"profile": "testing"},
+        base=ubuntu_base,
+        num_units=1,
+        trust=True,
+    )
 
-        # tls, test app and router
-        await asyncio.gather(
-            ops_test.model.deploy(
-                charm,
-                application_name=MYSQL_ROUTER_APP_NAME,
-                resources=mysqlrouter_resources,
-                series=series,
-                num_units=1,
-                trust=True,
-            ),
-            ops_test.model.deploy(
-                tls_app_name,
-                application_name=tls_app_name,
-                channel=tls_channel,
-                config=tls_config,
-                series=tls_series,
-            ),
-            ops_test.model.deploy(
-                TEST_APP_NAME,
-                application_name=TEST_APP_NAME,
-                channel="latest/edge",
-                series=series,
-            ),
-        )
+    # tls, test app and router
+    juju.deploy(
+        charm,
+        app=MYSQL_ROUTER_APP_NAME,
+        resources=mysqlrouter_resources,
+        base=ubuntu_base,
+        num_units=1,
+        trust=True,
+    )
+    juju.deploy(
+        tls_app_name,
+        app=tls_app_name,
+        channel=tls_channel,
+        config=tls_config,
+        base=tls_base,
+    )
+    juju.deploy(
+        TEST_APP_NAME,
+        app=TEST_APP_NAME,
+        channel="latest/edge",
+        base=ubuntu_base,
+    )
 
-        await ops_test.model.relate(
-            f"{MYSQL_ROUTER_APP_NAME}:backend-database", f"{MYSQL_APP_NAME}:database"
-        )
-        await ops_test.model.relate(
-            f"{TEST_APP_NAME}:database", f"{MYSQL_ROUTER_APP_NAME}:database"
-        )
+    juju.integrate(f"{MYSQL_ROUTER_APP_NAME}:backend-database", f"{MYSQL_APP_NAME}:database")
+    juju.integrate(f"{TEST_APP_NAME}:database", f"{MYSQL_ROUTER_APP_NAME}:database")
 
-        logger.info("Waiting for applications to become active")
-        # We can safely wait only for test application to be ready, given that it will
-        # only become active once all the other applications are ready.
-        await ops_test.model.wait_for_idle([TEST_APP_NAME], status="active", timeout=SLOW_TIMEOUT)
+    logger.info("Waiting for applications to become active")
+    # We can safely wait only for test application to be ready, given that it will
+    # only become active once all the other applications are ready.
+    juju.wait(
+        ready=wait_for_apps_status(jubilant_backports.all_active, TEST_APP_NAME),
+        timeout=SLOW_TIMEOUT,
+    )
 
 
 @pytest.mark.abort_on_fail
-async def test_connected_encryption(ops_test: OpsTest) -> None:
+def test_connected_encryption(juju: jubilant_backports.Juju) -> None:
     """Test encryption when backend database is using TLS."""
-    mysqlrouter_unit = ops_test.model.applications[MYSQL_ROUTER_APP_NAME].units[0]
+    mysqlrouter_unit = f"{MYSQL_ROUTER_APP_NAME}/0"
 
     for attempt in tenacity.Retrying(
         reraise=True,
@@ -109,9 +99,9 @@ async def test_connected_encryption(ops_test: OpsTest) -> None:
         wait=tenacity.wait_fixed(10),
     ):
         with attempt:
-            issuer = await get_tls_certificate_issuer(
-                ops_test,
-                mysqlrouter_unit.name,
+            issuer = get_tls_certificate_issuer(
+                juju,
+                mysqlrouter_unit,
                 host="127.0.0.1",
                 port=6446,
             )
@@ -120,7 +110,7 @@ async def test_connected_encryption(ops_test: OpsTest) -> None:
             )
 
     logger.info("Relating TLS with mysqlrouter")
-    await ops_test.model.relate(tls_app_name, MYSQL_ROUTER_APP_NAME)
+    juju.integrate(tls_app_name, MYSQL_ROUTER_APP_NAME)
 
     logger.info("Getting certificate issuer after relating with tls operator")
     for attempt in tenacity.Retrying(
@@ -129,9 +119,9 @@ async def test_connected_encryption(ops_test: OpsTest) -> None:
         wait=tenacity.wait_fixed(10),
     ):
         with attempt:
-            issuer = await get_tls_certificate_issuer(
-                ops_test,
-                mysqlrouter_unit.name,
+            issuer = get_tls_certificate_issuer(
+                juju,
+                mysqlrouter_unit,
                 host="127.0.0.1",
                 port=6446,
             )
@@ -140,8 +130,9 @@ async def test_connected_encryption(ops_test: OpsTest) -> None:
             )
 
     logger.info("Removing relation TLS with mysqlrouter")
-    await ops_test.model.applications[MYSQL_ROUTER_APP_NAME].remove_relation(
-        f"{tls_app_name}:certificates", f"{MYSQL_ROUTER_APP_NAME}:certificates"
+    juju.remove_relation(
+        f"{tls_app_name}:certificates",
+        f"{MYSQL_ROUTER_APP_NAME}:certificates",
     )
 
     for attempt in tenacity.Retrying(
@@ -150,9 +141,9 @@ async def test_connected_encryption(ops_test: OpsTest) -> None:
         wait=tenacity.wait_fixed(10),
     ):
         with attempt:
-            issuer = await get_tls_certificate_issuer(
-                ops_test,
-                mysqlrouter_unit.name,
+            issuer = get_tls_certificate_issuer(
+                juju,
+                mysqlrouter_unit,
                 host="127.0.0.1",
                 port=6446,
             )

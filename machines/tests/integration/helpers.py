@@ -124,7 +124,11 @@ def delete_file_or_directory_in_unit(juju: Juju, unit_name: str, path: str) -> N
     juju.ssh(
         unit_name,
         "sudo",
-        *["find", path, "-maxdepth", "1", "-delete"],
+        "find",
+        path,
+        "-maxdepth",
+        "1",
+        "-delete",
     )
 
 
@@ -365,7 +369,7 @@ def get_unit_address(juju: Juju, unit_name: str) -> str:
     """
     status = juju.status()
     app_name = unit_name.split("/")[0]
-    return status.apps[app_name].units[unit_name].address
+    return status.apps[app_name].units[unit_name].public_address
 
 
 def get_max_written_value_in_database(juju: Juju, unit_name: str, credentials: dict) -> int:
@@ -502,7 +506,7 @@ def get_machine_address(juju: Juju, unit_name: str) -> str:
     elif machine_status and machine_status.ip_addresses:
         return machine_status.ip_addresses[0]
 
-    assert False, "Unable to find the unit's machine" 
+    assert False, "Unable to find the unit's machine"
 
 
 def wait_for_apps_status(jubilant_status_func: JujuAppsStatusFn, *apps: str) -> JujuModelStatusFn:
@@ -521,8 +525,66 @@ def wait_for_apps_status(jubilant_status_func: JujuAppsStatusFn, *apps: str) -> 
     ))
 
 
-def wait_for_unit_status(app_name: str, unit_name: str, unit_status: str) -> JujuModelStatusFn:
-    """Returns whether a Juju unit to have a specific status."""
+def principal_unit_for_subordinate(
+    status: Status, subordinate_unit_name: str, principal_app_name: str
+) -> str:
+    """Returns the principal unit name for a given subordinate unit.
+
+    Args:
+        status: The Juju model status
+        subordinate_unit_name: The name of the subordinate unit
+        principal_app_name: The name of the principal application
+    """
+    for unit, unit_status in status.apps[principal_app_name].units.items():
+        if subordinate_unit_name in unit_status.subordinates:
+            return unit
+
+    raise ValueError(f"Unable to find principal unit for subordinate {subordinate_unit_name}")
+
+
+def wait_for_unit_status(
+    app_name: str,
+    unit_name: str,
+    unit_status: str,
+    subordinate_of=None,
+) -> JujuModelStatusFn:
+    """Returns whether a Juju unit to have a specific status.
+
+    Args:
+        app_name: The name of the application the unit belongs to
+        unit_name: The name of the unit to check the status of
+        unit_status: The status to check for
+        subordinate_of: If the unit is a subordinate, the name of the application it is subordinate
+    """
+    if subordinate_of:
+        return lambda status: (
+            status.apps[subordinate_of]
+            .units[principal_unit_for_subordinate(status, unit_name, subordinate_of)]
+            .subordinates[unit_name]
+            .workload_status.current
+            == unit_status
+        )
+    else:
+        return lambda status: (
+            status.apps[app_name].units[unit_name].workload_status.current == unit_status
+        )
+
+
+def wait_for_unit_message(
+    app_name: str,
+    unit_name: str,
+    unit_message: str,
+    subordinate_of=None,
+) -> JujuModelStatusFn:
+    """Returns whether a Juju unit to have a specific message."""
+    if subordinate_of:
+        return lambda status: (
+            status.apps[subordinate_of]
+            .units[principal_unit_for_subordinate(status, unit_name, subordinate_of)]
+            .subordinates[unit_name]
+            .workload_status.message
+            == unit_message
+        )
     return lambda status: (
-        status.apps[app_name].units[unit_name].workload_status.current == unit_status
+        status.apps[app_name].units[unit_name].workload_status.message == unit_message
     )

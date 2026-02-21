@@ -30,8 +30,6 @@ def test_exporter_endpoint(juju: jubilant_backports.Juju, charm, ubuntu_base) ->
     """Test that exporter endpoint is functional."""
     logger.info("Deploying all the applications")
 
-    # deploy mysqlrouter with num_units=None since it's a subordinate charm
-    # and will be installed with the related consumer application
     juju.deploy(
         MYSQL_APP_NAME,
         channel="8.0/edge",
@@ -42,7 +40,6 @@ def test_exporter_endpoint(juju: jubilant_backports.Juju, charm, ubuntu_base) ->
     juju.deploy(
         charm,
         app=MYSQL_ROUTER_APP_NAME,
-        num_units=0,
         base=ubuntu_base,
     )
     juju.deploy(
@@ -57,7 +54,6 @@ def test_exporter_endpoint(juju: jubilant_backports.Juju, charm, ubuntu_base) ->
     juju.deploy(
         GRAFANA_AGENT_APP_NAME,
         app=GRAFANA_AGENT_APP_NAME,
-        num_units=0,
         channel="1/stable",
         base=ubuntu_base,
     )
@@ -80,7 +76,7 @@ def test_exporter_endpoint(juju: jubilant_backports.Juju, charm, ubuntu_base) ->
 
     status = juju.status()
     unit_name = f"{APPLICATION_APP_NAME}/0"
-    unit_address = status.apps[APPLICATION_APP_NAME].units[unit_name].address
+    unit_address = status.apps[APPLICATION_APP_NAME].units[unit_name].public_address
 
     try:
         requests.get(f"http://{unit_address}:9152/metrics", stream=False)

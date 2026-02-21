@@ -7,6 +7,8 @@ import os
 
 import jubilant_backports
 
+from tests.integration.helpers import wait_for_apps_status
+
 from .test_database import (
     APPLICATION_APP_NAME,
     MYSQL_APP_NAME,
@@ -28,8 +30,6 @@ def test_ubuntu_pro(juju: jubilant_backports.Juju, charm, ubuntu_base):
     juju.deploy(
         charm,
         app=MYSQL_ROUTER_APP_NAME,
-        # deploy mysqlrouter with num_units=None since it's a subordinate charm
-        num_units=0,
         base=ubuntu_base,
     )
     juju.deploy(
@@ -52,14 +52,12 @@ def test_ubuntu_pro(juju: jubilant_backports.Juju, charm, ubuntu_base):
     juju.integrate(APPLICATION_APP_NAME, UBUNTU_PRO_APP_NAME)
 
     juju.wait(
-        ready=lambda status: all(
-            status.apps[app].app_status == "active"
-            for app in [
-                MYSQL_APP_NAME,
-                MYSQL_ROUTER_APP_NAME,
-                APPLICATION_APP_NAME,
-                UBUNTU_PRO_APP_NAME,
-            ]
+        ready=wait_for_apps_status(
+            jubilant_backports.all_active,
+            MYSQL_APP_NAME,
+            MYSQL_ROUTER_APP_NAME,
+            APPLICATION_APP_NAME,
+            UBUNTU_PRO_APP_NAME,
         ),
         timeout=SLOW_TIMEOUT,
     )
@@ -80,14 +78,12 @@ def test_landscape_client(juju: jubilant_backports.Juju, base):
     juju.integrate(APPLICATION_APP_NAME, LANDSCAPE_CLIENT_APP_NAME)
 
     juju.wait(
-        ready=lambda status: all(
-            status.apps[app].app_status == "active"
-            for app in [
-                MYSQL_APP_NAME,
-                MYSQL_ROUTER_APP_NAME,
-                APPLICATION_APP_NAME,
-                LANDSCAPE_CLIENT_APP_NAME,
-            ]
+        ready=wait_for_apps_status(
+            jubilant_backports.all_active,
+            MYSQL_APP_NAME,
+            MYSQL_ROUTER_APP_NAME,
+            APPLICATION_APP_NAME,
+            UBUNTU_PRO_APP_NAME,
         ),
         timeout=SLOW_TIMEOUT,
     )

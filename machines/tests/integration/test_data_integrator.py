@@ -46,7 +46,6 @@ def test_external_connectivity_with_data_integrator(
     juju.deploy(
         charm,
         app=MYSQL_ROUTER_APP_NAME,
-        num_units=0,
         base=ubuntu_base,
     )
     juju.deploy(
@@ -163,9 +162,7 @@ def test_external_connectivity_with_data_integrator_and_tls(juju: jubilant_backp
     assert data == [1, 2], f"Unexpected data in table {TEST_DATABASE}.{TEST_TABLE}"
 
     logger.info(f"Removing relation between mysqlrouter and {tls_app_name}")
-    juju.remove_relation(
-        f"{MYSQL_ROUTER_APP_NAME}:certificates", f"{tls_app_name}:certificates"
-    )
+    juju.remove_relation(f"{MYSQL_ROUTER_APP_NAME}:certificates", f"{tls_app_name}:certificates")
 
     for attempt in tenacity.Retrying(
         reraise=True,

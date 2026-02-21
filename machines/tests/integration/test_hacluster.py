@@ -2,7 +2,6 @@
 # Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-import json
 import logging
 import subprocess
 from time import sleep
@@ -20,11 +19,14 @@ from .helpers import (
     get_machine_address,
     get_tls_certificate_issuer,
     wait_for_apps_status,
+    wait_for_unit_message,
     wait_for_unit_status,
 )
 
 logger = logging.getLogger(__name__)
 
+j_logger = logging.getLogger("jubilant")
+j_logger.setLevel(logging.ERROR)
 
 MYSQL_APP_NAME = MYSQL_DEFAULT_APP_NAME
 MYSQL_ROUTER_APP_NAME = MYSQL_ROUTER_DEFAULT_APP_NAME
@@ -104,7 +106,6 @@ def test_external_connectivity_vip_with_hacluster(
     juju.deploy(
         charm,
         app=MYSQL_ROUTER_APP_NAME,
-        num_units=0,
         base=ubuntu_base,
     )
     juju.deploy(
@@ -124,7 +125,12 @@ def test_external_connectivity_vip_with_hacluster(
     # given that it will only become active once all the other
     # applications are ready.
     juju.wait(
-        ready=lambda status: status.apps[DATA_INTEGRATOR_APP_NAME].app_status == "active",
+        ready=wait_for_apps_status(
+            jubilant_backports.all_active,
+            MYSQL_APP_NAME,
+            MYSQL_ROUTER_APP_NAME,
+            DATA_INTEGRATOR_APP_NAME,
+        ),
         timeout=TIMEOUT,
     )
 
@@ -174,8 +180,11 @@ def test_external_connectivity_vip_with_hacluster(
             assert hostname == vip, "Configured VIP not in effect"
 
     juju.wait(
-        ready=lambda status: all(
-            status.apps[app].app_status == "active" for app in status.apps.keys()
+        ready=wait_for_apps_status(
+            jubilant_backports.all_active,
+            DATA_INTEGRATOR_APP_NAME,
+            MYSQL_ROUTER_APP_NAME,
+            MYSQL_APP_NAME,
         ),
         timeout=TIMEOUT,
     )
@@ -198,8 +207,12 @@ def test_external_connectivity_vip_with_hacluster(
             assert hostname == vip, "Reconfigured VIP not in effect"
 
     juju.wait(
-        ready=lambda status: all(
-            status.apps[app].app_status == "active" for app in status.apps.keys()
+        ready=wait_for_apps_status(
+            jubilant_backports.all_active,
+            DATA_INTEGRATOR_APP_NAME,
+            MYSQL_ROUTER_APP_NAME,
+            MYSQL_APP_NAME,
+            HA_CLUSTER_APP_NAME,
         ),
         timeout=TIMEOUT,
     )
@@ -213,7 +226,7 @@ def test_hacluster_failover(juju: jubilant_backports.Juju) -> None:
     """Test the failover of the hacluster leader."""
     logger.info("Stopping the lxd container for the hacluster primary")
     # Find hacluster leader unit
-    hacluster_leader_unit_name = get_leader_unit(juju, HA_CLUSTER_APP_NAME)
+    hacluster_leader_unit_name = get_leader_unit(juju, HA_CLUSTER_APP_NAME) or ""
 
     # Get machine hostname for the leader unit
     status = juju.status()
@@ -246,20 +259,15 @@ def test_hacluster_failover(juju: jubilant_backports.Juju) -> None:
     logger.info("Starting stopped machine")
     subprocess.check_output(["lxc", "start", machine_hostname], encoding="utf-8")
 
-    logger.info("Waiting till machine is started")
-    for attempt in tenacity.Retrying(
-        reraise=True,
-        stop=tenacity.stop_after_delay(TIMEOUT),
-        wait=tenacity.wait_fixed(10),
-    ):
-        with attempt:
-            assert "unknown" not in get_juju_status(juju.model_name), (
-                "Started machine's workload status is unknown"
-            )
+    logger.info("Waiting all active")
 
     juju.wait(
-        ready=lambda status: all(
-            status.apps[app].app_status == "active" for app in status.apps.keys()
+        ready=wait_for_apps_status(
+            jubilant_backports.all_active,
+            HA_CLUSTER_APP_NAME,
+            MYSQL_ROUTER_APP_NAME,
+            MYSQL_APP_NAME,
+            DATA_INTEGRATOR_APP_NAME,
         ),
         timeout=TIMEOUT,
     )
@@ -353,19 +361,26 @@ def test_remove_vip(juju: jubilant_backports.Juju) -> None:
     logger.info("Resetting the VIP")
     juju.config(MYSQL_ROUTER_APP_NAME, reset="vip")
 
+    logger.info("Waiting for mysqlrouter to be blocked due to missing VIP configuration")
     juju.wait(
-        ready=wait_for_unit_status(MYSQL_ROUTER_APP_NAME, f"{MYSQL_ROUTER_APP_NAME}/0", "blocked"),
+        ready=wait_for_unit_status(
+            MYSQL_ROUTER_APP_NAME,
+            f"{MYSQL_ROUTER_APP_NAME}/0",
+            "blocked",
+            DATA_INTEGRATOR_APP_NAME,
+        ),
         timeout=300,
     )
 
-    status = juju.status()
-    assert (
-        status
-        .apps[MYSQL_ROUTER_APP_NAME]
-        .units[f"{MYSQL_ROUTER_APP_NAME}/0"]
-        .workload_status.message
-        == "ha integration used without vip configuration"
-    ), "Incorrect mysql router unit status message"
+    juju.wait(
+        ready=wait_for_unit_message(
+            MYSQL_ROUTER_APP_NAME,
+            f"{MYSQL_ROUTER_APP_NAME}/0",
+            "ha integration used without vip configuration",
+            DATA_INTEGRATOR_APP_NAME,
+        ),
+        timeout=60,
+    )
 
     logger.info("Removing the relation between hacluster and mysqlrouter")
     juju.remove_relation(

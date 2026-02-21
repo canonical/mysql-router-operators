@@ -18,3 +18,14 @@ def run_action(juju: jubilant_backports.Juju, unit_name: str, action_name: str, 
     """
     task = juju.run(unit_name, action_name, params)
     return task.results
+
+
+def is_3_1_or_higher(juju: jubilant_backports.Juju) -> bool:
+    """Check if the Juju version is 3.1 or higher.
+
+    Args:
+        juju: Jubilant Juju instance
+    """
+    raw_version = juju.cli("version", include_model=False).strip()
+    major, minor, *_ = raw_version.split(".")
+    return int(major) > 3 or (int(major) == 3 and int(minor) >= 1)

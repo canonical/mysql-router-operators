@@ -1,0 +1,227 @@
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[32mINFO    [0m pytest_operator.plugin:plugin.py:806 Connecting to existing model concierge-microk8s:testing on unspecified cloud
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHSession received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHTunneler received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[32mINFO    [0m integration.test_charm:test_charm.py:45 Deploying mysql, mysqlrouter and application
+[32mINFO    [0m juju.model:__init__.py:2301 Deploying ch:amd64/noble/mysql-test-app-95
+[32mINFO    [0m juju.model:__init__.py:2301 Deploying ch:amd64/jammy/mysql-k8s-345
+[32mINFO    [0m juju.model:__init__.py:2301 Deploying local:mysql-router-k8s-0
+[32mINFO    [0m integration.test_charm:test_charm.py:76 Waiting for mysqlrouter to be in BlockedStatus
+[32mINFO    [0m integration.test_charm:test_charm.py:82 Relating mysql, mysqlrouter and application
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s/0 [executing] maintenance: Waiting for container
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s/0 [executing] waiting: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s/0 [idle] waiting: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s/0 [executing] active: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-k8s/0 [executing] maintenance: joining the cluster
+  mysql-k8s/1 [executing] active: 
+  mysql-k8s/2 [executing] active: Primary
+  mysql-router-k8s/0 [idle] active: 
+  mysql-test-app/0 [idle] active: Last written value=151
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-k8s/0 [idle] active: 
+  mysql-k8s/1 [executing] active: 
+  mysql-k8s/2 [executing] active: Primary
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-k8s/2 [executing] active: Primary
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-k8s/1 [executing] active: 
+  mysql-k8s/2 [executing] active: Primary
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-k8s/0 [executing] active: 
+  mysql-k8s/1 [executing] active: 
+  mysql-k8s/2 [executing] active: Primary
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-k8s/0 [executing] active: 
+  mysql-k8s/1 [executing] active: 
+  mysql-k8s/2 [executing] active: Primary
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-k8s/0 [executing] active: 
+  mysql-k8s/1 [executing] active: 
+  mysql-k8s/2 [executing] active: Primary
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-k8s/0 [executing] active: 
+  mysql-k8s/1 [executing] active: 
+  mysql-k8s/2 [executing] active: Primary
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-k8s/0 [executing] active: 
+  mysql-k8s/1 [executing] active: 
+  mysql-k8s/2 [executing] active: Primary
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-k8s/0 [executing] active: 
+  mysql-k8s/1 [executing] active: 
+  mysql-k8s/2 [executing] active: Primary
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-k8s/0 [executing] active: 
+  mysql-k8s/1 [executing] active: 
+  mysql-k8s/2 [executing] active: Primary
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-k8s/0 [executing] active: 
+  mysql-k8s/1 [executing] active: 
+  mysql-k8s/2 [executing] active: Primary
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-k8s/0 [idle] active: 
+  mysql-k8s/1 [executing] active: 
+  mysql-k8s/2 [executing] active: Primary
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-k8s/0 [executing] active: 
+  mysql-k8s/1 [executing] active: 
+  mysql-k8s/2 [executing] active: Primary
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-k8s/0 [executing] active: 
+  mysql-k8s/1 [executing] active: 
+  mysql-k8s/2 [executing] active: Primary
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-k8s/0 [executing] active: 
+  mysql-k8s/1 [executing] active: 
+  mysql-k8s/2 [executing] active: Primary
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-k8s/0 [executing] active: 
+  mysql-k8s/1 [executing] active: 
+  mysql-k8s/2 [executing] active: Primary
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-k8s/0 [executing] active: 
+  mysql-k8s/1 [executing] active: 
+  mysql-k8s/2 [executing] active: Primary
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-k8s/0 [executing] active: 
+  mysql-k8s/1 [executing] active: 
+  mysql-k8s/2 [executing] active: Primary
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-k8s/0 [executing] active: 
+  mysql-k8s/1 [executing] active: 
+  mysql-k8s/2 [executing] active: Primary
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-k8s/0 [executing] active: 
+  mysql-k8s/1 [executing] active: 
+  mysql-k8s/2 [executing] active: Primary
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-k8s/0 [executing] active: 
+  mysql-k8s/1 [executing] active: 
+  mysql-k8s/2 [executing] active: Primary
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-k8s/0 [executing] active: 
+  mysql-k8s/1 [executing] active: 
+  mysql-k8s/2 [executing] active: Primary
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-k8s/0 [executing] active: 
+  mysql-k8s/1 [executing] active: 
+  mysql-k8s/2 [executing] active: Primary
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-k8s/0 [executing] active: 
+  mysql-k8s/1 [executing] active: 
+  mysql-k8s/2 [executing] active: Primary
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-k8s/0 [executing] active: 
+  mysql-k8s/1 [executing] active: 
+  mysql-k8s/2 [executing] active: Primary
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-k8s/0 [executing] active: 
+  mysql-k8s/1 [executing] active: 
+  mysql-k8s/2 [executing] active: Primary
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-k8s/0 [executing] active: 
+  mysql-k8s/1 [executing] active: 
+  mysql-k8s/2 [executing] active: Primary
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-k8s/0 [executing] active: 
+  mysql-k8s/1 [executing] active: 
+  mysql-k8s/2 [executing] active: Primary
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-k8s/0 [executing] active: 
+  mysql-k8s/1 [executing] active: 
+  mysql-k8s/2 [executing] active: Primary
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller          Cloud/Region        Version  SLA          Timestamp
+testing  concierge-microk8s  microk8s/localhost  3.6.14   unsupported  02:06:41Z
+
+App               Version  Status  Scale  Charm             Channel      Rev  Address         Exposed  Message
+mysql-k8s         8.0.44   active      3  mysql-k8s         8.0/edge     345  10.152.183.138  no       
+mysql-router-k8s  8.4.7    active      1  mysql-router-k8s                 0  10.152.183.123  no       
+mysql-test-app    0.0.2    active      1  mysql-test-app    latest/edge   95  10.152.183.107  no       Last written value=9224
+
+Unit                 Workload  Agent      Address      Ports  Message
+mysql-k8s/0          active    executing  10.1.76.143         
+mysql-k8s/1          active    executing  10.1.76.145         
+mysql-k8s/2*         active    executing  10.1.76.144         Primary
+mysql-router-k8s/0*  active    idle       10.1.76.142         
+mysql-test-app/0*    active    idle       10.1.76.138         Last written value=9224
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+unit-mysql-k8s-1: 01:50:19 ERROR unit.mysql-k8s/1.juju-log database-peers:3: Cannot connect to the pebble in the mysql container to check binlogs collector
+unit-mysql-k8s-1: 01:50:19 ERROR unit.mysql-k8s/1.juju-log database-peers:3: Failed to reconcile binlogs collection during peer relation event
+unit-mysql-k8s-0: 01:50:19 ERROR unit.mysql-k8s/0.juju-log database-peers:3: Cannot connect to the pebble in the mysql container to check binlogs collector
+unit-mysql-k8s-0: 01:50:19 ERROR unit.mysql-k8s/0.juju-log database-peers:3: Failed to reconcile binlogs collection during peer relation event
+unit-mysql-k8s-2: 01:50:21 ERROR unit.mysql-k8s/2.juju-log database-peers:3: Cannot connect to the pebble in the mysql container to check binlogs collector
+unit-mysql-k8s-2: 01:50:21 ERROR unit.mysql-k8s/2.juju-log database-peers:3: Failed to reconcile binlogs collection during peer relation event
+unit-mysql-k8s-2: 01:50:26 ERROR unit.mysql-k8s/2.juju-log database-peers:3: Failed to get cluster labels
+unit-mysql-k8s-2: 01:50:26 ERROR unit.mysql-k8s/2.juju-log database-peers:3: Failed to get cluster labels
+unit-mysql-k8s-2: 01:50:26 ERROR unit.mysql-k8s/2.juju-log database-peers:3: Failed to get cluster labels
+unit-mysql-k8s-2: 01:50:27 ERROR unit.mysql-k8s/2.juju-log database-peers:3: Failed to check for instance mysql-k8s-2.mysql-k8s-endpoints.testing.svc.cluster.local.:33062 config
+unit-mysql-k8s-2: 01:50:27 ERROR unit.mysql-k8s/2.juju-log database-peers:3: Binlogs collector service does not exist
+unit-mysql-k8s-2: 01:50:27 ERROR unit.mysql-k8s/2.juju-log database-peers:3: Failed to reconcile binlogs collection during peer relation event
+unit-mysql-k8s-1: 01:50:27 ERROR unit.mysql-k8s/1.juju-log database-peers:3: Failed to check for instance mysql-k8s-1.mysql-k8s-endpoints.testing.svc.cluster.local.:33062 config
+unit-mysql-k8s-1: 01:50:27 ERROR unit.mysql-k8s/1.juju-log database-peers:3: Binlogs collector service does not exist
+unit-mysql-k8s-1: 01:50:27 ERROR unit.mysql-k8s/1.juju-log database-peers:3: Failed to reconcile binlogs collection during peer relation event
+unit-mysql-k8s-0: 01:50:27 ERROR unit.mysql-k8s/0.juju-log database-peers:3: Failed to check for instance mysql-k8s-0.mysql-k8s-endpoints.testing.svc.cluster.local.:33062 config
+unit-mysql-k8s-0: 01:50:27 ERROR unit.mysql-k8s/0.juju-log database-peers:3: Binlogs collector service does not exist
+unit-mysql-k8s-0: 01:50:27 ERROR unit.mysql-k8s/0.juju-log database-peers:3: Failed to reconcile binlogs collection during peer relation event
+unit-mysql-k8s-2: 01:50:29 ERROR unit.mysql-k8s/2.juju-log Failed to get cluster labels
+unit-mysql-k8s-2: 01:50:29 ERROR unit.mysql-k8s/2.juju-log Failed to get cluster labels
+unit-mysql-k8s-2: 01:50:30 ERROR unit.mysql-k8s/2.juju-log Failed to get cluster labels
+unit-mysql-k8s-0: 01:50:49 ERROR unit.mysql-k8s/0.juju-log Failed to get cluster labels
+unit-mysql-k8s-0: 01:50:50 ERROR unit.mysql-k8s/0.juju-log Failed to get cluster labels
+unit-mysql-k8s-2: 01:50:50 ERROR unit.mysql-k8s/2.juju-log Failed to get cluster labels
+unit-mysql-k8s-0: 01:50:50 ERROR unit.mysql-k8s/0.juju-log Failed to get cluster labels
+unit-mysql-k8s-2: 01:50:50 ERROR unit.mysql-k8s/2.juju-log Failed to get cluster labels
+unit-mysql-k8s-1: 01:50:51 ERROR unit.mysql-k8s/1.juju-log Failed to get cluster labels
+unit-mysql-k8s-1: 01:50:51 ERROR unit.mysql-k8s/1.juju-log Failed to get cluster labels
+unit-mysql-k8s-1: 01:50:52 ERROR unit.mysql-k8s/1.juju-log Failed to get cluster labels
+unit-mysql-k8s-0: 01:50:53 ERROR unit.mysql-k8s/0.juju-log upgrade:2: Failed to get cluster labels
+unit-mysql-k8s-1: 01:50:55 ERROR unit.mysql-k8s/1.juju-log upgrade:2: Failed to get cluster labels
+unit-mysql-k8s-0: 01:50:56 ERROR unit.mysql-k8s/0.juju-log upgrade:2: Failed to get cluster labels
+unit-mysql-k8s-1: 01:50:57 ERROR unit.mysql-k8s/1.juju-log database-peers:3: Failed to get cluster labels
+unit-mysql-k8s-1: 01:50:57 ERROR unit.mysql-k8s/1.juju-log database-peers:3: Failed to get cluster labels
+unit-mysql-k8s-1: 01:50:57 ERROR unit.mysql-k8s/1.juju-log database-peers:3: Failed to get cluster labels
+unit-mysql-k8s-0: 01:50:58 ERROR unit.mysql-k8s/0.juju-log database-peers:3: Failed to get cluster labels
+unit-mysql-k8s-0: 01:50:58 ERROR unit.mysql-k8s/0.juju-log database-peers:3: Failed to get cluster labels
+unit-mysql-k8s-1: 01:51:01 ERROR unit.mysql-k8s/1.juju-log database-peers:3: Failed to get cluster labels
+unit-mysql-k8s-1: 01:51:01 ERROR unit.mysql-k8s/1.juju-log database-peers:3: Failed to get cluster labels
+unit-mysql-k8s-1: 01:51:01 ERROR unit.mysql-k8s/1.juju-log database-peers:3: Failed to get cluster labels
+unit-mysql-k8s-1: 01:51:02 ERROR unit.mysql-k8s/1.juju-log database-peers:3: Failed to get cluster labels
+unit-mysql-k8s-0: 01:51:04 ERROR unit.mysql-k8s/0.juju-log database-peers:3: Failed to get cluster labels
+unit-mysql-k8s-1: 01:51:04 ERROR unit.mysql-k8s/1.juju-log database-peers:3: Failed to get cluster labels
+unit-mysql-k8s-1: 01:51:05 ERROR unit.mysql-k8s/1.juju-log database-peers:3: Failed to get cluster labels
+unit-mysql-k8s-0: 01:51:05 ERROR unit.mysql-k8s/0.juju-log database-peers:3: Failed to get cluster labels
+unit-mysql-k8s-1: 01:51:06 ERROR unit.mysql-k8s/1.juju-log database-peers:3: Failed to get cluster labels
+unit-mysql-k8s-0: 01:51:08 ERROR unit.mysql-k8s/0.juju-log database-peers:3: Failed to get cluster labels
+unit-mysql-k8s-0: 01:51:08 ERROR unit.mysql-k8s/0.juju-log database-peers:3: Failed to get cluster labels
+unit-mysql-k8s-0: 01:51:08 ERROR unit.mysql-k8s/0.juju-log database-peers:3: Failed to get cluster labels
+unit-mysql-k8s-1: 01:51:09 ERROR unit.mysql-k8s/1.juju-log database-peers:3: Failed to stop instance replication
+unit-mysql-k8s-0: 01:51:09 ERROR unit.mysql-k8s/0.juju-log database-peers:3: Failed to get cluster labels
+unit-mysql-k8s-1: 01:51:10 ERROR unit.mysql-k8s/1.juju-log database-peers:3: Failed to attach instance mysql-k8s-1.mysql-k8s-endpoints.testing.svc.cluster.local.:3306 to cluster cluster-eeb2f21ed48dd63f353b33a1ff12fd77
+unit-mysql-k8s-0: 01:51:13 ERROR unit.mysql-k8s/0.juju-log database-peers:3: Failed to get cluster labels
+unit-mysql-k8s-0: 01:51:13 ERROR unit.mysql-k8s/0.juju-log database-peers:3: Failed to get cluster labels
+unit-mysql-k8s-0: 01:51:13 ERROR unit.mysql-k8s/0.juju-log database-peers:3: Failed to get cluster labels
+unit-mysql-k8s-0: 01:51:14 ERROR unit.mysql-k8s/0.juju-log database-peers:3: Failed to get cluster labels
+unit-mysql-k8s-0: 01:51:27 ERROR unit.mysql-k8s/0.juju-log upgrade:2: Failed to get cluster labels
+unit-mysql-k8s-0: 01:51:30 ERROR unit.mysql-k8s/0.juju-log database-peers:3: Failed to get cluster labels
+unit-mysql-k8s-0: 01:51:30 ERROR unit.mysql-k8s/0.juju-log database-peers:3: Failed to get cluster labels
+unit-mysql-k8s-0: 01:51:31 ERROR unit.mysql-k8s/0.juju-log database-peers:3: Failed to get cluster labels
+unit-mysql-k8s-0: 01:51:35 ERROR unit.mysql-k8s/0.juju-log database-peers:3: Failed to stop instance replication
+unit-mysql-k8s-0: 01:51:37 ERROR unit.mysql-k8s/0.juju-log database-peers:3: Failed to attach instance mysql-k8s-0.mysql-k8s-endpoints.testing.svc.cluster.local.:3306 to cluster cluster-eeb2f21ed48dd63f353b33a1ff12fd77
+unit-mysql-k8s-1: 01:51:47 ERROR unit.mysql-k8s/1.juju-log upgrade:2: Failed to search instance replication members
+unit-mysql-k8s-1: 01:51:48 ERROR unit.mysql-k8s/1.juju-log upgrade:2: Failed to search instance replication members
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...

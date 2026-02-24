@@ -1,7 +1,7 @@
 # mysql-router-operators
-[![Charmhub](https://charmhub.io/mysql-router-k8s/badge.svg)](https://charmhub.io/mysql-router-k8s)
-[![Charmhub](https://charmhub.io/mysql-router/badge.svg?channel=dpe/candidate)](https://charmhub.io/mysql-router)
-[![Release](https://github.com/canonical/mysql-router-operators/actions/workflows/release.yaml/badge.svg)](https://github.com/canonical/mysql-router-operators/actions/workflows/release.yaml)
+[![Charmhub](https://charmhub.io/mysql-router-k8s/badge.svg?channel=8.0/edge)](https://charmhub.io/mysql-router-k8s)
+[![Charmhub](https://charmhub.io/mysql-router/badge.svg?channel=dpe/edge)](https://charmhub.io/mysql-router)
+[![Release](https://github.com/canonical/mysql-router-operators/actions/workflows/release.yaml/badge.svg?branch=dpe)](https://github.com/canonical/mysql-router-operators/actions/workflows/release.yaml)
 [![Tests](https://github.com/canonical/mysql-router-operators/actions/workflows/ci.yaml/badge.svg?branch=dpe)](https://github.com/canonical/mysql-router-operators/actions/workflows/ci.yaml)
 -----------------
 ## Description

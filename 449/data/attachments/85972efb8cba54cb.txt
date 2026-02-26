@@ -1,0 +1,64 @@
+[32mINFO    [0m integration.helpers:helpers.py:562 Ensure continuous writes are incrementing
+[32mINFO    [0m integration.helpers:helpers.py:514 Retrieving primary unit
+[32mINFO    [0m integration.test_upgrade:test_upgrade.py:167 Creating invalid upgrade charm
+[32mINFO    [0m integration.test_upgrade:test_upgrade.py:170 Refreshing mysql router with an invalid charm
+[32mINFO    [0m integration.test_upgrade:test_upgrade.py:180 Wait for refresh to block as incompatible
+[32mINFO    [0m integration.test_upgrade:test_upgrade.py:188 Ensure continuous writes while in failure state
+[32mINFO    [0m integration.helpers:helpers.py:562 Ensure continuous writes are incrementing
+[32mINFO    [0m integration.helpers:helpers.py:514 Retrieving primary unit
+[32mINFO    [0m integration.test_upgrade:test_upgrade.py:191 Re-refresh the charm
+[32mINFO    [0m integration.test_upgrade:test_upgrade.py:202 Wait for blocked app status
+[32mINFO    [0m integration.test_upgrade:test_upgrade.py:210 Wait for first unit to rollback
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s/0 [idle] active: Router 8.4.7 running (restart pending); Charm version 8.4/2.4.0
+  mysql-router-k8s/1 [idle] active: Router 8.4.7 running (restart pending); Charm version 8.4/2.4.0
+  mysql-router-k8s/2 [idle] active: Router 8.4.7 running; Charm version 8.4/2.4.0
+[32mINFO    [0m integration.test_upgrade:test_upgrade.py:214 Running resume-refresh on the mysql router leader unit
+[32mINFO    [0m integration.test_upgrade:test_upgrade.py:222 Waiting for rollback to complete on all units
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s/0 [idle] active: Router 8.4.7 running (restart pending); Charm version 8.4/2.4.0
+  mysql-router-k8s/1 [executing] maintenance: 
+  mysql-router-k8s/2 [idle] active: Router 8.4.7 running; Charm version 8.4/2.4.0
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s/0 [idle] active: Router 8.4.7 running (restart pending); Charm version 8.4/2.4.0
+  mysql-router-k8s/1 [executing] maintenance: 
+  mysql-router-k8s/2 [idle] active: Router 8.4.7 running; Charm version 8.4/2.4.0
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s/0 [executing] maintenance: 
+  mysql-router-k8s/1 [idle] active: Router 8.4.7 running; Charm version 8.4/2.4.0
+  mysql-router-k8s/2 [idle] active: Router 8.4.7 running; Charm version 8.4/2.4.0
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s/0 [executing] active: 
+  mysql-router-k8s/1 [idle] active: 
+  mysql-router-k8s/2 [idle] active: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s/0 [idle] active: 
+[32mINFO    [0m integration.test_upgrade:test_upgrade.py:230 Ensure continuous writes after rollback procedure
+[32mINFO    [0m integration.helpers:helpers.py:562 Ensure continuous writes are incrementing
+[32mINFO    [0m integration.helpers:helpers.py:514 Retrieving primary unit
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller          Cloud/Region        Version  SLA          Timestamp
+testing  concierge-microk8s  microk8s/localhost  3.6.14   unsupported  02:28:10Z
+
+App               Version  Status  Scale  Charm             Channel      Rev  Address        Exposed  Message
+mysql-k8s         8.0.44   active      1  mysql-k8s         8.0/edge     352  10.152.183.35  no       
+mysql-router-k8s  8.4.7    active      3  mysql-router-k8s                 2  10.152.183.70  no       
+mysql-test-app    0.0.2    active      1  mysql-test-app    latest/edge   95  10.152.183.96  no       
+
+Unit                 Workload  Agent  Address      Ports  Message
+mysql-k8s/0*         active    idle   10.1.114.78         Primary
+mysql-router-k8s/0*  active    idle   10.1.114.85         
+mysql-router-k8s/1   active    idle   10.1.114.84         
+mysql-router-k8s/2   active    idle   10.1.114.83         
+mysql-test-app/0*    active    idle   10.1.114.74         
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+unit-mysql-k8s-0: 02:17:35 ERROR unit.mysql-k8s/0.juju-log Failed to get cluster labels
+unit-mysql-k8s-0: 02:17:35 ERROR unit.mysql-k8s/0.juju-log Failed to get cluster labels
+unit-mysql-k8s-0: 02:17:37 ERROR unit.mysql-k8s/0.juju-log Failed to get cluster labels
+unit-mysql-k8s-0: 02:18:00 ERROR unit.mysql-k8s/0.juju-log Failed to get cluster labels
+unit-mysql-router-k8s-2: 02:24:43 ERROR juju.worker.uniter container "mysql-router": WaitNotices error, waiting 1s: cannot communicate with server: Get "http://localhost/v1/notices?timeout=30s": EOF
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...

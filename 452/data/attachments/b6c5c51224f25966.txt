@@ -1,0 +1,70 @@
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[32mINFO    [0m pytest_operator.plugin:plugin.py:806 Connecting to existing model concierge-microk8s:testing on unspecified cloud
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHSession received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHTunneler received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[32mINFO    [0m integration.test_log_rotation:test_log_rotation.py:46 Deploying mysql, mysqlrouter and application
+[32mINFO    [0m juju.model:__init__.py:2301 Deploying ch:amd64/noble/mysql-test-app-98
+[32mINFO    [0m juju.model:__init__.py:2301 Deploying ch:amd64/jammy/mysql-k8s-352
+[32mINFO    [0m juju.model:__init__.py:2301 Deploying local:mysql-router-k8s-0
+[32mINFO    [0m integration.test_log_rotation:test_log_rotation.py:77 Waiting for mysqlrouter to be in BlockedStatus
+[32mINFO    [0m integration.test_log_rotation:test_log_rotation.py:83 Relating mysql, mysqlrouter and application
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[32mINFO    [0m integration.test_log_rotation:test_log_rotation.py:104 Stopping the logrotate executor pebble service
+[32mINFO    [0m integration.test_log_rotation:test_log_rotation.py:107 Stopping any running logrotate jobs
+[32mINFO    [0m integration.test_log_rotation:test_log_rotation.py:110 Removing existing archive directory
+[32mINFO    [0m integration.test_log_rotation:test_log_rotation.py:117 Writing some data mysqlrouter log file
+[32mINFO    [0m integration.test_log_rotation:test_log_rotation.py:121 Ensuring only log files exist
+[32mINFO    [0m integration.test_log_rotation:test_log_rotation.py:130 Executing logrotate
+[32mINFO    [0m integration.test_log_rotation:test_log_rotation.py:133 Ensuring log files and archive directories exist
+[32mINFO    [0m integration.test_log_rotation:test_log_rotation.py:145 Ensuring log files was rotated
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller          Cloud/Region        Version  SLA          Timestamp
+testing  concierge-microk8s  microk8s/localhost  3.6.14   unsupported  01:43:22Z
+
+App               Version  Status   Scale  Charm             Channel      Rev  Address         Exposed  Message
+mysql-k8s         8.0.44   waiting      3  mysql-k8s         8.0/edge     352  10.152.183.45   no       installing agent
+mysql-router-k8s  8.4.7    active       1  mysql-router-k8s                 0  10.152.183.176  no       
+mysql-test-app    0.0.2    active       1  mysql-test-app    latest/edge   98  10.152.183.206  no       
+
+Unit                 Workload     Agent      Address      Ports  Message
+mysql-k8s/0          maintenance  idle       10.1.114.79         joining the cluster
+mysql-k8s/1          waiting      executing  10.1.114.80         waiting to join the cluster
+mysql-k8s/2*         active       executing  10.1.114.81         Primary
+mysql-router-k8s/0*  active       executing  10.1.114.75         
+mysql-test-app/0*    active       idle       10.1.114.74         
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+unit-mysql-k8s-2: 01:42:20 ERROR unit.mysql-k8s/2.juju-log Failed to get cluster labels
+unit-mysql-k8s-2: 01:42:23 ERROR unit.mysql-k8s/2.juju-log Failed to get cluster labels
+unit-mysql-k8s-0: 01:42:43 ERROR unit.mysql-k8s/0.juju-log Failed to get cluster labels
+unit-mysql-k8s-0: 01:42:43 ERROR unit.mysql-k8s/0.juju-log Failed to get cluster labels
+unit-mysql-k8s-2: 01:42:44 ERROR unit.mysql-k8s/2.juju-log Failed to get cluster labels
+unit-mysql-k8s-1: 01:42:44 ERROR unit.mysql-k8s/1.juju-log Failed to get cluster labels
+unit-mysql-k8s-1: 01:42:45 ERROR unit.mysql-k8s/1.juju-log Failed to get cluster labels
+unit-mysql-k8s-0: 01:42:53 ERROR unit.mysql-k8s/0.juju-log database-peers:2: Failed to get cluster labels
+unit-mysql-k8s-0: 01:42:53 ERROR unit.mysql-k8s/0.juju-log database-peers:2: Failed to get cluster labels
+unit-mysql-k8s-1: 01:42:55 ERROR unit.mysql-k8s/1.juju-log database-peers:2: Failed to get cluster labels
+unit-mysql-k8s-1: 01:42:56 ERROR unit.mysql-k8s/1.juju-log database-peers:2: Failed to get cluster labels
+unit-mysql-k8s-1: 01:42:58 ERROR unit.mysql-k8s/1.juju-log upgrade:1: Failed to get cluster labels
+unit-mysql-k8s-0: 01:42:58 ERROR unit.mysql-k8s/0.juju-log database-peers:2: Failed to get cluster labels
+unit-mysql-k8s-0: 01:42:59 ERROR unit.mysql-k8s/0.juju-log database-peers:2: Failed to get cluster labels
+unit-mysql-k8s-0: 01:42:59 ERROR unit.mysql-k8s/0.juju-log database-peers:2: Failed to get cluster labels
+unit-mysql-k8s-1: 01:43:01 ERROR unit.mysql-k8s/1.juju-log database-peers:2: Failed to get cluster labels
+unit-mysql-k8s-1: 01:43:01 ERROR unit.mysql-k8s/1.juju-log database-peers:2: Failed to get cluster labels
+unit-mysql-k8s-0: 01:43:02 ERROR unit.mysql-k8s/0.juju-log database-peers:2: Failed to get cluster labels
+unit-mysql-k8s-0: 01:43:02 ERROR unit.mysql-k8s/0.juju-log database-peers:2: Failed to get cluster labels
+unit-mysql-k8s-0: 01:43:02 ERROR unit.mysql-k8s/0.juju-log database-peers:2: Failed to get cluster labels
+unit-mysql-k8s-0: 01:43:05 ERROR unit.mysql-k8s/0.juju-log database-peers:2: Failed to stop instance replication
+unit-mysql-k8s-1: 01:43:06 ERROR unit.mysql-k8s/1.juju-log database-peers:2: Failed to get cluster labels
+unit-mysql-k8s-0: 01:43:06 ERROR unit.mysql-k8s/0.juju-log database-peers:2: Failed to attach instance mysql-k8s-0.mysql-k8s-endpoints.testing.svc.cluster.local.:3306 to cluster cluster-e5ccb4080c729209549240603982f15d
+unit-mysql-k8s-1: 01:43:11 ERROR unit.mysql-k8s/1.juju-log database-peers:2: Failed to get cluster labels
+unit-mysql-k8s-1: 01:43:11 ERROR unit.mysql-k8s/1.juju-log database-peers:2: Failed to get cluster labels
+unit-mysql-k8s-1: 01:43:16 ERROR unit.mysql-k8s/1.juju-log database-peers:2: Failed to get cluster labels
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...

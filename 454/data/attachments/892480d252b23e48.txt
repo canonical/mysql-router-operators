@@ -1,0 +1,25 @@
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller          Cloud/Region        Version  SLA          Timestamp
+testing  concierge-microk8s  microk8s/localhost  3.6.14   unsupported  01:47:27Z
+
+App               Version  Status       Scale  Charm             Channel      Rev  Address         Exposed  Message
+mysql-k8s         8.0.44   active           1  mysql-k8s         8.0/edge     352  10.152.183.238  no       
+mysql-router-k8s  8.4.7    maintenance      3  mysql-router-k8s                 0  10.152.183.121  no       Refreshing. To pause refresh, run `juju config mysql-router-k8s pause-after-unit-refresh=all`
+mysql-test-app    0.0.2    active           1  mysql-test-app    latest/edge   98  10.152.183.212  no       
+
+Unit                 Workload  Agent  Address      Ports  Message
+mysql-k8s/0*         active    idle   10.1.114.76         Primary
+mysql-router-k8s/0*  active    idle   10.1.114.77         Router 8.4.7 running (restart pending); Charm revision 878
+mysql-router-k8s/1   error     idle   10.1.114.81         hook failed: "upgrade-charm"
+mysql-router-k8s/2   active    idle   10.1.114.80         Router 8.4.7 running; Charm version 8.4/2.4.0
+mysql-test-app/0*    active    idle   10.1.114.73         
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+unit-mysql-k8s-0: 01:42:27 ERROR unit.mysql-k8s/0.juju-log Failed to get cluster labels
+unit-mysql-k8s-0: 01:42:27 ERROR unit.mysql-k8s/0.juju-log Failed to get cluster labels
+unit-mysql-k8s-0: 01:42:30 ERROR unit.mysql-k8s/0.juju-log Failed to get cluster labels
+unit-mysql-k8s-0: 01:42:52 ERROR unit.mysql-k8s/0.juju-log Failed to get cluster labels
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...

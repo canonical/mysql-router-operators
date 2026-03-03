@@ -15,7 +15,7 @@ on:
 jobs:
   tag:
     name: Create charm refresh compatibility version git tag
-    uses: canonical/data-platform-workflows/.github/workflows/tag_charm_edge.yaml@v42.0.0
+    uses: canonical/data-platform-workflows/.github/workflows/tag_charm_edge.yaml@v42.0.1
     with:
       track: '8.4'
     permissions:
@@ -40,7 +40,7 @@ jobs:
     needs:
       - tag
       - ci-tests
-    uses: canonical/data-platform-workflows/.github/workflows/release_charm_edge.yaml@v42.0.0
+    uses: canonical/data-platform-workflows/.github/workflows/release_charm_edge.yaml@v42.0.1
     with:
       track: '8.4'
       path-to-charm-directory: ${{ matrix.path }}

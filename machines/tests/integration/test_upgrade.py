@@ -43,7 +43,6 @@ async def test_deploy_edge(ops_test: OpsTest, ubuntu_base) -> None:
             num_units=1,
             channel="8.4/edge",
             config={"profile": "testing"},
-            base="ubuntu@24.04",
         ),
         ops_test.model.deploy(
             MYSQL_ROUTER_APP_NAME,
@@ -213,9 +212,9 @@ def create_valid_upgrade_charm(charm_file: str | pathlib.Path) -> None:
 
     # charm needs to refresh snap to be able to avoid no-op when upgrading.
     # set an old revision of the snap
-    versions["snap"]["revisions"]["x86_64"] = "121"
-    versions["snap"]["revisions"]["aarch64"] = "122"
-    versions["workload"] = "8.0.39"
+    versions["snap"]["revisions"]["x86_64"] = "171"
+    versions["snap"]["revisions"]["aarch64"] = "170"
+    versions["workload"] = "8.4.7"
 
     with zipfile.ZipFile(charm_file, mode="a") as charm_zip:
         charm_zip.writestr("refresh_versions.toml", tomli_w.dumps(versions))
@@ -227,7 +226,7 @@ def create_invalid_upgrade_charm(charm_file: str | pathlib.Path) -> None:
         with zipfile.Path(charm_zip, "refresh_versions.toml").open("rb") as file:
             versions = tomli.load(file)
 
-    versions["charm"] = "8.0/0.0.0"
+    versions["charm"] = "8.4/0.0.0"
 
     with zipfile.ZipFile(charm_file, mode="a") as charm_zip:
         # an invalid charm version because the major workload_version is one less than the current workload_version

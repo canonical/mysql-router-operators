@@ -97,6 +97,9 @@ async def test_upgrade_from_edge(ops_test: OpsTest, charm) -> None:
     logger.info("Refresh the charm")
     await mysql_router_application.refresh(path=charm, resources=RESOURCES)
 
+    # sleep to ensure that active status from before re-refresh does not affect below check
+    time.sleep(15)
+
     # Highest to lowest unit number
     refresh_order = sorted(
         mysql_router_application.units,

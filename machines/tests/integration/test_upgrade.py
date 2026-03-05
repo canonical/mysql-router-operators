@@ -6,6 +6,7 @@ import logging
 import os
 import pathlib
 import shutil
+import time
 import zipfile
 
 import pytest
@@ -90,6 +91,9 @@ async def test_upgrade_from_edge(ops_test: OpsTest, charm, continuous_writes) ->
 
     logger.info("Refresh the charm")
     await mysql_router_application.refresh(path=temporary_charm)
+
+    # sleep to ensure that active status from before re-refresh does not affect below check
+    time.sleep(15)
 
     # Refresh will always be incompatible since we are downgrading the workload
     # Refresh will additionally be incompatible on PR CI (not edge CI) since unrelease charm

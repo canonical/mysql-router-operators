@@ -19,9 +19,10 @@ this operator.
   the `dpe` branch. This also avoids merge commits and creates a linear Git commit history.
 
 ## Develop
-Install `tox`, `poetry`, `charmcraftcache`, and `charmcraftlocal`
+Install `yq`, `tox`, `poetry`, `charmcraftcache`, and `charmcraftlocal`
 
 ```shell
+pipx install yq
 pipx install tox
 pipx install poetry
 pipx install charmcraftcache
@@ -64,9 +65,12 @@ Build the charm in this git repository using:
 juju add-model dev
 juju model-config logging-config="<root>=INFO;unit=DEBUG"
 
+# Extract the K8s image
+export MYSQL_ROUTER_IMAGE=$(yq -r '.["resources"]["mysql-router-image"]["upstream-source"]' kubernetes/metadata.yaml)
+
 # Deploy the K8s or VM charm
-(cd kubernetes && juju deploy ./mysql-router-k8s_ubuntu-22.04-amd64.charm --resource mysql-image=...)
-(cd machines && juju deploy ./mysql-router_ubuntu-22.04-amd64.charm)
+(cd kubernetes && juju deploy ./mysql-router-k8s_ubuntu@22.04-amd64.charm --resource mysql-router-image=${MYSQL_ROUTER_IMAGE})
+(cd machines && juju deploy ./mysql-router_ubuntu@22.04-amd64.charm)
 ```
 
 ## Canonical Contributor Agreement

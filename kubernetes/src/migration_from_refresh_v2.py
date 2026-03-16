@@ -165,13 +165,13 @@ def main():  # noqa: C901
             )
             last_in_progress_log = time.time()
         charm.unit_status = charm.MaintenanceStatus(
-            "Migration in progress. Do not run actions & do not run `juju refresh`. If stuck >15 "
-            "min, contact charm developers"
+            "Migration in progress. Ignore app status, do not run actions, do not run `juju "
+            "refresh`. If stuck >15 min, contact us"
         )
         if charm.is_leader:
             charm.app_status = charm.MaintenanceStatus(
-                "Refresh migration in progress. All units will restart. If this status is shown "
-                "for >15 minutes, contact charm developers"
+                "Migration in progress. Do not run actions and do not run `juju refresh`. If "
+                "stuck >15 min, contact charm developers"
             )
 
         if charm.unit != units[0]:

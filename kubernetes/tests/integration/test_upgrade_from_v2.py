@@ -32,7 +32,7 @@ RESOURCES = {"mysql-router-image": METADATA["resources"]["mysql-router-image"]["
 
 
 @pytest.mark.abort_on_fail
-async def test_deploy_v2(ops_test: OpsTest) -> None:
+async def test_deploy_v2(ops_test: OpsTest, series) -> None:
     """Deploy v2 charms and test application."""
     logger.info("Deploying all applications")
 
@@ -52,6 +52,7 @@ async def test_deploy_v2(ops_test: OpsTest) -> None:
             revision=mysql_rev,
             application_name=MYSQL_APP_NAME,
             config={"profile": "testing"},
+            series=series,
             num_units=1,
             trust=True,
         ),
@@ -60,6 +61,7 @@ async def test_deploy_v2(ops_test: OpsTest) -> None:
             channel="8.0/stable",
             revision=router_rev,
             application_name=MYSQL_ROUTER_APP_NAME,
+            series=series,
             num_units=3,
             trust=True,
         ),
@@ -67,6 +69,7 @@ async def test_deploy_v2(ops_test: OpsTest) -> None:
             "mysql-test-app",
             channel="latest/edge",
             application_name=APPLICATION_APP_NAME,
+            series=series,
             num_units=1,
         ),
     )

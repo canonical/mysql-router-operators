@@ -37,10 +37,10 @@ class _KubernetesUnit(charm.Unit):
 
     @classmethod
     def from_pod(cls, pod: lightkube.resources.core_v1.Pod, /):
-        # Example: "postgresql-k8s-0"
+        # Example: "mysql-k8s-0"
         pod_name = pod.metadata.name
         app_name, unit_number = pod_name.rsplit("-", maxsplit=1)
-        # Example: "postgresql-k8s/0"
+        # Example: "mysql-k8s/0"
         unit_name = f"{app_name}/{unit_number}"
         return cls(
             unit_name,

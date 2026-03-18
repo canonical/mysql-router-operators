@@ -1,0 +1,162 @@
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[32mINFO    [0m pytest_operator.plugin:plugin.py:806 Connecting to existing model concierge-lxd:testing on unspecified cloud
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHSession received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHTunneler received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[32mINFO    [0m integration.test_hacluster:test_hacluster.py:86 Deploy and relate all applications without hacluster
+[32mINFO    [0m juju.model:__init__.py:2301 Deploying ch:amd64/noble/data-integrator-362
+[32mINFO    [0m juju.model:__init__.py:2301 Deploying ch:amd64/noble/mysql-456
+[32mINFO    [0m juju.model:__init__.py:2301 Deploying local:mysql-router-0
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[32mINFO    [0m integration.test_hacluster:test_hacluster.py:120 Waiting for applications to become active
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  data-integrator/0 [allocating] waiting: waiting for machine
+  data-integrator/1 [allocating] waiting: waiting for machine
+  data-integrator/2 [allocating] waiting: waiting for machine
+  data-integrator/3 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  data-integrator/0 [allocating] waiting: waiting for machine
+  data-integrator/1 [allocating] waiting: waiting for machine
+  data-integrator/2 [allocating] waiting: waiting for machine
+  data-integrator/3 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  data-integrator/0 [allocating] waiting: waiting for machine
+  data-integrator/1 [allocating] waiting: waiting for machine
+  data-integrator/2 [allocating] waiting: waiting for machine
+  data-integrator/3 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  data-integrator/0 [allocating] waiting: waiting for machine
+  data-integrator/1 [allocating] waiting: waiting for machine
+  data-integrator/2 [allocating] waiting: waiting for machine
+  data-integrator/3 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  data-integrator/0 [idle] blocked: Please relate the data-integrator with the desired product
+  data-integrator/1 [allocating] waiting: waiting for machine
+  data-integrator/2 [allocating] waiting: waiting for machine
+  data-integrator/3 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  data-integrator/0 [idle] blocked: Please relate the data-integrator with the desired product
+  data-integrator/1 [allocating] waiting: waiting for machine
+  data-integrator/2 [allocating] waiting: waiting for machine
+  data-integrator/3 [idle] blocked: Please relate the data-integrator with the desired product
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  data-integrator/0 [idle] blocked: Please relate the data-integrator with the desired product
+  data-integrator/1 [allocating] waiting: waiting for machine
+  data-integrator/2 [executing] blocked: Please relate the data-integrator with the desired product
+  data-integrator/3 [idle] blocked: Please relate the data-integrator with the desired product
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  data-integrator/0 [idle] blocked: Please relate the data-integrator with the desired product
+  data-integrator/1 [executing] blocked: Please relate the data-integrator with the desired product
+  data-integrator/2 [idle] blocked: Please relate the data-integrator with the desired product
+  data-integrator/3 [idle] blocked: Please relate the data-integrator with the desired product
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  data-integrator/0 [idle] blocked: Please relate the data-integrator with the desired product
+  data-integrator/1 [idle] blocked: Please relate the data-integrator with the desired product
+  data-integrator/2 [idle] blocked: Please relate the data-integrator with the desired product
+  data-integrator/3 [idle] blocked: Please relate the data-integrator with the desired product
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  data-integrator/0 [idle] blocked: Please relate the data-integrator with the desired product
+  data-integrator/1 [idle] blocked: Please relate the data-integrator with the desired product
+  data-integrator/2 [idle] blocked: Please relate the data-integrator with the desired product
+  data-integrator/3 [idle] blocked: Please relate the data-integrator with the desired product
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  data-integrator/0 [idle] blocked: Please relate the data-integrator with the desired product
+  data-integrator/1 [idle] blocked: Please relate the data-integrator with the desired product
+  data-integrator/2 [idle] blocked: Please relate the data-integrator with the desired product
+  data-integrator/3 [idle] blocked: Please relate the data-integrator with the desired product
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  data-integrator/0 [idle] blocked: Please relate the data-integrator with the desired product
+  data-integrator/1 [idle] blocked: Please relate the data-integrator with the desired product
+  data-integrator/2 [idle] blocked: Please relate the data-integrator with the desired product
+  data-integrator/3 [idle] blocked: Please relate the data-integrator with the desired product
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  data-integrator/0 [idle] blocked: Please relate the data-integrator with the desired product
+  data-integrator/1 [idle] blocked: Please relate the data-integrator with the desired product
+  data-integrator/2 [idle] blocked: Please relate the data-integrator with the desired product
+  data-integrator/3 [idle] blocked: Please relate the data-integrator with the desired product
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  data-integrator/0 [idle] active: 
+  data-integrator/1 [idle] active: 
+  data-integrator/2 [executing] active: 
+  data-integrator/3 [executing] active: 
+[32mINFO    [0m integration.test_hacluster:test_hacluster.py:128 Ensure the database is accessible externally
+[32mINFO    [0m integration.helpers:helpers.py:429 Running get-credentials on data-integrator/0
+[32mINFO    [0m integration.test_hacluster:test_hacluster.py:140 Ensure provided host in a data-integrator ip
+[32mINFO    [0m integration.test_hacluster:test_hacluster.py:146 Deploy and relate hacluster
+[32mINFO    [0m juju.model:__init__.py:2301 Deploying ch:amd64/noble/hacluster-139
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[32mINFO    [0m integration.test_hacluster:test_hacluster.py:157 Configure the VIP on mysqlrouter
+[32mINFO    [0m integration.helpers:helpers.py:429 Running get-credentials on data-integrator/0
+[32mINFO    [0m integration.helpers:helpers.py:429 Running get-credentials on data-integrator/0
+[32mINFO    [0m integration.helpers:helpers.py:429 Running get-credentials on data-integrator/0
+[32mINFO    [0m integration.helpers:helpers.py:429 Running get-credentials on data-integrator/0
+[32mINFO    [0m integration.helpers:helpers.py:429 Running get-credentials on data-integrator/0
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  data-integrator/0 [executing] active: 
+  data-integrator/1 [idle] active: 
+  data-integrator/2 [idle] active: 
+  data-integrator/3 [idle] active: 
+  mysql/0 [idle] active: 
+  mysql-router/0 [idle] active: 
+  mysql-router/1 [idle] active: 
+  mysql-router/2 [idle] active: 
+  mysql-router/3 [idle] active: 
+  hacluster/1 [executing] active: Unit is ready and clustered
+  hacluster/3 [executing] active: Unit is ready and clustered
+  hacluster/2 [executing] active: Unit is ready and clustered
+  hacluster/4 [executing] waiting: Resource: res_mysql-router_5b747c85c0d028_vip not yet configured
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  data-integrator/0 [idle] active: 
+  data-integrator/2 [idle] active: 
+  mysql-router/0 [idle] active: 
+  mysql-router/3 [executing] active: 
+  hacluster/1 [executing] active: Unit is ready and clustered
+  hacluster/3 [executing] active: Unit is ready and clustered
+  hacluster/2 [executing] active: Unit is ready and clustered
+  hacluster/4 [idle] waiting: Resource: res_mysql-router_5b747c85c0d028_vip not yet configured
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql/0 [idle] active: 
+  hacluster/1 [idle] active: Unit is ready and clustered
+  hacluster/3 [idle] active: Unit is ready and clustered
+  hacluster/2 [idle] active: Unit is ready and clustered
+  hacluster/4 [idle] active: Unit is ready and clustered
+[32mINFO    [0m integration.test_hacluster:test_hacluster.py:42 Ensure database accessible via VIP
+[32mINFO    [0m integration.helpers:helpers.py:429 Running get-credentials on data-integrator/0
+[32mINFO    [0m integration.test_hacluster:test_hacluster.py:179 Reconfiguring the VIP
+[32mINFO    [0m integration.helpers:helpers.py:429 Running get-credentials on data-integrator/0
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  data-integrator/0 [executing] active: 
+  data-integrator/1 [idle] active: 
+  data-integrator/2 [idle] active: 
+  data-integrator/3 [idle] active: 
+  mysql/0 [idle] active: 
+  mysql-router/0 [idle] active: 
+  mysql-router/1 [idle] active: 
+  mysql-router/2 [idle] active: 
+  mysql-router/3 [idle] active: 
+  hacluster/1 [executing] active: Unit is ready and clustered
+  hacluster/3 [executing] active: Unit is ready and clustered
+  hacluster/2 [executing] active: Unit is ready and clustered
+  hacluster/4 [executing] active: Unit is ready and clustered
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  data-integrator/2 [idle] active: 
+  mysql/0 [executing] active: 
+  mysql-router/0 [idle] active: 
+  mysql-router/1 [idle] active: 
+  mysql-router/2 [idle] active: 
+  hacluster/1 [idle] waiting: Resource: res_mysql-router_d15e69892a5e07_vip not yet configured
+  hacluster/3 [idle] active: Unit is ready and clustered
+  hacluster/2 [idle] active: Unit is ready and clustered
+  hacluster/4 [idle] active: Unit is ready and clustered
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  hacluster/1 [idle] active: Unit is ready and clustered
+  hacluster/3 [idle] active: Unit is ready and clustered
+  hacluster/2 [idle] active: Unit is ready and clustered
+  hacluster/4 [idle] active: Unit is ready and clustered
+[32mINFO    [0m integration.test_hacluster:test_hacluster.py:198 Ensure database accessible via reconfigured VIP
+[32mINFO    [0m integration.test_hacluster:test_hacluster.py:42 Ensure database accessible via VIP
+[32mINFO    [0m integration.helpers:helpers.py:429 Running get-credentials on data-integrator/0

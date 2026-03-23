@@ -11,7 +11,7 @@ docs: https://discourse.charmhub.io/t/charmed-mysql-router-k8s-documentation/121
 source: https://github.com/canonical/mysql-router-operators
 issues: https://github.com/canonical/mysql-router-operators/issues
 website:
-  - https://ubuntu.com/data/mysql
+  - https://canonical.com/data/mysql
   - https://charmhub.io/mysql-router-k8s
   - https://github.com/canonical/mysql-router-operators
   - https://chat.charmhub.io/charmhub/channels/data-platform
@@ -51,6 +51,10 @@ peers:
     interface: tls
   cos:
     interface: cos
+  # Not used; kept to avoid uncaught exception during stop event when refreshing from v2 charm
+  # See src/migration_from_refresh_v2.py
+  upgrade-version-a:
+    interface: upgrade
   refresh-v-three:
     interface: refresh
   mysql-router-peers:

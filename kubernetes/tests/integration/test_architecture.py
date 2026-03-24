@@ -31,7 +31,7 @@ def test_arm_charm_on_amd_host(juju: jubilant_backports.Juju, ubuntu_base) -> No
     )
 
     juju.wait(
-        ready=lambda status: status.apps[MYSQL_ROUTER_APP_NAME].app_status == "error",
+        ready=lambda status: status.apps[MYSQL_ROUTER_APP_NAME].app_status.current == "error",
         timeout=300,
     )
 
@@ -54,7 +54,7 @@ def test_amd_charm_on_arm_host(juju: jubilant_backports.Juju, ubuntu_base) -> No
     )
 
     juju.wait(
-        ready=lambda status: status.apps[MYSQL_ROUTER_APP_NAME].app_status == "error",
+        ready=lambda status: status.apps[MYSQL_ROUTER_APP_NAME].app_status.current == "error",
         timeout=300,
     )
 

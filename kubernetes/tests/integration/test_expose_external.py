@@ -11,6 +11,7 @@ import pytest
 import tenacity
 import yaml
 
+from . import architecture
 from .helpers import (
     APPLICATION_DEFAULT_APP_NAME,
     MYSQL_DEFAULT_APP_NAME,
@@ -108,6 +109,7 @@ def test_expose_external(juju: jubilant_backports.Juju, charm, ubuntu_base) -> N
         base=ubuntu_base,
         num_units=1,
         trust=True,
+        constraints={"arch": architecture.architecture},
     )
     juju.deploy(
         charm,
@@ -124,6 +126,7 @@ def test_expose_external(juju: jubilant_backports.Juju, charm, ubuntu_base) -> N
         config={"database-name": TEST_DATABASE_NAME},
         base="ubuntu@24.04",
         num_units=1,
+        constraints={"arch": architecture.architecture},
     )
 
     logger.info("Relating mysql-k8s, mysql-router-k8s and data-integrator")
@@ -178,6 +181,7 @@ def test_expose_external_with_tls(juju: jubilant_backports.Juju) -> None:
         channel=TLS_CHANNEL,
         config=TLS_CONFIG,
         base=TLS_BASE,
+        constraints={"arch": architecture.architecture},
     )
     juju.wait(
         ready=wait_for_apps_status(jubilant_backports.all_active, TLS_APP_NAME),

@@ -174,7 +174,11 @@ def delete_file_or_directory_in_unit(
     if path.strip() in ["/", "."]:
         return
 
-    juju.ssh(unit_name, "find", path, "-maxdepth", "1", "-delete", container=container_name)
+    try:
+        juju.ssh(unit_name, "find", path, "-maxdepth", "1", "-delete", container=container_name)
+    except Exception:
+        # if the file or directory does not exist, ignore the error
+        pass
 
 
 def get_process_pid(juju: Juju, unit_name: str, container_name: str, process: str) -> int:

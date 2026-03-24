@@ -9,6 +9,7 @@ import jubilant_backports
 import pytest
 import yaml
 
+from . import architecture
 from .helpers import (
     APPLICATION_DEFAULT_APP_NAME,
     MYSQL_DEFAULT_APP_NAME,
@@ -52,6 +53,7 @@ def test_log_rotation(juju: jubilant_backports.Juju, charm, ubuntu_base):
         base=ubuntu_base,
         num_units=3,
         trust=True,  # Necessary after a6f1f01: Fix/endpoints as k8s services (#142)
+        constraints={"arch": architecture.architecture},
     )
     juju.deploy(
         charm,
@@ -67,6 +69,7 @@ def test_log_rotation(juju: jubilant_backports.Juju, charm, ubuntu_base):
         app=APPLICATION_APP_NAME,
         base=ubuntu_base,
         num_units=1,
+        constraints={"arch": architecture.architecture},
     )
 
     logger.info("Relating mysql, mysqlrouter and application")

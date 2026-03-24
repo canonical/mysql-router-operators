@@ -11,6 +11,7 @@ import requests
 import tenacity
 import yaml
 
+from . import architecture
 from .helpers import (
     APPLICATION_DEFAULT_APP_NAME,
     MYSQL_DEFAULT_APP_NAME,
@@ -55,6 +56,7 @@ def test_exporter_endpoint(juju: jubilant_backports.Juju, charm, ubuntu_base) ->
         base=ubuntu_base,
         num_units=1,
         trust=True,
+        constraints={"arch": architecture.architecture},
     )
     juju.deploy(
         charm,
@@ -70,6 +72,7 @@ def test_exporter_endpoint(juju: jubilant_backports.Juju, charm, ubuntu_base) ->
         app=APPLICATION_APP_NAME,
         base=ubuntu_base,
         num_units=1,
+        constraints={"arch": architecture.architecture},
     )
     juju.deploy(
         GRAFANA_AGENT_APP_NAME,
@@ -77,6 +80,7 @@ def test_exporter_endpoint(juju: jubilant_backports.Juju, charm, ubuntu_base) ->
         app=GRAFANA_AGENT_APP_NAME,
         num_units=1,
         base=ubuntu_base,
+        constraints={"arch": architecture.architecture},
     )
 
     logger.info("Relating mysql, mysqlrouter and application")
@@ -112,6 +116,7 @@ def test_exporter_endpoint(juju: jubilant_backports.Juju, charm, ubuntu_base) ->
         channel=tls_channel,
         config=tls_config,
         base=tls_base,
+        constraints={"arch": architecture.architecture},
     )
 
     juju.wait(

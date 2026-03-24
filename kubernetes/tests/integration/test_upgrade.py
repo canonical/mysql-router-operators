@@ -15,6 +15,7 @@ import tomli
 import tomli_w
 import yaml
 
+from . import architecture
 from .helpers import (
     APPLICATION_DEFAULT_APP_NAME,
     MYSQL_DEFAULT_APP_NAME,
@@ -54,6 +55,7 @@ def test_deploy_edge(juju: jubilant_backports.Juju, ubuntu_base) -> None:
         base=ubuntu_base,
         num_units=1,
         trust=True,  # Necessary after a6f1f01: Fix/endpoints as k8s services (#142)
+        constraints={"arch": architecture.architecture},
     )
     juju.deploy(
         MYSQL_ROUTER_APP_NAME,
@@ -62,6 +64,7 @@ def test_deploy_edge(juju: jubilant_backports.Juju, ubuntu_base) -> None:
         base=ubuntu_base,
         num_units=3,
         trust=True,  # Necessary after a6f1f01: Fix/endpoints as k8s services (#142)
+        constraints={"arch": architecture.architecture},
     )
     juju.deploy(
         APPLICATION_APP_NAME,
@@ -70,6 +73,7 @@ def test_deploy_edge(juju: jubilant_backports.Juju, ubuntu_base) -> None:
         base=ubuntu_base,
         num_units=1,
         config={"sleep_interval": "500"},
+        constraints={"arch": architecture.architecture},
     )
 
     logger.info(f"Relating {MYSQL_ROUTER_APP_NAME} to {MYSQL_APP_NAME} and {APPLICATION_APP_NAME}")

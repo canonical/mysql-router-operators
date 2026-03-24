@@ -1,14 +1,14 @@
 # Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-import asyncio
 import logging
 import time
 from pathlib import Path
 
+import jubilant_backports
 import pytest
 import yaml
-from pytest_operator.plugin import OpsTest
+from jubilant_backports import Juju
 
 from .architecture import architecture
 from .helpers import (
@@ -32,7 +32,7 @@ RESOURCES = {"mysql-router-image": METADATA["resources"]["mysql-router-image"]["
 
 
 @pytest.mark.abort_on_fail
-async def test_deploy_v2(ops_test: OpsTest, series) -> None:
+def test_deploy_v2(juju: Juju, ubuntu_base) -> None:
     """Deploy v2 charms and test application."""
     logger.info("Deploying all applications")
 
@@ -45,76 +45,69 @@ async def test_deploy_v2(ops_test: OpsTest, series) -> None:
     else:
         pytest.skip(f"Architecture {architecture} not supported in this test")
 
-    await asyncio.gather(
-        ops_test.model.deploy(
-            "mysql-k8s",
-            channel="8.0/stable",
-            revision=mysql_rev,
-            application_name=MYSQL_APP_NAME,
-            config={"profile": "testing"},
-            series=series,
-            num_units=1,
-            trust=True,
-        ),
-        ops_test.model.deploy(
-            "mysql-router-k8s",
-            channel="8.0/stable",
-            revision=router_rev,
-            application_name=MYSQL_ROUTER_APP_NAME,
-            series=series,
-            num_units=3,
-            trust=True,
-        ),
-        ops_test.model.deploy(
-            "mysql-test-app",
-            channel="latest/edge",
-            application_name=APPLICATION_APP_NAME,
-            series=series,
-            num_units=1,
-        ),
+    juju.deploy(
+        "mysql-k8s",
+        channel="8.0/stable",
+        revision=mysql_rev,
+        app=MYSQL_APP_NAME,
+        config={"profile": "testing"},
+        base=ubuntu_base,
+        num_units=1,
+        trust=True,
+    )
+    juju.deploy(
+        "mysql-router-k8s",
+        channel="8.0/stable",
+        revision=router_rev,
+        app=MYSQL_ROUTER_APP_NAME,
+        base=ubuntu_base,
+        num_units=3,
+        trust=True,
+    )
+    juju.deploy(
+        "mysql-test-app",
+        channel="latest/edge",
+        app=APPLICATION_APP_NAME,
+        base=ubuntu_base,
+        num_units=1,
+        constraints={"arch": architecture},
     )
 
     logger.info(f"Relating {MYSQL_ROUTER_APP_NAME} to {MYSQL_APP_NAME} and {APPLICATION_APP_NAME}")
 
-    await ops_test.model.relate(
-        f"{MYSQL_ROUTER_APP_NAME}:backend-database", f"{MYSQL_APP_NAME}:database"
-    )
-    await ops_test.model.relate(
-        f"{APPLICATION_APP_NAME}:database", f"{MYSQL_ROUTER_APP_NAME}:database"
-    )
+    juju.integrate(f"{MYSQL_ROUTER_APP_NAME}:backend-database", f"{MYSQL_APP_NAME}:database")
+    juju.integrate(f"{APPLICATION_APP_NAME}:database", f"{MYSQL_ROUTER_APP_NAME}:database")
 
-    mysql_router_application = ops_test.model.applications[MYSQL_ROUTER_APP_NAME]
     logger.info("Waiting for applications to become active")
-    await ops_test.model.block_until(
-        lambda: (
-            all(unit.workload_status == "active" for unit in mysql_router_application.units)
-            and all(unit.agent_status == "idle" for unit in mysql_router_application.units)
-        ),
+    juju.wait(
+        lambda status: jubilant_backports.all_active(status, MYSQL_ROUTER_APP_NAME),
         timeout=TIMEOUT,
     )
 
 
 @pytest.mark.abort_on_fail
-async def test_upgrade_from_v2(ops_test: OpsTest, charm) -> None:
+def test_upgrade_from_v2(juju: Juju, charm) -> None:
     """Upgrade mysqlrouter from v2 to v3 while ensuring continuous writes incrementing."""
-    await ensure_all_units_continuous_writes_incrementing(ops_test)
-
-    mysql_router_application = ops_test.model.applications[MYSQL_ROUTER_APP_NAME]
+    ensure_all_units_continuous_writes_incrementing(juju)
 
     logger.info("Refresh the charm with local v3 build")
-    await mysql_router_application.refresh(path=charm, resources=RESOURCES)
+    juju.cli(
+        "refresh",
+        MYSQL_ROUTER_APP_NAME,
+        "--path",
+        str(charm),
+        "--resource",
+        f"mysql-router-image={RESOURCES['mysql-router-image']}",
+    )
 
     logger.info("Block until router become active")
     # sleep to ensure that active status from before re-refresh does not affect below check
     time.sleep(15)
 
-    await ops_test.model.block_until(
-        lambda: (
-            all(unit.workload_status == "active" for unit in mysql_router_application.units)
-            and all(unit.agent_status == "idle" for unit in mysql_router_application.units)
-        ),
+    juju.wait(
+        lambda status: jubilant_backports.all_active(status, MYSQL_ROUTER_APP_NAME),
         timeout=TIMEOUT,
     )
 
     logger.info("Ensure continuous writes after upgrade")
-    await ensure_all_units_continuous_writes_incrementing(ops_test)
+    ensure_all_units_continuous_writes_incrementing(juju)

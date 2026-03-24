@@ -9,6 +9,7 @@ import pytest
 import tenacity
 import yaml
 
+from . import architecture
 from .helpers import (
     APPLICATION_DEFAULT_APP_NAME,
     MYSQL_DEFAULT_APP_NAME,
@@ -51,6 +52,7 @@ def test_deploy_and_relate(juju: jubilant_backports.Juju, charm, ubuntu_base) ->
         base=ubuntu_base,
         num_units=1,
         trust=True,
+        constraints={"arch": architecture.architecture},
     )
 
     # tls, test app and router
@@ -68,12 +70,14 @@ def test_deploy_and_relate(juju: jubilant_backports.Juju, charm, ubuntu_base) ->
         channel=tls_channel,
         config=tls_config,
         base=tls_base,
+        constraints={"arch": architecture.architecture},
     )
     juju.deploy(
         TEST_APP_NAME,
         app=TEST_APP_NAME,
         channel="latest/edge",
         base=ubuntu_base,
+        constraints={"arch": architecture.architecture},
     )
 
     juju.integrate(f"{MYSQL_ROUTER_APP_NAME}:backend-database", f"{MYSQL_APP_NAME}:database")

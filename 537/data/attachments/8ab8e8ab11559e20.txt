@@ -1,0 +1,103 @@
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[32mINFO    [0m pytest_operator.plugin:plugin.py:806 Connecting to existing model concierge-microk8s:testing on unspecified cloud
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHSession received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHTunneler received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SecretsRevoker received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[32mINFO    [0m integration.test_exporter_with_tls:test_exporter_with_tls.py:44 Deploying all the applications
+[32mINFO    [0m juju.model:__init__.py:2301 Deploying ch:amd64/jammy/grafana-agent-k8s-164
+[32mINFO    [0m juju.model:__init__.py:2301 Deploying ch:amd64/noble/mysql-test-app-98
+[32mINFO    [0m juju.model:__init__.py:2301 Deploying ch:amd64/noble/mysql-k8s-357
+[32mINFO    [0m juju.model:__init__.py:2301 Deploying local:mysql-router-k8s-0
+[32mINFO    [0m integration.test_exporter_with_tls:test_exporter_with_tls.py:85 Waiting for mysqlrouter to be in BlockedStatus
+[32mINFO    [0m integration.test_exporter_with_tls:test_exporter_with_tls.py:91 Relating mysql, mysqlrouter and application
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s/0 [executing] maintenance: Waiting for container
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s/0 [executing] waiting: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s/0 [idle] waiting: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s/0 [executing] active: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-k8s/0 [executing] active: 
+  mysql-k8s/1 [executing] active: 
+  mysql-k8s/2 [executing] maintenance: joining the cluster
+  mysql-router-k8s/0 [idle] active: 
+  mysql-test-app/0 [idle] active: Last written value=95
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-k8s/0 [idle] active: 
+  mysql-k8s/1 [idle] active: 
+  mysql-k8s/2 [idle] active: 
+[32mINFO    [0m integration.test_exporter_with_tls:test_exporter_with_tls.py:123 Deploying self-signed-certificates
+[32mINFO    [0m juju.model:__init__.py:2301 Deploying ch:amd64/noble/self-signed-certificates-586
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  self-signed-certificates/0 [allocating] waiting: installing agent
+[32mINFO    [0m integration.test_exporter_with_tls:test_exporter_with_tls.py:134 Relating mysqlrouter with self-signed-certificates
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[32mINFO    [0m integration.test_exporter_with_tls:test_exporter_with_tls.py:157 Relating mysqlrouter with grafana agent
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[32mINFO    [0m integration.test_exporter_with_tls:test_exporter_with_tls.py:198 Removing relation between mysqlrouter and grafana agent
+[32mINFO    [0m integration.test_exporter_with_tls:test_exporter_with_tls.py:218 Removing relation between mysqlrouter and self-signed-certificates
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller          Cloud/Region        Version  SLA          Timestamp
+testing  concierge-microk8s  microk8s/localhost  3.6.19   unsupported  02:03:18Z
+
+App                       Version  Status   Scale  Charm                     Channel      Rev  Address         Exposed  Message
+grafana-agent-k8s         0.40.4   blocked      1  grafana-agent-k8s         1/stable     164  10.152.183.30   no       Missing ['grafana-cloud-config']|['grafana-dashboards-provider'] for grafana-dashboards-consumer; ['grafana-cloud-con...
+mysql-k8s                 8.4.8    active       3  mysql-k8s                 8.4/edge     357  10.152.183.26   no       
+mysql-router-k8s          8.4.8    active       1  mysql-router-k8s                         0  10.152.183.221  no       
+mysql-test-app            0.0.2    active       1  mysql-test-app            latest/edge   98  10.152.183.195  no       Last written value=565
+self-signed-certificates           active       1  self-signed-certificates  1/stable     586  10.152.183.205  no       
+
+Unit                         Workload     Agent      Address      Ports  Message
+grafana-agent-k8s/0*         blocked      idle       10.1.144.82         Missing ['grafana-cloud-config']|['grafana-dashboards-provider'] for grafana-dashboards-consumer; ['grafana-cloud-con...
+mysql-k8s/0*                 active       idle       10.1.144.79         
+mysql-k8s/1                  active       idle       10.1.144.80         
+mysql-k8s/2                  active       idle       10.1.144.81         
+mysql-router-k8s/0*          maintenance  executing  10.1.144.78         MySQL Router starting
+mysql-test-app/0*            active       idle       10.1.144.73         Last written value=565
+self-signed-certificates/0*  active       idle       10.1.144.83         
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+unit-mysql-k8s-0: 01:58:57 ERROR unit.mysql-k8s/0.juju-log Failed to get cluster labels
+unit-mysql-k8s-1: 01:59:19 ERROR unit.mysql-k8s/1.juju-log Failed to get cluster labels
+unit-mysql-k8s-1: 01:59:19 ERROR unit.mysql-k8s/1.juju-log Failed to get cluster labels
+unit-mysql-k8s-2: 01:59:19 ERROR unit.mysql-k8s/2.juju-log Failed to get cluster labels
+unit-mysql-k8s-2: 01:59:20 ERROR unit.mysql-k8s/2.juju-log Failed to get cluster labels
+unit-mysql-k8s-0: 01:59:20 ERROR unit.mysql-k8s/0.juju-log Failed to get cluster labels
+unit-mysql-k8s-2: 01:59:33 ERROR unit.mysql-k8s/2.juju-log upgrade:4: Failed to get cluster labels
+unit-mysql-k8s-1: 01:59:33 ERROR unit.mysql-k8s/1.juju-log database-peers:2: Failed to get cluster labels
+unit-mysql-k8s-1: 01:59:34 ERROR unit.mysql-k8s/1.juju-log database-peers:2: Failed to get cluster labels
+unit-mysql-k8s-1: 01:59:38 ERROR unit.mysql-k8s/1.juju-log database-peers:2: Failed to get cluster labels
+unit-mysql-k8s-1: 01:59:39 ERROR unit.mysql-k8s/1.juju-log database-peers:2: Failed to get cluster labels
+unit-mysql-k8s-1: 01:59:39 ERROR unit.mysql-k8s/1.juju-log database-peers:2: Failed to get cluster labels
+unit-mysql-k8s-2: 01:59:40 ERROR unit.mysql-k8s/2.juju-log upgrade:4: Failed to get cluster labels
+unit-mysql-k8s-1: 01:59:44 ERROR unit.mysql-k8s/1.juju-log database-peers:2: Failed to stop instance replication
+unit-mysql-k8s-2: 01:59:44 ERROR unit.mysql-k8s/2.juju-log database-peers:2: Failed to get cluster labels
+unit-mysql-k8s-2: 01:59:44 ERROR unit.mysql-k8s/2.juju-log database-peers:2: Failed to get cluster labels
+unit-mysql-k8s-1: 01:59:47 ERROR unit.mysql-k8s/1.juju-log database-peers:2: Failed to attach instance mysql-k8s-1.mysql-k8s-endpoints.testing.svc.cluster.local.:3306 to cluster cluster-593462b20a751c34efe2f8f39875022c
+unit-mysql-k8s-2: 01:59:48 ERROR unit.mysql-k8s/2.juju-log database-peers:2: Failed to get cluster labels
+unit-mysql-k8s-2: 01:59:49 ERROR unit.mysql-k8s/2.juju-log database-peers:2: Failed to get cluster labels
+unit-mysql-k8s-2: 01:59:49 ERROR unit.mysql-k8s/2.juju-log database-peers:2: Failed to get cluster labels
+unit-mysql-k8s-2: 01:59:54 ERROR unit.mysql-k8s/2.juju-log upgrade:4: Failed to get cluster labels
+unit-mysql-k8s-2: 01:59:58 ERROR unit.mysql-k8s/2.juju-log database-peers:2: Failed to get cluster labels
+unit-mysql-k8s-2: 01:59:59 ERROR unit.mysql-k8s/2.juju-log database-peers:2: Failed to get cluster labels
+unit-mysql-k8s-2: 01:59:59 ERROR unit.mysql-k8s/2.juju-log database-peers:2: Failed to get cluster labels
+unit-mysql-k8s-2: 02:00:07 ERROR unit.mysql-k8s/2.juju-log database-peers:2: Failed to get cluster labels
+unit-mysql-k8s-2: 02:00:08 ERROR unit.mysql-k8s/2.juju-log database-peers:2: Failed to get cluster labels
+unit-mysql-k8s-2: 02:00:15 ERROR unit.mysql-k8s/2.juju-log database-peers:2: Failed to get cluster labels
+unit-mysql-k8s-2: 02:00:21 ERROR unit.mysql-k8s/2.juju-log database-peers:2: Failed to stop instance replication
+unit-mysql-k8s-2: 02:00:25 ERROR unit.mysql-k8s/2.juju-log database-peers:2: Failed to attach instance mysql-k8s-2.mysql-k8s-endpoints.testing.svc.cluster.local.:3306 to cluster cluster-593462b20a751c34efe2f8f39875022c
+unit-mysql-k8s-1: 02:00:35 ERROR unit.mysql-k8s/1.juju-log upgrade:4: Failed to search instance replication members
+unit-mysql-k8s-1: 02:00:36 ERROR unit.mysql-k8s/1.juju-log upgrade:4: Failed to search instance replication members
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...

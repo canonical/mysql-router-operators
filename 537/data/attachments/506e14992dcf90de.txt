@@ -1,0 +1,161 @@
+[32mINFO    [0m integration.test_hacluster:test_hacluster.py:337 Resetting the VIP
+[32mINFO    [0m integration.test_hacluster:test_hacluster.py:349 Removing the relation between hacluster and mysqlrouter
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router/0 [executing] blocked: ha integration used without vip configuration
+  mysql-router/1 [executing] blocked: ha integration used without vip configuration
+  mysql-router/2 [executing] blocked: ha integration used without vip configuration
+  mysql-router/3 [executing] active: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router/0 [executing] blocked: ha integration used without vip configuration
+  mysql-router/1 [executing] blocked: ha integration used without vip configuration
+  mysql-router/2 [executing] blocked: ha integration used without vip configuration
+  mysql-router/3 [executing] active: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router/0 [idle] active: 
+  mysql-router/1 [idle] active: 
+  mysql-router/2 [idle] active: 
+  mysql-router/3 [idle] active: 
+[32mINFO    [0m integration.test_hacluster:test_hacluster.py:357 Ensuring that VIP is not the data-integrator endpoint hostname
+[32mINFO    [0m integration.helpers:helpers.py:429 Running get-credentials on data-integrator/0
+[32mINFO    [0m integration.test_hacluster:test_hacluster.py:360 Data integrator endpoint hostname is 10.245.22.3
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller     Cloud/Region         Version  SLA          Timestamp
+testing  concierge-lxd  localhost/localhost  3.6.19   unsupported  02:15:33Z
+
+App                       Version  Status  Scale  Charm                     Channel        Rev  Exposed  Message
+data-integrator                    active      4  data-integrator           latest/stable  362  no       
+hacluster                 2.1.6    active      4  hacluster                 2.4/edge       139  no       Unit is ready and clustered
+mysql                     8.4.8    active      1  mysql                     8.4/edge       456  no       
+mysql-router              8.4.8    active      4  mysql-router                               0  no       
+self-signed-certificates           active      1  self-signed-certificates  1/stable       586  no       
+
+Unit                         Workload  Agent  Machine  Public address  Ports           Message
+data-integrator/0*           active    idle   0        10.245.22.3                     
+  hacluster/0*               active    idle            10.245.22.3                     Unit is ready and clustered
+  mysql-router/0*            active    idle            10.245.22.3     6446-6447/tcp   
+data-integrator/1            active    idle   1        10.245.22.2                     
+  hacluster/3                active    idle            10.245.22.2                     Unit is ready and clustered
+  mysql-router/1             active    idle            10.245.22.2     6446-6447/tcp   
+data-integrator/2            active    idle   2        10.245.22.247                   
+  hacluster/5                active    idle            10.245.22.247                   Unit is ready and clustered
+  mysql-router/2             active    idle            10.245.22.247   6446-6447/tcp   
+data-integrator/3            active    idle   3        10.245.22.69                    
+  hacluster/4                active    idle            10.245.22.69                    Unit is ready and clustered
+  mysql-router/3             active    idle            10.245.22.69    6446-6447/tcp   
+mysql/0*                     active    idle   4        10.245.22.152   3306,33060/tcp  
+self-signed-certificates/0*  active    idle   5        10.245.22.47                    
+
+Machine  State    Address        Inst id        Base          AZ             Message
+0        started  10.245.22.3    juju-14824a-0  ubuntu@24.04  runnervm46oaq  Running
+1        started  10.245.22.2    juju-14824a-1  ubuntu@24.04  runnervm46oaq  Running
+2        started  10.245.22.247  juju-14824a-2  ubuntu@24.04  runnervm46oaq  Running
+3        started  10.245.22.69   juju-14824a-3  ubuntu@24.04  runnervm46oaq  Running
+4        started  10.245.22.152  juju-14824a-4  ubuntu@24.04  runnervm46oaq  Running
+5        started  10.245.22.47   juju-14824a-5  ubuntu@24.04  runnervm46oaq  Running
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+machine-0: 01:58:34 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 01:58:34 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 01:59:00 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 01:59:00 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 01:59:12 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 01:59:12 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-4: 01:59:55 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-4: 01:59:55 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 02:00:22 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 02:00:22 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-mysql-0: 02:01:18 ERROR unit.mysql/0.juju-log Failed to get cluster labels
+unit-mysql-0: 02:01:39 ERROR unit.mysql/0.juju-log Failed command: fuser 3306/tcp; user=None; group=None
+unit-mysql-router-0: 02:02:46 ERROR unit.mysql-router/0.juju-log backend-database:7: common.mysql_shell:Failed to run MySQL Shell script:
+import json
+import mysqlsh
+import traceback
+
+try:
+    # Disable wizards in this script, since it will be invoked without --no-wizard
+    shell.options.set('useWizards', False)
+    session.run_sql("CREATE USER `relation-7_a1d805c7730347e-8` IDENTIFIED BY 'DjVMcbapqxHZfdZLYYTpnMPz' ATTRIBUTE '{\"created_by_user\": \"relation-7_a1d805c7730347e\"}'")
+    session.run_sql("GRANT ALL PRIVILEGES ON `testdatabase`.* TO `relation-7_a1d805c7730347e-8`")
+
+except mysqlsh.DBError as exception:
+    error = {
+        "message": str(exception),
+        "code": exception.code,
+        "traceback_message": "".join(traceback.format_exception(exception)),
+    }
+else:
+    error = None
+with open("/tmp/mysqlsh_error.json", "w") as file:
+    json.dump(error, file)
+
+MySQL client error 1819
+MySQL Shell traceback:
+Traceback (most recent call last):
+  File "<string>", line 8, in <module>
+mysqlsh.DBError: MySQL Error (1819): ClassicSession.run_sql: Your password does not satisfy the current policy requirements
+
+Traceback (most recent call last):
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/venv/lib/python3.12/site-packages/common/mysql_shell/__init__.py", line 99, in _run_code
+    raise ShellDBError(**exception)
+common.mysql_shell.ShellDBError: MySQL Error (1819): ClassicSession.run_sql: Your password does not satisfy the current policy requirements
+unit-mysql-router-0: 02:02:46 ERROR unit.mysql-router/0.juju-log backend-database:7: root:Uncaught exception while in charm code:
+Traceback (most recent call last):
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/src/charm.py", line 224, in <module>
+    ops.main.main(MachineSubordinateRouterCharm)
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/venv/lib/python3.12/site-packages/ops/main.py", line 436, in main
+    _emit_charm_event(charm, dispatcher.event_name)
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/venv/lib/python3.12/site-packages/ops/main.py", line 144, in _emit_charm_event
+    event_to_emit.emit(*args, **kwargs)
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/venv/lib/python3.12/site-packages/ops/framework.py", line 351, in emit
+    framework._emit(event)
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/venv/lib/python3.12/site-packages/ops/framework.py", line 853, in _emit
+    self._reemit(event_path)
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/venv/lib/python3.12/site-packages/ops/framework.py", line 942, in _reemit
+    custom_handler(event)
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/venv/lib/python3.12/site-packages/common/_charm_libs/charms/data_platform_libs/v0/data_interfaces.py", line 3141, in _on_relation_changed_event
+    getattr(self.on, "database_created").emit(
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/venv/lib/python3.12/site-packages/ops/framework.py", line 351, in emit
+    framework._emit(event)
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/venv/lib/python3.12/site-packages/ops/framework.py", line 853, in _emit
+    self._reemit(event_path)
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/venv/lib/python3.12/site-packages/ops/framework.py", line 942, in _reemit
+    custom_handler(event)
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/lib/charms/tempo_coordinator_k8s/v0/charm_tracing.py", line 738, in wrapped_function
+    return callable(*args, **kwargs)  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/venv/lib/python3.12/site-packages/common/abstract_charm.py", line 336, in reconcile
+    self._database_provides.reconcile_users(
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/lib/charms/tempo_coordinator_k8s/v0/charm_tracing.py", line 738, in wrapped_function
+    return callable(*args, **kwargs)  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/venv/lib/python3.12/site-packages/common/relations/database_provides.py", line 273, in reconcile_users
+    relation.create_database_and_user(
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/venv/lib/python3.12/site-packages/common/relations/database_provides.py", line 124, in create_database_and_user
+    password = shell.create_application_database(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/venv/lib/python3.12/site-packages/common/mysql_shell/__init__.py", line 215, in create_application_database
+    return self._create_application_user(database=database, username=username)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/venv/lib/python3.12/site-packages/common/mysql_shell/__init__.py", line 205, in _create_application_user
+    self._run_sql([
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/venv/lib/python3.12/site-packages/common/mysql_shell/__init__.py", line 112, in _run_sql
+    self._run_code(
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/venv/lib/python3.12/site-packages/common/mysql_shell/__init__.py", line 99, in _run_code
+    raise ShellDBError(**exception)
+common.mysql_shell.ShellDBError: MySQL Error (1819): ClassicSession.run_sql: Your password does not satisfy the current policy requirements
+unit-mysql-router-0: 02:02:46 ERROR juju.worker.uniter.operation hook "backend-database-relation-changed" (via hook dispatching script: dispatch) failed: exit status 1
+machine-5: 02:12:38 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-5: 02:12:38 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-mysql-router-0: 02:14:03 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: relation scope id "a1d805c7-7303-47ec-8e1a-3f3d8814824a:r#12#self-signed-certificates": settings a1d805c7-7303-47ec-8e1a-3f3d8814824a:r#12#self-signed-certificates not found (not found)
+unit-mysql-router-3: 02:14:37 ERROR juju.worker.dependency "log-sender" manifold worker returned unexpected error: sending log message: websocket: close 1005 (no status): websocket: close sent
+unit-mysql-router-1: 02:14:37 ERROR juju.worker.dependency "log-sender" manifold worker returned unexpected error: sending log message: websocket: close 1005 (no status): websocket: close sent
+unit-mysql-router-2: 02:14:37 ERROR juju.worker.dependency "log-sender" manifold worker returned unexpected error: sending log message: websocket: close 1005 (no status): websocket: close sent
+unit-data-integrator-1: 02:14:57 ERROR juju.worker.dependency "log-sender" manifold worker returned unexpected error: sending log message: websocket: close 1005 (no status): websocket: close sent
+unit-mysql-0: 02:15:03 ERROR juju.worker.dependency "log-sender" manifold worker returned unexpected error: sending log message: websocket: close 1005 (no status): websocket: close sent
+unit-data-integrator-2: 02:15:05 ERROR juju.worker.dependency "log-sender" manifold worker returned unexpected error: sending log message: websocket: close 1005 (no status): websocket: close sent
+unit-hacluster-5: 02:15:09 ERROR juju.worker.dependency "log-sender" manifold worker returned unexpected error: sending log message: websocket: close 1005 (no status): websocket: close sent
+unit-data-integrator-3: 02:15:14 ERROR juju.worker.dependency "log-sender" manifold worker returned unexpected error: sending log message: websocket: close 1005 (no status): websocket: close sent
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...

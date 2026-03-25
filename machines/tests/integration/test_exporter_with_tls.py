@@ -9,6 +9,7 @@ import pytest
 import requests
 import tenacity
 
+from . import architecture
 from .helpers import (
     APPLICATION_DEFAULT_APP_NAME,
     MYSQL_DEFAULT_APP_NAME,
@@ -29,7 +30,7 @@ RETRY_TIMEOUT = 3 * 60
 TLS_APP_NAME = "self-signed-certificates"
 TLS_CHANNEL = "1/stable"
 TLS_CONFIG = {"ca-common-name": "Test CA"}
-TLS_BASE = "ubuntu@24.04"
+TLS_BASE = "ubuntu@22.04"
 
 
 @pytest.mark.abort_on_fail
@@ -43,6 +44,7 @@ def test_exporter_endpoint(juju: jubilant_backports.Juju, charm, ubuntu_base) ->
         app=MYSQL_APP_NAME,
         config={"profile": "testing"},
         num_units=1,
+        constraints={"arch": architecture.architecture},
     )
     juju.deploy(
         charm,

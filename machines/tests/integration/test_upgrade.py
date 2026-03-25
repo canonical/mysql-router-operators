@@ -12,6 +12,7 @@ import pytest
 import tomli
 import tomli_w
 
+from . import architecture
 from .helpers import (
     APPLICATION_DEFAULT_APP_NAME,
     MYSQL_DEFAULT_APP_NAME,
@@ -42,6 +43,7 @@ def test_deploy_edge(juju: jubilant_backports.Juju, ubuntu_base) -> None:
         channel="8.0/edge",
         config={"profile": "testing"},
         base=ubuntu_base,
+        constraints={"arch": architecture.architecture},
     )
     juju.deploy(
         MYSQL_ROUTER_APP_NAME,

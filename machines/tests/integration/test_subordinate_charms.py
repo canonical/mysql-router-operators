@@ -7,8 +7,8 @@ import os
 
 import jubilant_backports
 
-from tests.integration.helpers import wait_for_apps_status
-
+from . import architecture
+from .helpers import wait_for_apps_status
 from .test_database import (
     APPLICATION_APP_NAME,
     MYSQL_APP_NAME,
@@ -26,6 +26,7 @@ def test_ubuntu_pro(juju: jubilant_backports.Juju, charm, ubuntu_base):
         channel="8.0/edge",
         app=MYSQL_APP_NAME,
         config={"profile": "testing"},
+        constraints={"arch": architecture.architecture},
     )
     juju.deploy(
         charm,

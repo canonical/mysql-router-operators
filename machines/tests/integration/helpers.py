@@ -212,12 +212,8 @@ def stop_running_flush_mysqlrouter_cronjobs(juju: Juju, unit_name: str) -> None:
         unit_name: The name of the unit to be tested
     """
     juju.ssh(
-        unit_name,
-        "sudo",
-        "pkill",
-        "-9",
-        "-f",
-        "logrotate -f /etc/logrotate.d/flush_mysqlrouter_logs",
+        command="sudo pkill -9 logrotate || exit 0",
+        target=unit_name,
     )
 
     # hold execution until process is stopped
@@ -525,28 +521,8 @@ def wait_for_apps_status(jubilant_status_func: JujuAppsStatusFn, *apps: str) -> 
     ))
 
 
-def principal_unit_for_subordinate(
-    status: Status, subordinate_unit_name: str, principal_app_name: str
-) -> str:
-    """Returns the principal unit name for a given subordinate unit.
-
-    Args:
-        status: The Juju model status
-        subordinate_unit_name: The name of the subordinate unit
-        principal_app_name: The name of the principal application
-    """
-    for unit, unit_status in status.apps[principal_app_name].units.items():
-        if subordinate_unit_name in unit_status.subordinates:
-            return unit
-
-    raise ValueError(f"Unable to find principal unit for subordinate {subordinate_unit_name}")
-
-
 def wait_for_unit_status(
-    app_name: str,
-    unit_name: str,
-    unit_status: str,
-    subordinate_of=None,
+    app_name: str, unit_name: str, unit_status: str, subordinate_of=None
 ) -> JujuModelStatusFn:
     """Returns whether a Juju unit to have a specific status.
 
@@ -558,7 +534,23 @@ def wait_for_unit_status(
     """
     if subordinate_of:
         return lambda status: (
-            status.apps[subordinate_of]
+            status
+            .apps[subordinate_of]
+            .units[f"{subordinate_of}/0"]
+            .subordinates[unit_name]
+            .workload_status.current
+            == unit_status
+        )
+    else:
+        return lambda status: (
+            status.apps[app_name].units[unit_name].workload_status.current == unit_status
+     def wait_for_unit_message(app_name: str, unit_name: str, unit_message: str) -> JujuModelStatusFn:
+    """Returns whether a Juju unit to have a specific message."""
+    return lambda status: (
+        status.apps[app_name].units[unit_name].workload_status.message == unit_message
+    )   )
+            status
+            .apps[subordinate_of]
             .units[principal_unit_for_subordinate(status, unit_name, subordinate_of)]
             .subordinates[unit_name]
             .workload_status.current
@@ -579,12 +571,6 @@ def wait_for_unit_message(
     """Returns whether a Juju unit to have a specific message."""
     if subordinate_of:
         return lambda status: (
-            status.apps[subordinate_of]
-            .units[principal_unit_for_subordinate(status, unit_name, subordinate_of)]
-            .subordinates[unit_name]
-            .workload_status.message
-            == unit_message
-        )
-    return lambda status: (
-        status.apps[app_name].units[unit_name].workload_status.message == unit_message
-    )
+            status
+            .apps[subordinate_of]
+

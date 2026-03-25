@@ -124,7 +124,6 @@ def test_expose_external(juju: jubilant_backports.Juju, charm, ubuntu_base) -> N
         app=DATA_INTEGRATOR,
         channel="latest/edge",
         config={"database-name": TEST_DATABASE_NAME},
-        base="ubuntu@24.04",
         num_units=1,
         constraints={"arch": architecture.architecture},
     )

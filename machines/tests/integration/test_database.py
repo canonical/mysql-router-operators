@@ -8,6 +8,7 @@ from time import sleep
 import jubilant_backports
 import pytest
 
+from . import architecture
 from .helpers import (
     APPLICATION_DEFAULT_APP_NAME,
     MYSQL_DEFAULT_APP_NAME,
@@ -40,6 +41,7 @@ def test_database_relation(juju: jubilant_backports.Juju, charm, ubuntu_base) ->
         app=MYSQL_APP_NAME,
         config={"profile": "testing"},
         num_units=1,
+        constraints={"arch": architecture.architecture},
     )
     juju.deploy(
         charm,

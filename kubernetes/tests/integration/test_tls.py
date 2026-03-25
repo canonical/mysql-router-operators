@@ -63,6 +63,7 @@ def test_deploy_and_relate(juju: jubilant_backports.Juju, charm, ubuntu_base) ->
         base=ubuntu_base,
         num_units=1,
         trust=True,
+        constraints={"arch": architecture.architecture},
     )
     juju.deploy(
         tls_app_name,

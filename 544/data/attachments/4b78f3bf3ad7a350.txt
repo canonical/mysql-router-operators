@@ -1,0 +1,74 @@
+[32mINFO    [0m integration.test_tls:test_tls.py:103 Relating TLS with mysqlrouter
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[32mINFO    [0m integration.test_tls:test_tls.py:106 Getting certificate issuer after relating with tls operator
+[32mINFO    [0m integration.test_tls:test_tls.py:122 Removing relation TLS with mysqlrouter
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller     Cloud/Region         Version  SLA          Timestamp
+testing  concierge-lxd  localhost/localhost  3.6.19   unsupported  02:10:12Z
+
+App                       Version  Status  Scale  Charm                     Channel      Rev  Exposed  Message
+mysql                     8.4      active      3  mysql                     8.4/edge     496  no       Healthy
+mysql-router              8.4.8    active      1  mysql-router                             0  no       
+mysql-test-app            0.0.2    active      1  mysql-test-app            latest/edge   98  no       Last written value=8279
+self-signed-certificates           active      1  self-signed-certificates  1/stable     586  no       
+
+Unit                         Workload  Agent      Machine  Public address  Ports           Message
+mysql-test-app/0*            active    idle       4        10.132.205.244                  Last written value=8279
+  mysql-router/0*            active    executing           10.132.205.244                  
+mysql/0*                     active    executing  0        10.132.205.141  3306,33060/tcp  Primary
+mysql/1                      active    idle       1        10.132.205.49   3306,33060/tcp  
+mysql/2                      active    idle       2        10.132.205.133  3306,33060/tcp  
+self-signed-certificates/0*  active    idle       3        10.132.205.203                  
+
+Machine  State    Address         Inst id        Base          AZ             Message
+0        started  10.132.205.141  juju-ffe461-0  ubuntu@24.04  runnervm46oaq  Running
+1        started  10.132.205.49   juju-ffe461-1  ubuntu@24.04  runnervm46oaq  Running
+2        started  10.132.205.133  juju-ffe461-2  ubuntu@24.04  runnervm46oaq  Running
+3        started  10.132.205.203  juju-ffe461-3  ubuntu@24.04  runnervm46oaq  Running
+4        started  10.132.205.244  juju-ffe461-4  ubuntu@24.04  runnervm46oaq  Running
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+machine-0: 02:00:51 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 02:00:51 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 02:01:28 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 02:01:28 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 02:01:45 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 02:01:45 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 02:02:14 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 02:02:14 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-mysql-0: 02:02:29 ERROR unit.mysql/0.juju-log root:Failed to get cluster labels
+machine-4: 02:02:42 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-4: 02:02:42 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-mysql-0: 02:02:53 ERROR unit.mysql/0.juju-log mysql_vm_helpers:Failed command: fuser 3306/tcp; user=None; group=None
+unit-mysql-2: 02:03:11 ERROR unit.mysql/2.juju-log mysql_vm_helpers:Failed command: fuser 3306/tcp; user=None; group=None
+unit-mysql-1: 02:03:20 ERROR unit.mysql/1.juju-log mysql_vm_helpers:Failed command: fuser 3306/tcp; user=None; group=None
+unit-mysql-2: 02:03:44 ERROR unit.mysql/2.juju-log root:Failed to get cluster labels
+unit-mysql-2: 02:03:48 ERROR unit.mysql/2.juju-log root:Failed to get cluster labels
+unit-mysql-2: 02:03:56 ERROR unit.mysql/2.juju-log database-peers:0: root:Failed to get cluster labels
+unit-mysql-2: 02:03:57 ERROR unit.mysql/2.juju-log database-peers:0: root:Failed to get cluster labels
+unit-mysql-1: 02:04:04 ERROR unit.mysql/1.juju-log database-peers:0: root:Failed to get cluster labels
+unit-mysql-2: 02:04:05 ERROR unit.mysql/2.juju-log root:Failed to get cluster labels
+unit-mysql-1: 02:04:05 ERROR unit.mysql/1.juju-log database-peers:0: root:Failed to get cluster labels
+unit-mysql-2: 02:04:10 ERROR unit.mysql/2.juju-log root:Failed to get cluster labels
+unit-mysql-1: 02:04:10 ERROR unit.mysql/1.juju-log root:Failed to get cluster labels
+unit-mysql-1: 02:04:15 ERROR unit.mysql/1.juju-log root:Failed to get cluster labels
+unit-mysql-2: 02:04:16 ERROR unit.mysql/2.juju-log database-peers:0: root:Failed to get cluster labels
+unit-mysql-2: 02:04:16 ERROR unit.mysql/2.juju-log database-peers:0: root:Failed to get cluster labels
+unit-mysql-2: 02:04:18 ERROR unit.mysql/2.juju-log database-peers:0: root:Failed to get cluster labels
+unit-mysql-1: 02:04:20 ERROR unit.mysql/1.juju-log database-peers:0: root:Failed to get cluster labels
+unit-mysql-1: 02:04:20 ERROR unit.mysql/1.juju-log database-peers:0: root:Failed to get cluster labels
+unit-mysql-1: 02:04:22 ERROR unit.mysql/1.juju-log database-peers:0: root:Failed to get cluster labels
+unit-mysql-2: 02:04:25 ERROR unit.mysql/2.juju-log database-peers:0: root:Failed to stop instance replication
+unit-mysql-2: 02:04:29 ERROR unit.mysql/2.juju-log database-peers:0: root:Failed to attach instance 10.132.205.133:3306 to cluster cluster-612fe1f272347175e539bd37beac7387
+unit-mysql-1: 02:04:39 ERROR unit.mysql/1.juju-log database-peers:0: root:Failed to get cluster labels
+unit-mysql-1: 02:04:39 ERROR unit.mysql/1.juju-log database-peers:0: root:Failed to get cluster labels
+unit-mysql-1: 02:04:40 ERROR unit.mysql/1.juju-log database-peers:0: root:Failed to get cluster labels
+unit-mysql-1: 02:05:04 ERROR unit.mysql/1.juju-log database-peers:0: root:Failed to get cluster labels
+unit-mysql-1: 02:05:05 ERROR unit.mysql/1.juju-log database-peers:0: root:Failed to get cluster labels
+unit-mysql-1: 02:05:07 ERROR unit.mysql/1.juju-log database-peers:0: root:Failed to get cluster labels
+unit-mysql-1: 02:05:15 ERROR unit.mysql/1.juju-log database-peers:0: root:Failed to stop instance replication
+unit-mysql-1: 02:05:19 ERROR unit.mysql/1.juju-log database-peers:0: root:Failed to attach instance 10.132.205.49:3306 to cluster cluster-612fe1f272347175e539bd37beac7387
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...

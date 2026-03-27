@@ -1,0 +1,64 @@
+[33mWARNING [0m juju.client.connection:connection.py:579 RPC: Connection closed, reconnecting
+[1m[31mERROR   [0m juju.client.connection:connection.py:587 RPC: Automatic reconnect failed
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller     Cloud/Region         Version  SLA          Timestamp
+testing  concierge-lxd  localhost/localhost  3.6.20   unsupported  01:48:52Z
+
+App               Version  Status       Scale  Charm             Channel      Rev  Exposed  Message
+mysql                      waiting          1  mysql             8.4/edge     496  no       agent initialising
+mysql-router      8.4.8    maintenance    0/1  mysql-router                     0  no       Waiting for peer relation
+mysql-test-app    0.0.2    error          0/1  mysql-test-app    latest/edge   98  no       hook failed: "database-relation-changed"
+ubuntu-advantage           maintenance    0/1  ubuntu-advantage  latest/edge  147  no       installing charm software
+
+Unit                   Workload  Agent      Machine  Public address  Ports  Message
+mysql-test-app/0*      error     lost       0        10.18.37.74            hook failed: "database-relation-changed"
+  mysql-router/0*      unknown   lost                10.18.37.74            agent lost, see 'juju show-status-log mysql-router/0'
+  ubuntu-advantage/0*  unknown   lost                10.18.37.74            agent lost, see 'juju show-status-log ubuntu-advantage/0'
+mysql/0*               waiting   executing  1        10.18.37.48            agent initialising
+
+Machine  State    Address      Inst id        Base          AZ             Message
+0        started  10.18.37.74  juju-71af68-0  ubuntu@24.04  runnervmrg6be  Running
+1        started  10.18.37.48  juju-71af68-1  ubuntu@24.04  runnervmrg6be  Running
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+machine-0: 01:48:36 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 01:48:36 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 01:48:43 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 01:48:43 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-mysql-0: 01:48:48 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: lease manager stopped
+unit-mysql-0: 01:48:48 ERROR juju.worker.dependency "secret-drain-worker" manifold worker returned unexpected error: executing leadership func: lease manager stopped
+unit-mysql-router-0: 01:48:48 ERROR juju.worker.uniter resolver loop error: lease manager stopped
+unit-mysql-test-app-0: 01:48:48 ERROR unit.mysql-test-app/0.juju-log database:8: Uncaught exception while in charm code:
+Traceback (most recent call last):
+  File "/var/lib/juju/agents/unit-mysql-test-app-0/charm/src/charm.py", line 485, in <module>
+    main(MySQLTestApplication)
+  File "/var/lib/juju/agents/unit-mysql-test-app-0/charm/venv/lib/python3.12/site-packages/ops/main.py", line 40, in main
+    return _main.main(charm_class=charm_class, use_juju_for_storage=use_juju_for_storage)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-test-app-0/charm/venv/lib/python3.12/site-packages/ops/_main.py", line 558, in main
+    manager.run()
+  File "/var/lib/juju/agents/unit-mysql-test-app-0/charm/venv/lib/python3.12/site-packages/ops/_main.py", line 543, in run
+    self._emit()
+  File "/var/lib/juju/agents/unit-mysql-test-app-0/charm/venv/lib/python3.12/site-packages/ops/_main.py", line 502, in _emit
+    self._emit_charm_event(self.dispatcher.event_name)
+  File "/var/lib/juju/agents/unit-mysql-test-app-0/charm/venv/lib/python3.12/site-packages/ops/_main.py", line 530, in _emit_charm_event
+    event_to_emit.emit(*args, **kwargs)
+  File "/var/lib/juju/agents/unit-mysql-test-app-0/charm/venv/lib/python3.12/site-packages/ops/framework.py", line 347, in emit
+    framework._emit(event)
+  File "/var/lib/juju/agents/unit-mysql-test-app-0/charm/venv/lib/python3.12/site-packages/ops/framework.py", line 906, in _emit
+    self._reemit(event_path)
+  File "/var/lib/juju/agents/unit-mysql-test-app-0/charm/venv/lib/python3.12/site-packages/ops/framework.py", line 996, in _reemit
+    custom_handler(event)
+  File "/var/lib/juju/agents/unit-mysql-test-app-0/charm/src/charm.py", line 381, in _on_relation_changed
+    if self._database_config:
+       ^^^^^^^^^^^^^^^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-test-app-0/charm/src/charm.py", line 139, in _database_config
+    data = list(self.database.fetch_relation_data().values())[0]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+IndexError: list index out of range
+unit-mysql-router-0: 01:48:48 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: lease manager stopped
+unit-mysql-test-app-0: 01:48:48 ERROR juju.worker.uniter.operation hook "database-relation-changed" (via hook dispatching script: dispatch) failed: exit status 1
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...

@@ -1,0 +1,123 @@
+[31m[1mERROR   [0m asyncio:base_events.py:1821 Task exception was never retrieved
+future: <Task finished name='Task-495' coro=<Connection.reconnect() done, defined at /root/spread_project/.tox/integration/lib/python3.12/site-packages/juju/client/connection.py:697> exception=InvalidMessage('did not receive a valid HTTP response')>
+Traceback (most recent call last):
+  File "/root/spread_project/.tox/integration/lib/python3.12/site-packages/websockets/http11.py", line 241, in parse
+    status_line = yield from parse_line(read_line)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/spread_project/.tox/integration/lib/python3.12/site-packages/websockets/http11.py", line 309, in parse_line
+    line = yield from read_line(MAX_LINE_LENGTH)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/spread_project/.tox/integration/lib/python3.12/site-packages/websockets/streams.py", line 46, in read_line
+    raise EOFError(f"stream ends after {p} bytes, before end of line")
+EOFError: stream ends after 0 bytes, before end of line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/root/spread_project/.tox/integration/lib/python3.12/site-packages/websockets/client.py", line 301, in parse
+    response = yield from Response.parse(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/spread_project/.tox/integration/lib/python3.12/site-packages/websockets/http11.py", line 243, in parse
+    raise EOFError("connection closed while reading HTTP status line") from exc
+EOFError: connection closed while reading HTTP status line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/root/spread_project/.tox/integration/lib/python3.12/site-packages/juju/client/connection.py", line 709, in reconnect
+    res = await connector(
+          ^^^^^^^^^^^^^^^^
+  File "/root/spread_project/.tox/integration/lib/python3.12/site-packages/juju/client/connection.py", line 800, in _connect_with_login
+    await self._connect(endpoints)
+  File "/root/spread_project/.tox/integration/lib/python3.12/site-packages/juju/client/connection.py", line 743, in _connect
+    result = await task
+             ^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/tasks.py", line 631, in _wait_for_one
+    return f.result()  # May raise f.exception().
+           ^^^^^^^^^^
+  File "/root/spread_project/.tox/integration/lib/python3.12/site-packages/juju/client/connection.py", line 729, in _try_endpoint
+    return await self._open(endpoint, cacert)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/spread_project/.tox/integration/lib/python3.12/site-packages/juju/client/connection.py", line 333, in _open
+    await websockets.connect(
+  File "/root/spread_project/.tox/integration/lib/python3.12/site-packages/websockets/asyncio/client.py", line 543, in __await_impl__
+    await self.connection.handshake(
+  File "/root/spread_project/.tox/integration/lib/python3.12/site-packages/websockets/asyncio/client.py", line 114, in handshake
+    raise self.protocol.handshake_exc
+websockets.exceptions.InvalidMessage: did not receive a valid HTTP response
+[31m[1mERROR   [0m asyncio:base_events.py:1821 Task exception was never retrieved
+future: <Task finished name='Task-493' coro=<Connection.reconnect() done, defined at /root/spread_project/.tox/integration/lib/python3.12/site-packages/juju/client/connection.py:697> exception=InvalidMessage('did not receive a valid HTTP response')>
+Traceback (most recent call last):
+  File "/root/spread_project/.tox/integration/lib/python3.12/site-packages/websockets/http11.py", line 241, in parse
+    status_line = yield from parse_line(read_line)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/spread_project/.tox/integration/lib/python3.12/site-packages/websockets/http11.py", line 309, in parse_line
+    line = yield from read_line(MAX_LINE_LENGTH)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/spread_project/.tox/integration/lib/python3.12/site-packages/websockets/streams.py", line 46, in read_line
+    raise EOFError(f"stream ends after {p} bytes, before end of line")
+EOFError: stream ends after 0 bytes, before end of line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/root/spread_project/.tox/integration/lib/python3.12/site-packages/websockets/client.py", line 301, in parse
+    response = yield from Response.parse(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/spread_project/.tox/integration/lib/python3.12/site-packages/websockets/http11.py", line 243, in parse
+    raise EOFError("connection closed while reading HTTP status line") from exc
+EOFError: connection closed while reading HTTP status line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/root/spread_project/.tox/integration/lib/python3.12/site-packages/juju/client/connection.py", line 709, in reconnect
+    res = await connector(
+          ^^^^^^^^^^^^^^^^
+  File "/root/spread_project/.tox/integration/lib/python3.12/site-packages/juju/client/connection.py", line 800, in _connect_with_login
+    await self._connect(endpoints)
+  File "/root/spread_project/.tox/integration/lib/python3.12/site-packages/juju/client/connection.py", line 743, in _connect
+    result = await task
+             ^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/tasks.py", line 631, in _wait_for_one
+    return f.result()  # May raise f.exception().
+           ^^^^^^^^^^
+  File "/root/spread_project/.tox/integration/lib/python3.12/site-packages/juju/client/connection.py", line 729, in _try_endpoint
+    return await self._open(endpoint, cacert)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/spread_project/.tox/integration/lib/python3.12/site-packages/juju/client/connection.py", line 333, in _open
+    await websockets.connect(
+  File "/root/spread_project/.tox/integration/lib/python3.12/site-packages/websockets/asyncio/client.py", line 543, in __await_impl__
+    await self.connection.handshake(
+  File "/root/spread_project/.tox/integration/lib/python3.12/site-packages/websockets/asyncio/client.py", line 114, in handshake
+    raise self.protocol.handshake_exc
+websockets.exceptions.InvalidMessage: did not receive a valid HTTP response
+[31m[1mERROR   [0m juju.client.connection:connection.py:587 RPC: Automatic reconnect failed
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller     Cloud/Region         Version  SLA          Timestamp
+testing  concierge-lxd  localhost/localhost  3.6.20   unsupported  01:48:06Z
+
+App              Version  Status   Scale  Charm            Channel        Rev  Exposed  Message
+data-integrator           waiting    0/4  data-integrator  latest/stable  362  no       waiting for machine
+mysql                     waiting    0/1  mysql            8.4/edge       496  no       waiting for machine
+mysql-router              unknown      0  mysql-router                      0  no       
+
+Unit               Workload  Agent       Machine  Public address  Ports  Message
+data-integrator/0  waiting   allocating  0        10.186.233.172         waiting for machine
+data-integrator/1  waiting   allocating  1                               waiting for machine
+data-integrator/2  waiting   allocating  2        10.186.233.71          waiting for machine
+data-integrator/3  waiting   allocating  3                               waiting for machine
+mysql/0            waiting   allocating  4                               waiting for machine
+
+Machine  State    Address         Inst id        Base          AZ             Message
+0        pending  10.186.233.172  juju-de4b74-0  ubuntu@24.04  runnervmrg6be  Running
+1        pending                  pending        ubuntu@24.04                 Creating container
+2        pending  10.186.233.71   juju-de4b74-2  ubuntu@24.04  runnervmrg6be  Running
+3        pending                  pending        ubuntu@24.04                 Creating container
+4        pending                  pending        ubuntu@24.04                 Creating container
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...

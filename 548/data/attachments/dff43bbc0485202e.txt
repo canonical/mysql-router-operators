@@ -1,0 +1,56 @@
+[32mINFO    [0m integration.test_tls:test_tls.py:116 Relating TLS with mysqlrouter
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[32mINFO    [0m integration.test_tls:test_tls.py:119 Getting certificate issuer after relating with tls operator
+[32mINFO    [0m integration.test_tls:test_tls.py:136 Removing relation TLS with mysqlrouter
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller          Cloud/Region        Version  SLA          Timestamp
+testing  concierge-microk8s  microk8s/localhost  3.6.20   unsupported  01:50:47Z
+
+App                       Version  Status  Scale  Charm                     Channel      Rev  Address         Exposed  Message
+mysql-k8s                 8.4      active      3  mysql-k8s                 8.4/edge     404  10.152.183.253  no       
+mysql-router-k8s          8.4.8    active      1  mysql-router-k8s                         0  10.152.183.190  no       
+mysql-test-app            0.0.2    active      1  mysql-test-app            latest/edge   98  10.152.183.213  no       Last written value=65
+self-signed-certificates           active      1  self-signed-certificates  1/stable     586  10.152.183.236  no       
+
+Unit                         Workload  Agent      Address      Ports  Message
+mysql-k8s/0                  active    executing  10.1.144.79         
+mysql-k8s/1*                 active    executing  10.1.144.78         
+mysql-k8s/2                  active    executing  10.1.144.77         
+mysql-router-k8s/0*          active    executing  10.1.144.80         
+mysql-test-app/0*            active    idle       10.1.144.81         Last written value=65
+self-signed-certificates/0*  active    idle       10.1.144.82         
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+unit-mysql-k8s-1: 01:48:38 ERROR unit.mysql-k8s/1.juju-log root:Failed to get cluster labels
+unit-mysql-k8s-0: 01:48:59 ERROR unit.mysql-k8s/0.juju-log root:Failed to get cluster labels
+unit-mysql-k8s-0: 01:48:59 ERROR unit.mysql-k8s/0.juju-log root:Failed to get cluster labels
+unit-mysql-k8s-2: 01:49:01 ERROR unit.mysql-k8s/2.juju-log root:Failed to get cluster labels
+unit-mysql-k8s-1: 01:49:01 ERROR unit.mysql-k8s/1.juju-log root:Failed to get cluster labels
+unit-mysql-k8s-0: 01:49:15 ERROR unit.mysql-k8s/0.juju-log database-peers:0: root:Failed to get cluster labels
+unit-mysql-k8s-2: 01:49:15 ERROR unit.mysql-k8s/2.juju-log database-peers:0: root:Failed to get cluster labels
+unit-mysql-k8s-0: 01:49:15 ERROR unit.mysql-k8s/0.juju-log database-peers:0: root:Failed to get cluster labels
+unit-mysql-k8s-2: 01:49:15 ERROR unit.mysql-k8s/2.juju-log database-peers:0: root:Failed to get cluster labels
+unit-mysql-k8s-2: 01:49:27 ERROR unit.mysql-k8s/2.juju-log database-peers:0: root:Failed to get cluster labels
+unit-mysql-k8s-2: 01:49:28 ERROR unit.mysql-k8s/2.juju-log database-peers:0: root:Failed to get cluster labels
+unit-mysql-k8s-2: 01:49:28 ERROR unit.mysql-k8s/2.juju-log database-peers:0: root:Failed to get cluster labels
+unit-mysql-k8s-0: 01:49:32 ERROR unit.mysql-k8s/0.juju-log database-peers:0: root:Failed to get cluster labels
+unit-mysql-k8s-0: 01:49:32 ERROR unit.mysql-k8s/0.juju-log database-peers:0: root:Failed to get cluster labels
+unit-mysql-k8s-0: 01:49:33 ERROR unit.mysql-k8s/0.juju-log database-peers:0: root:Failed to get cluster labels
+unit-mysql-k8s-0: 01:49:37 ERROR unit.mysql-k8s/0.juju-log database-peers:0: root:Failed to stop instance replication
+unit-mysql-k8s-2: 01:49:38 ERROR unit.mysql-k8s/2.juju-log database-peers:0: root:Failed to get cluster labels
+unit-mysql-k8s-2: 01:49:38 ERROR unit.mysql-k8s/2.juju-log database-peers:0: root:Failed to get cluster labels
+unit-mysql-k8s-2: 01:49:39 ERROR unit.mysql-k8s/2.juju-log database-peers:0: root:Failed to get cluster labels
+unit-mysql-k8s-0: 01:49:40 ERROR unit.mysql-k8s/0.juju-log database-peers:0: root:Failed to attach instance mysql-k8s-0.mysql-k8s-endpoints.testing.svc.cluster.local.:3306 to cluster cluster-dd537fe94ad5a392c8f51e15fade2af1
+unit-mysql-k8s-2: 01:49:50 ERROR unit.mysql-k8s/2.juju-log root:Failed to get cluster labels
+unit-mysql-k8s-2: 01:49:51 ERROR unit.mysql-k8s/2.juju-log root:Failed to get cluster labels
+unit-mysql-k8s-2: 01:49:55 ERROR unit.mysql-k8s/2.juju-log root:Failed to get cluster labels
+unit-mysql-k8s-2: 01:49:56 ERROR unit.mysql-k8s/2.juju-log root:Failed to get cluster labels
+unit-mysql-k8s-2: 01:50:12 ERROR unit.mysql-k8s/2.juju-log database-peers:0: root:Failed to get cluster labels
+unit-mysql-k8s-2: 01:50:12 ERROR unit.mysql-k8s/2.juju-log database-peers:0: root:Failed to get cluster labels
+unit-mysql-k8s-2: 01:50:14 ERROR unit.mysql-k8s/2.juju-log database-peers:0: root:Failed to get cluster labels
+unit-mysql-k8s-2: 01:50:20 ERROR unit.mysql-k8s/2.juju-log database-peers:0: root:Failed to stop instance replication
+unit-mysql-k8s-2: 01:50:24 ERROR unit.mysql-k8s/2.juju-log database-peers:0: root:Failed to attach instance mysql-k8s-2.mysql-k8s-endpoints.testing.svc.cluster.local.:3306 to cluster cluster-dd537fe94ad5a392c8f51e15fade2af1
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...

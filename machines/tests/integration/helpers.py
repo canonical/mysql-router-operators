@@ -542,8 +542,7 @@ def wait_for_unit_status(
     """
     if subordinate_of:
         return lambda status: (
-            status
-            .apps[subordinate_of]
+            status.apps[subordinate_of]
             .units[f"{subordinate_of}/0"]
             .subordinates[unit_name]
             .workload_status.current
@@ -581,8 +580,7 @@ def wait_for_unit_message(
     """Returns whether a Juju unit to have a specific message."""
     if subordinate_of:
         return lambda status: (
-            status
-            .apps[subordinate_of]
+            status.apps[subordinate_of]
             .units[principal_unit_for_subordinate(status, unit_name, subordinate_of)]
             .subordinates[unit_name]
             .workload_status.message

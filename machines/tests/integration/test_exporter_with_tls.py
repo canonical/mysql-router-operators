@@ -59,6 +59,7 @@ def test_exporter_endpoint(juju: jubilant_backports.Juju, charm, ubuntu_base) ->
         # they will use the series of the principal charm
         base=ubuntu_base,
         channel="latest/edge",
+        config={"sleep_interval": 1000},
     )
     juju.deploy(
         GRAFANA_AGENT_APP_NAME,
@@ -88,10 +89,10 @@ def test_exporter_endpoint(juju: jubilant_backports.Juju, charm, ubuntu_base) ->
 
     juju.wait(
         ready=lambda status: (
-            status.apps[MYSQL_APP_NAME].app_status == "active"
-            and status.apps[MYSQL_ROUTER_APP_NAME].app_status == "active"
-            and status.apps[APPLICATION_APP_NAME].app_status == "active"
-            and status.apps[GRAFANA_AGENT_APP_NAME].app_status == "blocked"
+            status.apps[MYSQL_APP_NAME].app_status.current == "active"
+            and status.apps[MYSQL_ROUTER_APP_NAME].app_status.current == "active"
+            and status.apps[APPLICATION_APP_NAME].app_status.current == "active"
+            and status.apps[GRAFANA_AGENT_APP_NAME].app_status.current == "blocked"
         ),
         timeout=SLOW_TIMEOUT,
     )
@@ -116,7 +117,7 @@ def test_exporter_endpoint(juju: jubilant_backports.Juju, charm, ubuntu_base) ->
         base=TLS_BASE,
     )
     juju.wait(
-        ready=lambda status: status.apps[TLS_APP_NAME].app_status == "active",
+        ready=lambda status: status.apps[TLS_APP_NAME].app_status.current == "active",
         timeout=SLOW_TIMEOUT,
     )
 

@@ -61,6 +61,7 @@ def test_build_deploy_and_relate(juju: jubilant_backports.Juju, charm, ubuntu_ba
         app=TEST_APP_NAME,
         channel="latest/edge",
         base=ubuntu_base,
+        config={"sleep_interval": 1000},
     )
 
     juju.integrate(f"{MYSQL_ROUTER_APP_NAME}:backend-database", f"{MYSQL_APP_NAME}:database")
@@ -70,7 +71,7 @@ def test_build_deploy_and_relate(juju: jubilant_backports.Juju, charm, ubuntu_ba
     # We can safely wait only for test application to be ready, given that it will
     # only become active once all the other applications are ready.
     juju.wait(
-        ready=lambda status: status.apps[TEST_APP_NAME].app_status == "active",
+        ready=lambda status: status.apps[TEST_APP_NAME].app_status.current == "active",
         timeout=SLOW_TIMEOUT,
     )
 

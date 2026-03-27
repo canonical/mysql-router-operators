@@ -7,7 +7,6 @@ import subprocess
 from time import sleep
 
 import jubilant_backports
-import pytest
 import tenacity
 
 from . import architecture
@@ -19,6 +18,8 @@ from .helpers import (
     get_leader_unit,
     get_machine_address,
     get_tls_certificate_issuer,
+    machine_for_subordinate,
+    principal_unit_for_subordinate,
     wait_for_apps_status,
     wait_for_unit_message,
     wait_for_unit_status,
@@ -90,7 +91,6 @@ def generate_next_available_ip(
     assert False, "Unable to compute next available IP"
 
 
-@pytest.mark.abort_on_fail
 def test_external_connectivity_vip_with_hacluster(
     juju: jubilant_backports.Juju, charm, ubuntu_base
 ) -> None:
@@ -165,10 +165,10 @@ def test_external_connectivity_vip_with_hacluster(
     juju.integrate(f"{DATA_INTEGRATOR_APP_NAME}:juju-info", f"{HA_CLUSTER_APP_NAME}:juju-info")
     juju.integrate(f"{MYSQL_ROUTER_APP_NAME}:ha", f"{HA_CLUSTER_APP_NAME}:ha")
 
-    logger.info("Configure the VIP on mysqlrouter")
     global vip
     vip = generate_next_available_ip(juju, hostname)
 
+    logger.info(f"Configuring {vip=} on mysqlrouter")
     juju.config(MYSQL_ROUTER_APP_NAME, {"vip": vip})
 
     for attempt in tenacity.Retrying(
@@ -187,6 +187,7 @@ def test_external_connectivity_vip_with_hacluster(
             DATA_INTEGRATOR_APP_NAME,
             MYSQL_ROUTER_APP_NAME,
             MYSQL_APP_NAME,
+            HA_CLUSTER_APP_NAME,
         ),
         timeout=TIMEOUT,
     )
@@ -223,36 +224,35 @@ def test_external_connectivity_vip_with_hacluster(
     ensure_database_accessible_from_vip(juju)
 
 
-@pytest.mark.abort_on_fail
 def test_hacluster_failover(juju: jubilant_backports.Juju) -> None:
     """Test the failover of the hacluster leader."""
     logger.info("Stopping the lxd container for the hacluster primary")
     # Find hacluster leader unit
-    hacluster_leader_unit_name = get_leader_unit(juju, HA_CLUSTER_APP_NAME) or ""
+    hacluster_leader_unit_name = (
+        get_leader_unit(juju, HA_CLUSTER_APP_NAME, DATA_INTEGRATOR_APP_NAME) or ""
+    )
 
     # Get machine hostname for the leader unit
     status = juju.status()
-    machine_id = status.apps[HA_CLUSTER_APP_NAME].units[hacluster_leader_unit_name].machine
+    machine_id = (
+        machine_for_subordinate(status, hacluster_leader_unit_name, DATA_INTEGRATOR_APP_NAME) or ""
+    )
     machine_hostname = status.machines[machine_id].hostname
 
     subprocess.check_output(["lxc", "stop", machine_hostname], encoding="utf-8")
     sleep(10)
 
+    logger.info("Waiting for machine to be reported as down")
     juju.wait(
-        ready=wait_for_apps_status(
-            jubilant_backports.all_active,
-            MYSQL_ROUTER_APP_NAME,
-            MYSQL_APP_NAME,
-            DATA_INTEGRATOR_APP_NAME,
-        ),
+        ready=lambda status: status.machines[machine_id].juju_status.current == "down",
         timeout=TIMEOUT,
     )
 
     logger.info("Ensuring database still accessible via VIP")
     # Find principal unit for hacluster leader (assumes data-integrator)
     if hacluster_leader_unit_name:
-        avoid_unit = hacluster_leader_unit_name.replace(
-            HA_CLUSTER_APP_NAME, DATA_INTEGRATOR_APP_NAME
+        avoid_unit = principal_unit_for_subordinate(
+            status, hacluster_leader_unit_name, DATA_INTEGRATOR_APP_NAME
         )
         ensure_database_accessible_from_vip(juju, avoid_unit=avoid_unit)
     else:
@@ -275,8 +275,7 @@ def test_hacluster_failover(juju: jubilant_backports.Juju) -> None:
     )
 
 
-@pytest.mark.abort_on_fail
-def test_tls_along_with_ha_cluster(juju: jubilant_backports.Juju, base) -> None:
+def test_tls_along_with_ha_cluster(juju: jubilant_backports.Juju) -> None:
     """Ensure that mysqlrouter is externally accessible with TLS integration."""
     logger.info("Deploying TLS")
     juju.deploy(
@@ -308,7 +307,7 @@ def test_tls_along_with_ha_cluster(juju: jubilant_backports.Juju, base) -> None:
     juju.integrate(f"{MYSQL_ROUTER_APP_NAME}:certificates", f"{TLS_APP_NAME}:certificates")
 
     juju.wait(
-        ready=lambda status: status.apps[TLS_APP_NAME].app_status == "active",
+        ready=lambda status: status.apps[TLS_APP_NAME].app_status.current == "active",
         timeout=TIMEOUT,
     )
 
@@ -357,7 +356,6 @@ def test_tls_along_with_ha_cluster(juju: jubilant_backports.Juju, base) -> None:
     ensure_database_accessible_from_vip(juju)
 
 
-@pytest.mark.abort_on_fail
 def test_remove_vip(juju: jubilant_backports.Juju) -> None:
     """Ensure removal of VIP results in connection through data-integrator."""
     logger.info("Resetting the VIP")

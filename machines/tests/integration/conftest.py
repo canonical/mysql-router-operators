@@ -13,18 +13,8 @@ logger = logging.getLogger(__name__)
 
 
 @pytest.fixture(scope="module")
-def juju(request: pytest.FixtureRequest):
-    """Create a temporary Juju model for tests."""
-    keep_models = bool(request.config.getoption("--keep-models"))
-
-    with jubilant_backports.temp_model(keep=keep_models) as juju_instance:
-        juju_instance.wait_timeout = 10 * 60
-
-        yield juju_instance
-
-        if request.session.testsfailed:
-            log = juju_instance.debug_log(limit=1000)
-            print(log, end="")
+def juju() -> jubilant_backports.Juju:
+    return jubilant_backports.Juju(model="testing")
 
 
 def pytest_addoption(parser):

@@ -308,23 +308,31 @@ def get_primary_unit(
     return primary_unit
 
 
-def get_leader_unit(juju: Juju, app_name: str) -> str | None:
+def get_leader_unit(juju: Juju, app_name: str, subordinate_of: str | None) -> str | None:
     """Get the leader unit of a given application.
 
     Args:
         juju: Jubilant Juju instance
         app_name: The name of the application
+        subordinate_of: If the application is a subordinate, the name of the application it is subordinate to
 
     Returns:
         Unit name of the leader or None if not found
     """
     model_status = juju.status()
-    app_status = model_status.apps[app_name]
-    for name, status in app_status.units.items():
-        if status.leader:
-            return name
-
-    return None
+    if subordinate_of:
+        app_status = model_status.apps[subordinate_of]
+        if app_status.units:
+            for unit in app_status.units.values():
+                if unit.subordinates:
+                    for sub_name, sub_unit in unit.subordinates.items():
+                        if app_name in sub_name and sub_unit.leader:
+                            return sub_name
+    else:
+        app_status = model_status.apps[app_name]
+        for name, status in app_status.units.items():
+            if status.leader:
+                return name
 
 
 def get_primary_unit_wrapper(juju: Juju, app_name: str, unit_excluded: str | None = None) -> str:
@@ -534,7 +542,8 @@ def wait_for_unit_status(
     """
     if subordinate_of:
         return lambda status: (
-            status.apps[subordinate_of]
+            status
+            .apps[subordinate_of]
             .units[f"{subordinate_of}/0"]
             .subordinates[unit_name]
             .workload_status.current
@@ -572,7 +581,8 @@ def wait_for_unit_message(
     """Returns whether a Juju unit to have a specific message."""
     if subordinate_of:
         return lambda status: (
-            status.apps[subordinate_of]
+            status
+            .apps[subordinate_of]
             .units[principal_unit_for_subordinate(status, unit_name, subordinate_of)]
             .subordinates[unit_name]
             .workload_status.message
@@ -581,3 +591,18 @@ def wait_for_unit_message(
     return lambda status: (
         status.apps[app_name].units[unit_name].workload_status.message == unit_message
     )
+
+
+def machine_for_subordinate(
+    status: Status, subordinate_unit_name: str, principal_app_name: str
+) -> str | None:
+    """Returns the machine id for a given subordinate unit.
+
+    Args:
+        status: The Juju model status
+        subordinate_unit_name: The name of the subordinate unit
+        principal_app_name: The name of the principal application
+    """
+    for unit in status.apps[principal_app_name].units.values():
+        if subordinate_unit_name in unit.subordinates:
+            return unit.machine

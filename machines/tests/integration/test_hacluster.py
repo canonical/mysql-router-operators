@@ -387,8 +387,9 @@ def test_remove_vip(juju: jubilant_backports.Juju) -> None:
         MYSQL_ROUTER_APP_NAME,
         HA_CLUSTER_APP_NAME,
     )
+    sleep(10)
     juju.wait(
-        ready=lambda status: status.apps[MYSQL_ROUTER_APP_NAME].app_status == "active",
+        ready=lambda status: status.apps[MYSQL_ROUTER_APP_NAME].app_status.current == "active",
         timeout=TIMEOUT,
     )
 

@@ -1,0 +1,23 @@
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller          Cloud/Region        Version  SLA          Timestamp
+testing  concierge-microk8s  microk8s/localhost  3.6.20   unsupported  01:56:49Z
+
+App               Version  Status  Scale  Charm             Channel      Rev  Address         Exposed  Message
+mysql-k8s         8.4      active      1  mysql-k8s         8.4/edge     404  10.152.183.43   no       
+mysql-router-k8s  8.4.7    active      3  mysql-router-k8s  8.4/edge     878  10.152.183.133  no       
+mysql-test-app    0.0.2    active      1  mysql-test-app    latest/edge   98  10.152.183.200  no       
+
+Unit                 Workload  Agent  Address      Ports  Message
+mysql-k8s/0*         active    idle   10.1.233.15         
+mysql-router-k8s/0   active    idle   10.1.233.13         
+mysql-router-k8s/1*  active    idle   10.1.233.12         
+mysql-router-k8s/2   active    idle   10.1.233.14         
+mysql-test-app/0*    active    idle   10.1.233.11         
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+unit-mysql-k8s-0: 01:55:14 ERROR unit.mysql-k8s/0.juju-log root:Failed to get cluster labels
+unit-mysql-k8s-0: 01:55:35 ERROR unit.mysql-k8s/0.juju-log root:Failed to get cluster labels
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...

@@ -14,7 +14,7 @@ from .helpers import (
     MYSQL_ROUTER_DEFAULT_APP_NAME,
     execute_queries_against_unit,
     get_inserted_data_by_application,
-    get_server_config_credentials,
+    get_operator_credentials,
 )
 
 logger = logging.getLogger(__name__)
@@ -111,15 +111,15 @@ async def test_database_relation(ops_test: OpsTest, charm, ubuntu_base) -> None:
 
     mysql_unit = mysql_app.units[0]
     mysql_unit_address = await mysql_unit.get_public_address()
-    server_config_credentials = await get_server_config_credentials(mysql_unit)
+    operator_credentials = await get_operator_credentials(mysql_unit)
 
     select_inserted_data_sql = (
         f"SELECT data FROM `{TEST_DATABASE}`.{TEST_TABLE} WHERE data = '{inserted_data}'",
     )
     selected_data = await execute_queries_against_unit(
         mysql_unit_address,
-        server_config_credentials["username"],
-        server_config_credentials["password"],
+        operator_credentials["username"],
+        operator_credentials["password"],
         select_inserted_data_sql,
     )
 

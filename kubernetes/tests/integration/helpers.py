@@ -33,7 +33,6 @@ MYSQL_DEFAULT_APP_NAME = "mysql-k8s"
 MYSQL_ROUTER_DEFAULT_APP_NAME = "mysql-router-k8s"
 APPLICATION_DEFAULT_APP_NAME = "mysql-test-app"
 
-SERVER_CONFIG_USERNAME = "serverconfig"
 CONTAINER_NAME = "mysql-router"
 LOGROTATE_EXECUTOR_SERVICE = "logrotate_executor"
 
@@ -78,7 +77,7 @@ async def execute_queries_against_unit(
     return output
 
 
-async def get_server_config_credentials(unit: Unit) -> dict:
+async def get_operator_credentials(unit: Unit) -> dict:
     """Helper to run an action to retrieve server config credentials.
 
     Args:
@@ -87,7 +86,7 @@ async def get_server_config_credentials(unit: Unit) -> dict:
     Returns:
         A dictionary with the server config username and password
     """
-    return await run_action(unit, "get-password", username=SERVER_CONFIG_USERNAME)
+    return await run_action(unit, "get-password", username="charmed-operator")
 
 
 async def get_inserted_data_by_application(unit: Unit) -> str | None:
@@ -565,10 +564,10 @@ async def ensure_all_units_continuous_writes_incrementing(
 
     primary = await get_primary_unit_wrapper(ops_test, mysql_application_name)
 
-    server_config_credentials = await get_server_config_credentials(mysql_units[0])
+    operator_credentials = await get_operator_credentials(mysql_units[0])
 
     last_max_written_value = await get_max_written_value_in_database(
-        ops_test, primary, server_config_credentials
+        ops_test, primary, operator_credentials
     )
 
     select_all_continuous_writes_sql = [
@@ -586,7 +585,7 @@ async def ensure_all_units_continuous_writes_incrementing(
 
                     # ensure the max written value is incrementing (continuous writes is active)
                     max_written_value = await get_max_written_value_in_database(
-                        ops_test, unit, server_config_credentials
+                        ops_test, unit, operator_credentials
                     )
                     assert max_written_value > last_max_written_value, (
                         "Continuous writes not incrementing"
@@ -596,8 +595,8 @@ async def ensure_all_units_continuous_writes_incrementing(
                     all_written_values = set(
                         await execute_queries_against_unit(
                             unit_address,
-                            server_config_credentials["username"],
-                            server_config_credentials["password"],
+                            operator_credentials["username"],
+                            operator_credentials["password"],
                             select_all_continuous_writes_sql,
                         )
                     )

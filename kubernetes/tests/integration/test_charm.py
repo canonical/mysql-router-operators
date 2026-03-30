@@ -17,7 +17,7 @@ from .helpers import (
     MYSQL_ROUTER_DEFAULT_APP_NAME,
     execute_queries_against_unit,
     get_inserted_data_by_application,
-    get_server_config_credentials,
+    get_operator_credentials,
     get_unit_address,
     scale_application,
 )
@@ -106,15 +106,15 @@ async def test_database_relation(ops_test: OpsTest, charm):
 
     mysql_unit = mysql_app.units[0]
     mysql_unit_address = await get_unit_address(ops_test, mysql_unit.name)
-    server_config_credentials = await get_server_config_credentials(mysql_unit)
+    operator_credentials = await get_operator_credentials(mysql_unit)
 
     select_inserted_data_sql = [
         f"SELECT data FROM continuous_writes.random_data WHERE data = '{inserted_data}'",
     ]
     selected_data = await execute_queries_against_unit(
         mysql_unit_address,
-        server_config_credentials["username"],
-        server_config_credentials["password"],
+        operator_credentials["username"],
+        operator_credentials["password"],
         select_inserted_data_sql,
     )
 

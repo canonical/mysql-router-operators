@@ -95,8 +95,6 @@ backends:
           username: runner
       - ubuntu-22.04-arm:
           username: runner
-          variants:
-            - -juju29
 
 suites:
   tests/spread/:

@@ -3,13 +3,18 @@
 
 import logging
 
+import jubilant_backports
 import pytest
-from pytest_operator.plugin import OpsTest
 
 from . import architecture, juju_
 from .helpers import APPLICATION_DEFAULT_APP_NAME, get_application_name
 
 logger = logging.getLogger(__name__)
+
+
+@pytest.fixture(scope="module")
+def juju() -> jubilant_backports.Juju:
+    return jubilant_backports.Juju(model="testing")
 
 
 @pytest.fixture
@@ -24,26 +29,25 @@ def series():
 
 @pytest.fixture
 def charm(ubuntu_base):
-    # Return str instead of pathlib.Path since python-libjuju's model.deploy(), juju deploy, and
-    # juju bundle files expect local charms to begin with `./` or `/` to distinguish them from
-    # Charmhub charms.
+    # Return str instead of pathlib.Path since juju deploy and juju bundle files expect
+    # local charms to begin with `./` or `/` to distinguish them from Charmhub charms.
     return f"./mysql-router-k8s_{ubuntu_base}-{architecture.architecture}.charm"
 
 
 @pytest.fixture
-async def continuous_writes(ops_test: OpsTest):
+def continuous_writes(juju: jubilant_backports.Juju):
     """Starts continuous writes to the MySQL cluster for a test and clear the writes at the end."""
-    application_name = get_application_name(ops_test, APPLICATION_DEFAULT_APP_NAME)
+    application_name = get_application_name(juju, APPLICATION_DEFAULT_APP_NAME)
 
-    application_unit = ops_test.model.applications[application_name].units[0]
+    application_unit = f"{application_name}/0"
 
     logger.info("Clearing continuous writes")
-    await juju_.run_action(application_unit, "clear-continuous-writes")
+    juju_.run_action(juju, application_unit, "clear-continuous-writes")
 
     logger.info("Starting continuous writes")
-    await juju_.run_action(application_unit, "start-continuous-writes")
+    juju_.run_action(juju, application_unit, "start-continuous-writes")
 
     yield
 
     logger.info("Clearing continuous writes")
-    await juju_.run_action(application_unit, "clear-continuous-writes")
+    juju_.run_action(juju, application_unit, "clear-continuous-writes")

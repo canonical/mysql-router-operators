@@ -7,19 +7,20 @@ import logging
 import pathlib
 import subprocess
 import tempfile
+from collections.abc import Callable
 
+import jubilant_backports
 import mysql.connector
 import tenacity
 import yaml
-from juju.model import Model
-from juju.unit import Unit
+from jubilant_backports import Juju
+from jubilant_backports.statustypes import Status
 from mysql.connector.errors import (
     DatabaseError,
     InterfaceError,
     OperationalError,
     ProgrammingError,
 )
-from pytest_operator.plugin import OpsTest
 
 from .connector import MySQLConnector
 from .juju_ import run_action
@@ -37,8 +38,11 @@ SERVER_CONFIG_USERNAME = "serverconfig"
 CONTAINER_NAME = "mysql-router"
 LOGROTATE_EXECUTOR_SERVICE = "logrotate_executor"
 
+JujuModelStatusFn = Callable[[Status], bool]
+JujuAppsStatusFn = Callable[[Status, str], bool]
 
-async def execute_queries_against_unit(
+
+def execute_queries_against_unit(
     unit_address: str,
     username: str,
     password: str,
@@ -78,116 +82,110 @@ async def execute_queries_against_unit(
     return output
 
 
-async def get_server_config_credentials(unit: Unit) -> dict:
+def get_server_config_credentials(juju: Juju, unit_name: str) -> dict:
     """Helper to run an action to retrieve server config credentials.
 
     Args:
-        unit: The juju unit on which to run the get-password action for server-config credentials
+        juju: Jubilant Juju instance
+        unit_name: The juju unit name on which to run the get-password action for server-config credentials
 
     Returns:
         A dictionary with the server config username and password
     """
-    return await run_action(unit, "get-password", username=SERVER_CONFIG_USERNAME)
+    return run_action(juju, unit_name, "get-password", username=SERVER_CONFIG_USERNAME)
 
 
-async def get_inserted_data_by_application(unit: Unit) -> str | None:
+def get_inserted_data_by_application(juju: Juju, unit_name: str) -> str | None:
     """Helper to run an action to retrieve inserted data by the application.
 
     Args:
-        unit: The juju unit on which to run the get-inserted-data action
+        juju: Jubilant Juju instance
+        unit_name: The juju unit name on which to run the get-inserted-data action
 
     Returns:
         A string representing the inserted data
     """
-    return (await run_action(unit, "get-inserted-data")).get("data")
+    return run_action(juju, unit_name, "get-inserted-data").get("data")
 
 
-async def get_credentials(unit: Unit) -> dict:
+def get_credentials(juju: Juju, unit_name: str) -> dict:
     """Helper to run an action on data-integrator to get credentials.
 
     Args:
-        unit: The data-integrator unit to run action against
+        juju: Jubilant Juju instance
+        unit_name: The data-integrator unit name to run action against
 
     Returns:
         A dictionary with the credentials
     """
-    return await run_action(unit, "get-credentials")
+    return run_action(juju, unit_name, "get-credentials")
 
 
-async def get_unit_address(ops_test: OpsTest, unit_name: str) -> str:
+def get_unit_address(juju: Juju, unit_name: str) -> str:
     """Get unit IP address.
 
     Args:
-        ops_test: The ops test framework instance
+        juju: Jubilant Juju instance
         unit_name: The name of the unit
 
     Returns:
         IP address of the unit
     """
-    status = await ops_test.model.get_status()
-    return status["applications"][unit_name.split("/")[0]].units[unit_name]["address"]
+    status = juju.status()
+    app_name = unit_name.split("/")[0]
+    return status.apps[app_name].units[unit_name].address
 
 
-async def scale_application(
-    ops_test: OpsTest, application_name: str, desired_count: int, wait: bool = True
+def scale_application(
+    juju: Juju, application_name: str, desired_count: int, wait: bool = True
 ) -> None:
     """Scale a given application to the desired unit count.
 
     Args:
-        ops_test: The ops test framework
+        juju: Jubilant Juju instance
         application_name: The name of the application
         desired_count: The number of units to scale to
         wait: Boolean indicating whether to wait until units
             reach desired count
     """
-    await ops_test.model.applications[application_name].scale(desired_count)
+    juju.cli("scale-application", application_name, str(desired_count))
 
     if desired_count > 0 and wait:
-        await ops_test.model.wait_for_idle(
-            apps=[application_name],
-            status="active",
-            timeout=(15 * 60),
-            wait_for_exact_units=desired_count,
+        juju.wait(
+            ready=lambda status: all((
+                wait_for_apps_status(jubilant_backports.all_active, application_name)(status),
+                len(status.apps[application_name].units) == desired_count,
+            )),
+            timeout=15 * 60,
         )
 
 
-async def delete_file_or_directory_in_unit(
-    ops_test: OpsTest, unit_name: str, path: str, container_name: str = CONTAINER_NAME
-) -> bool:
+def delete_file_or_directory_in_unit(
+    juju: Juju, unit_name: str, path: str, container_name: str = CONTAINER_NAME
+) -> None:
     """Delete a file in the provided unit.
 
     Args:
-        ops_test: The ops test framework
+        juju: Jubilant Juju instance
         unit_name: The name unit on which to delete the file from
         container_name: The name of the container where the file or directory is
         path: The path of file or directory to delete
-
-    Returns:
-        boolean indicating success
     """
     if path.strip() in ["/", "."]:
         return
 
-    await ops_test.juju(
-        "ssh",
-        "--container",
-        container_name,
-        unit_name,
-        "find",
-        path,
-        "-maxdepth",
-        "1",
-        "-delete",
-    )
+    try:
+        juju.ssh(unit_name, "find", path, "-maxdepth", "1", "-delete", container=container_name)
+    except Exception:
+        # if the file or directory does not exist, ignore the error
+        pass
 
 
-async def get_process_pid(
-    ops_test: OpsTest, unit_name: str, container_name: str, process: str
-) -> int:
+def get_process_pid(juju: Juju, unit_name: str, container_name: str, process: str) -> int:
     """Return the pid of a process running in a given unit.
 
     Args:
-        ops_test: The ops test object passed into every test case
+        juju: Jubilant Juju instance
         unit_name: The name of the unit
         container_name: The name of the container to get the process pid from
         process: The process name to search for
@@ -195,27 +193,31 @@ async def get_process_pid(
         A integer for the process id
     """
     try:
-        _, raw_pid, _ = await ops_test.juju("ssh", unit_name, "pgrep", "-x", process)
-        pid = int(raw_pid.strip())
-
+        result = juju.ssh(unit_name, "pgrep", "-x", process)
+        pid = int(result.strip())
         return pid
     except Exception:
         return None
 
 
-async def write_content_to_file_in_unit(
-    ops_test: OpsTest, unit: Unit, path: str, content: str, container_name: str = CONTAINER_NAME
+def write_content_to_file_in_unit(
+    juju: Juju,
+    unit_name: str,
+    path: str,
+    content: str,
+    container_name: str = CONTAINER_NAME,
 ) -> None:
     """Write content to the file in the provided unit.
 
     Args:
-        ops_test: The ops test framework
-        unit: THe unit in which to write to file in
+        juju: Jubilant Juju instance
+        unit_name: The unit name in which to write to file in
         path: The path at which to write the content to
         content: The content to write to the file
         container_name: The container where to write the file
     """
-    pod_name = unit.name.replace("/", "-")
+    pod_name = unit_name.replace("/", "-")
+    model_name = juju.model or ""
 
     with tempfile.NamedTemporaryFile(mode="w", dir=pathlib.Path.home()) as temp_file:
         temp_file.write(content)
@@ -226,7 +228,7 @@ async def write_content_to_file_in_unit(
                 "microk8s.kubectl",
                 "cp",
                 "-n",
-                ops_test.model.info.name,
+                model_name,
                 "-c",
                 container_name,
                 temp_file.name,
@@ -236,21 +238,22 @@ async def write_content_to_file_in_unit(
         )
 
 
-async def read_contents_from_file_in_unit(
-    ops_test: OpsTest, unit: Unit, path: str, container_name: str = CONTAINER_NAME
+def read_contents_from_file_in_unit(
+    juju: Juju, unit_name: str, path: str, container_name: str = CONTAINER_NAME
 ) -> str:
     """Read contents from file in the provided unit.
 
     Args:
-        ops_test: The ops test framework
-        unit: The unit in which to read file from
+        juju: Jubilant Juju instance
+        unit_name: The unit name in which to read file from
         path: The path from which to read content from
         container_name: The container where the file exists
 
     Returns:
         the contents of the file
     """
-    pod_name = unit.name.replace("/", "-")
+    pod_name = unit_name.replace("/", "-")
+    model_name = juju.model or ""
 
     with tempfile.NamedTemporaryFile(mode="r+", dir=pathlib.Path.home()) as temp_file:
         subprocess.run(
@@ -258,7 +261,7 @@ async def read_contents_from_file_in_unit(
                 "microk8s.kubectl",
                 "cp",
                 "-n",
-                ops_test.model.info.name,
+                model_name,
                 "-c",
                 container_name,
                 f"{pod_name}:{path}",
@@ -277,13 +280,13 @@ async def read_contents_from_file_in_unit(
     return contents
 
 
-async def ls_la_in_unit(
-    ops_test: OpsTest, unit_name: str, directory: str, container_name: str = CONTAINER_NAME
+def ls_la_in_unit(
+    juju: Juju, unit_name: str, directory: str, container_name: str = CONTAINER_NAME
 ) -> list[str]:
     """Returns the output of ls -la in unit.
 
     Args:
-        ops_test: The ops test framework
+        juju: Jubilant Juju instance
         unit_name: The name of unit in which to run ls -la
         directory: The directory from which to run ls -la
         container_name: The container where to run ls -la
@@ -291,10 +294,7 @@ async def ls_la_in_unit(
     Returns:
         a list of files returned by ls -la
     """
-    return_code, output, _ = await ops_test.juju(
-        "ssh", "--container", container_name, unit_name, "ls", "-la", directory
-    )
-    assert return_code == 0
+    output = juju.ssh(unit_name, "ls", "-la", directory, container=container_name)
 
     ls_output = output.split("\n")[1:]
 
@@ -305,42 +305,29 @@ async def ls_la_in_unit(
     ]
 
 
-async def stop_running_log_rotate_executor(ops_test: OpsTest, unit_name: str):
+def stop_running_log_rotate_executor(juju: Juju, unit_name: str):
     """Stop running the log rotate executor script.
 
     Args:
-        ops_test: The ops test object passed into every test case
+        juju: Jubilant Juju instance
         unit_name: The name of the unit to be tested
     """
     # send KILL signal to log rotate executor, which trigger shutdown process
-    await ops_test.juju(
-        "ssh",
-        "--container",
-        CONTAINER_NAME,
-        unit_name,
-        "pebble",
-        "stop",
-        LOGROTATE_EXECUTOR_SERVICE,
-    )
+    juju.ssh(unit_name, "pebble", "stop", LOGROTATE_EXECUTOR_SERVICE, container=CONTAINER_NAME)
 
 
-async def stop_running_flush_mysqlrouter_job(ops_test: OpsTest, unit_name: str) -> None:
+def stop_running_flush_mysqlrouter_job(juju: Juju, unit_name: str) -> None:
     """Stop running any logrotate jobs that may have been triggered by cron.
 
     Args:
-        ops_test: The ops test object passed into every test case
+        juju: Jubilant Juju instance
         unit_name: The name of the unit to be tested
     """
     # send KILL signal to log rotate process, which trigger shutdown process
-    await ops_test.juju(
-        "ssh",
-        "--container",
-        CONTAINER_NAME,
-        unit_name,
-        "pkill",
-        "-9",
-        "-f",
-        "logrotate -f /etc/logrotate.d/flush_mysqlrouter_logs",
+    juju.ssh(
+        command="pkill -9 logrotate || exit 0",
+        target=unit_name,
+        container=CONTAINER_NAME,
     )
 
     # hold execution until process is stopped
@@ -348,25 +335,26 @@ async def stop_running_flush_mysqlrouter_job(ops_test: OpsTest, unit_name: str) 
         reraise=True, stop=tenacity.stop_after_attempt(45), wait=tenacity.wait_fixed(2)
     ):
         with attempt:
-            if await get_process_pid(ops_test, unit_name, CONTAINER_NAME, "logrotate"):
+            if get_process_pid(juju, unit_name, CONTAINER_NAME, "logrotate"):
                 raise Exception("Failed to stop the flush_mysql_logs logrotate process.")
 
 
-async def rotate_mysqlrouter_logs(ops_test: OpsTest, unit_name: str) -> None:
+def rotate_mysqlrouter_logs(juju: Juju, unit_name: str) -> None:
     """Dispatch the custom event to run logrotate.
 
     Args:
-        ops_test: The ops test object passed into every test case
+        juju: Jubilant Juju instance
         unit_name: The name of the unit to be tested
     """
     pod_label = unit_name.replace("/", "-")
+    model_name = juju.model or ""
 
     subprocess.run(
         [
             "microk8s.kubectl",
             "exec",
             "-n",
-            ops_test.model.info.name,
+            model_name,
             "-it",
             pod_label,
             "--container",
@@ -408,20 +396,20 @@ def is_connection_possible(credentials: dict, **extra_opts) -> bool:
         return False
 
 
-async def get_tls_ca(
-    ops_test: OpsTest,
+def get_tls_ca(
+    juju: Juju,
     unit_name: str,
 ) -> str:
     """Returns the TLS CA used by the unit.
 
     Args:
-        ops_test: The ops test framework instance
+        juju: Jubilant Juju instance
         unit_name: The name of the unit
 
     Returns:
         TLS CA or an empty string if there is no CA.
     """
-    raw_data = (await ops_test.juju("show-unit", unit_name))[1]
+    raw_data = juju.cli("show-unit", unit_name)
     if not raw_data:
         raise ValueError(f"no unit info could be grabbed for {unit_name}")
     data = yaml.safe_load(raw_data)
@@ -434,35 +422,51 @@ async def get_tls_ca(
     return json.loads(relation_data[0]["application-data"]["certificates"])[0].get("ca")
 
 
-async def get_tls_certificate_issuer(
-    ops_test: OpsTest,
+def get_tls_certificate_issuer(
+    juju: Juju,
     unit_name: str,
     socket: str | None = None,
     host: str | None = None,
     port: int | None = None,
 ) -> str:
+    """Get TLS certificate issuer.
+
+    Args:
+        juju: Jubilant Juju instance
+        unit_name: Name of the unit
+        socket: Unix socket path
+        host: Host address
+        port: Port number
+
+    Returns:
+        Certificate issuer string
+    """
     connect_args = f"-unix {socket}" if socket else f"-connect {host}:{port}"
-    get_tls_certificate_issuer_commands = [
-        "ssh",
-        "--container",
-        CONTAINER_NAME,
+    issuer = juju.ssh(
         unit_name,
         f"openssl s_client -showcerts -starttls mysql {connect_args} < /dev/null | openssl x509 -text | grep Issuer",
-    ]
-    return_code, issuer, _ = await ops_test.juju(*get_tls_certificate_issuer_commands)
-    assert return_code == 0, f"failed to get TLS certificate issuer on {unit_name=}"
+        container=CONTAINER_NAME,
+    )
     return issuer
 
 
-def get_application_name(ops_test: OpsTest, application_name_substring: str) -> str:
+def get_application_name(juju: Juju, application_name_substring: str) -> str:
     """Returns the name of the application with the provided application name.
 
     This enables us to retrieve the name of the deployed application in an existing model.
 
     Note: if multiple applications with the application name exist,
     the first one found will be returned.
+
+    Args:
+        juju: Jubilant Juju instance
+        application_name_substring: Application name substring to search for
+
+    Returns:
+        Application name or empty string if not found
     """
-    for application in ops_test.model.applications:
+    status = juju.status()
+    for application in status.apps:
         if application_name_substring == application:
             return application
 
@@ -470,78 +474,79 @@ def get_application_name(ops_test: OpsTest, application_name_substring: str) -> 
 
 
 @tenacity.retry(stop=tenacity.stop_after_attempt(30), wait=tenacity.wait_fixed(5), reraise=True)
-async def get_primary_unit(
-    ops_test: OpsTest,
-    unit: Unit,
+def get_primary_unit(
+    juju: Juju,
+    unit_name: str,
     app_name: str,
-) -> Unit:
+) -> str:
     """Helper to retrieve the primary unit.
 
     Args:
-        ops_test: The ops test object passed into every test case
-        unit: A unit on which to run dba.get_cluster().status() on
+        juju: Jubilant Juju instance
+        unit_name: A unit name on which to run dba.get_cluster().status() on
         app_name: The name of the test application
-        cluster_name: The name of the test cluster
 
     Returns:
-        A juju unit that is a MySQL primary
+        A juju unit name that is a MySQL primary
     """
-    units = ops_test.model.applications[app_name].units
-    results = await run_action(unit, "get-cluster-status")
+    status = juju.status()
+    unit_names = list(status.apps[app_name].units.keys())
+    results = run_action(juju, unit_name, "get-cluster-status")
 
     primary_unit = None
     for k, v in results["status"]["defaultreplicaset"]["topology"].items():
         if v["memberrole"] == "primary":
             unit_name = f"{app_name}/{k.split('-')[-1]}"
-            primary_unit = [unit for unit in units if unit.name == unit_name][0]
-            break
+            if unit_name in unit_names:
+                primary_unit = unit_name
+                break
 
     if not primary_unit:
         raise ValueError("Unable to find primary unit")
     return primary_unit
 
 
-async def get_primary_unit_wrapper(ops_test: OpsTest, app_name: str, unit_excluded=None) -> Unit:
+def get_primary_unit_wrapper(juju: Juju, app_name: str, unit_excluded: str | None = None) -> str:
     """Wrapper for getting primary.
 
     Args:
-        ops_test: The ops test object passed into every test case
+        juju: Jubilant Juju instance
         app_name: The name of the application
-        unit_excluded: excluded unit to run command on
+        unit_excluded: excluded unit name to run command on
     Returns:
-        The primary Unit object
+        The primary unit name
     """
     logger.info("Retrieving primary unit")
-    units = ops_test.model.applications[app_name].units
+    status = juju.status()
+    unit_names = list(status.apps[app_name].units.keys())
     if unit_excluded:
         # if defined, exclude unit from available unit to run command on
         # useful when the workload is stopped on unit
-        unit = ({unit for unit in units if unit.name != unit_excluded.name}).pop()
+        available_units = [u for u in unit_names if u != unit_excluded]
+        unit_name = available_units[0] if available_units else unit_names[0]
     else:
-        unit = units[0]
+        unit_name = unit_names[0]
 
-    primary_unit = await get_primary_unit(ops_test, unit, app_name)
+    primary_unit = get_primary_unit(juju, unit_name, app_name)
 
     return primary_unit
 
 
-async def get_max_written_value_in_database(
-    ops_test: OpsTest, unit: Unit, credentials: dict
-) -> int:
+def get_max_written_value_in_database(juju: Juju, unit_name: str, credentials: dict) -> int:
     """Retrieve the max written value in the MySQL database.
 
     Args:
-        ops_test: The ops test framework
-        unit: The MySQL unit on which to execute queries on
+        juju: Jubilant Juju instance
+        unit_name: The MySQL unit name on which to execute queries on
         credentials: Database credentials to use
     """
-    unit_address = await get_unit_address(ops_test, unit.name)
+    unit_address = get_unit_address(juju, unit_name)
 
     select_max_written_value_sql = [
         f"SELECT MAX(number) FROM `{CONTINUOUS_WRITES_DATABASE_NAME}`.`{CONTINUOUS_WRITES_TABLE_NAME}`;"
     ]
 
-    output = await execute_queries_against_unit(
+    output = execute_queries_against_unit(
         unit_address,
         credentials["username"],
         credentials["password"],
@@ -551,8 +556,8 @@ async def get_max_written_value_in_database(
     return output[0]
 
 
-async def ensure_all_units_continuous_writes_incrementing(
-    ops_test: OpsTest, mysql_units: list[Unit] | None = None
+def ensure_all_units_continuous_writes_incrementing(
+    juju: Juju, mysql_unit_names: list[str] | None = None
 ) -> None:
     """Ensure that continuous writes is incrementing on all units.
 
@@ -561,76 +566,74 @@ async def ensure_all_units_continuous_writes_incrementing(
     """
     logger.info("Ensure continuous writes are incrementing")
 
-    mysql_application_name = get_application_name(ops_test, MYSQL_DEFAULT_APP_NAME)
+    mysql_application_name = get_application_name(juju, MYSQL_DEFAULT_APP_NAME)
 
-    if not mysql_units:
-        mysql_units = ops_test.model.applications[mysql_application_name].units
+    if not mysql_unit_names:
+        status = juju.status()
+        mysql_unit_names = list(status.apps[mysql_application_name].units.keys())
 
-    primary = await get_primary_unit_wrapper(ops_test, mysql_application_name)
+    primary = get_primary_unit_wrapper(juju, mysql_application_name)
 
-    server_config_credentials = await get_server_config_credentials(mysql_units[0])
+    server_config_credentials = get_server_config_credentials(juju, mysql_unit_names[0])
 
-    last_max_written_value = await get_max_written_value_in_database(
-        ops_test, primary, server_config_credentials
+    last_max_written_value = get_max_written_value_in_database(
+        juju, primary, server_config_credentials
     )
 
     select_all_continuous_writes_sql = [
         f"SELECT * FROM `{CONTINUOUS_WRITES_DATABASE_NAME}`.`{CONTINUOUS_WRITES_TABLE_NAME}`"
     ]
 
-    async with ops_test.fast_forward():
-        for unit in mysql_units:
-            for attempt in tenacity.Retrying(
-                reraise=True, stop=tenacity.stop_after_delay(5 * 60), wait=tenacity.wait_fixed(10)
-            ):
-                with attempt:
-                    # ensure that all units are up to date (including the previous primary)
-                    unit_address = await get_unit_address(ops_test, unit.name)
+    for unit_name in mysql_unit_names:
+        for attempt in tenacity.Retrying(
+            reraise=True, stop=tenacity.stop_after_delay(5 * 60), wait=tenacity.wait_fixed(10)
+        ):
+            with attempt:
+                # ensure that all units are up to date (including the previous primary)
+                unit_address = get_unit_address(juju, unit_name)
 
-                    # ensure the max written value is incrementing (continuous writes is active)
-                    max_written_value = await get_max_written_value_in_database(
-                        ops_test, unit, server_config_credentials
+                # ensure the max written value is incrementing (continuous writes is active)
+                max_written_value = get_max_written_value_in_database(
+                    juju, unit_name, server_config_credentials
+                )
+                assert max_written_value > last_max_written_value, (
+                    "Continuous writes not incrementing"
+                )
+
+                # ensure that the unit contains all values up to the max written value
+                all_written_values = set(
+                    execute_queries_against_unit(
+                        unit_address,
+                        server_config_credentials["username"],
+                        server_config_credentials["password"],
+                        select_all_continuous_writes_sql,
                     )
-                    assert max_written_value > last_max_written_value, (
-                        "Continuous writes not incrementing"
-                    )
+                )
+                numbers = set(range(1, max_written_value))
+                assert numbers <= all_written_values, (
+                    f"Missing numbers in database for unit {unit_name}"
+                )
 
-                    # ensure that the unit contains all values up to the max written value
-                    all_written_values = set(
-                        await execute_queries_against_unit(
-                            unit_address,
-                            server_config_credentials["username"],
-                            server_config_credentials["password"],
-                            select_all_continuous_writes_sql,
-                        )
-                    )
-                    numbers = set(range(1, max_written_value))
-                    assert numbers <= all_written_values, (
-                        f"Missing numbers in database for unit {unit.name}"
-                    )
-
-                    last_max_written_value = max_written_value
+                last_max_written_value = max_written_value
 
 
-async def get_leader_unit(
-    ops_test: OpsTest | None, app_name: str, model: Model | None = None
-) -> Unit | None:
+def get_leader_unit(juju: Juju, app_name: str) -> str | None:
     """Get the leader unit of a given application.
 
     Args:
-        ops_test: The ops test framework instance
+        juju: Jubilant Juju instance
         app_name: The name of the application
-        model: The model to use (overrides ops_test.model)
-    """
-    leader_unit = None
-    if not model:
-        model = ops_test.model
-    for unit in model.applications[app_name].units:
-        if await unit.is_leader_from_status():
-            leader_unit = unit
-            break
 
-    return leader_unit
+    Returns:
+        Unit name of the leader or None if not found
+    """
+    model_status = juju.status()
+    app_status = model_status.apps[app_name]
+    for name, status in app_status.units.items():
+        if status.leader:
+            return name
+
+    return None
 
 
 def get_juju_status(model_name: str) -> str:
@@ -640,3 +643,26 @@ def get_juju_status(model_name: str) -> str:
         model_name: The model for which to retrieve juju status for
     """
     return subprocess.check_output(["juju", "status", "--model", model_name]).decode("utf-8")
+
+
+def wait_for_apps_status(jubilant_status_func: JujuAppsStatusFn, *apps: str) -> JujuModelStatusFn:
+    """Waits for Juju agents to be idle, and for applications to reach a certain status.
+
+    Args:
+        jubilant_status_func: The Juju apps status function to wait for.
+        apps: The applications to wait for.
+
+    Returns:
+        Juju model status function.
+    """
+    return lambda status: all((
+        jubilant_backports.all_agents_idle(status, *apps),
+        jubilant_status_func(status, *apps),
+    ))
+
+
+def wait_for_unit_status(app_name: str, unit_name: str, unit_status: str) -> JujuModelStatusFn:
+    """Returns whether a Juju unit to have a specific status."""
+    return lambda status: (
+        status.apps[app_name].units[unit_name].workload_status.current == unit_status
+    )

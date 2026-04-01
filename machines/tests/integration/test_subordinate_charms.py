@@ -3,9 +3,12 @@
 
 """Test charms subordinated alongside MySQL Router charm."""
 
-import asyncio
 import os
 
+import jubilant_backports
+
+from . import architecture
+from .helpers import wait_for_apps_status
 from .test_database import (
     APPLICATION_APP_NAME,
     MYSQL_APP_NAME,
@@ -17,77 +20,71 @@ UBUNTU_PRO_APP_NAME = "ubuntu-advantage"
 LANDSCAPE_CLIENT_APP_NAME = "landscape-client"
 
 
-async def test_ubuntu_pro(ops_test, charm, series):
-    await asyncio.gather(
-        ops_test.model.deploy(
+def test_ubuntu_pro(juju: jubilant_backports.Juju, charm, ubuntu_base):
+    juju.deploy(
+        MYSQL_APP_NAME,
+        channel="8.0/edge",
+        app=MYSQL_APP_NAME,
+        config={"profile": "testing"},
+        constraints={"arch": architecture.architecture},
+    )
+    juju.deploy(
+        charm,
+        app=MYSQL_ROUTER_APP_NAME,
+        base=ubuntu_base,
+    )
+    juju.deploy(
+        APPLICATION_APP_NAME,
+        app=APPLICATION_APP_NAME,
+        channel="latest/edge",
+        # MySQL Router is subordinate—it will use the series of the principal charm
+        base=ubuntu_base,
+    )
+    juju.deploy(
+        UBUNTU_PRO_APP_NAME,
+        app=UBUNTU_PRO_APP_NAME,
+        channel="latest/edge",
+        config={"token": os.environ["UBUNTU_PRO_TOKEN"]},
+        base=ubuntu_base,
+    )
+
+    juju.integrate(f"{MYSQL_APP_NAME}", f"{MYSQL_ROUTER_APP_NAME}")
+    juju.integrate(f"{MYSQL_ROUTER_APP_NAME}:database", f"{APPLICATION_APP_NAME}:database")
+    juju.integrate(APPLICATION_APP_NAME, UBUNTU_PRO_APP_NAME)
+
+    juju.wait(
+        ready=wait_for_apps_status(
+            jubilant_backports.all_active,
             MYSQL_APP_NAME,
-            channel="8.0/edge",
-            application_name=MYSQL_APP_NAME,
-            config={"profile": "testing"},
-        ),
-        ops_test.model.deploy(
-            charm,
-            application_name=MYSQL_ROUTER_APP_NAME,
-            # deploy mysqlrouter with num_units=None since it's a subordinate charm
-            num_units=None,
-            series=series,
-        ),
-        ops_test.model.deploy(
+            MYSQL_ROUTER_APP_NAME,
             APPLICATION_APP_NAME,
-            application_name=APPLICATION_APP_NAME,
-            channel="latest/edge",
-            # MySQL Router is subordinate—it will use the series of the principal charm
-            series=series,
-        ),
-        ops_test.model.deploy(
             UBUNTU_PRO_APP_NAME,
-            application_name=UBUNTU_PRO_APP_NAME,
-            channel="latest/edge",
-            config={"token": os.environ["UBUNTU_PRO_TOKEN"]},
-            series=series,
         ),
+        timeout=SLOW_TIMEOUT,
     )
-    await ops_test.model.relate(f"{MYSQL_APP_NAME}", f"{MYSQL_ROUTER_APP_NAME}")
-    await ops_test.model.relate(
-        f"{MYSQL_ROUTER_APP_NAME}:database", f"{APPLICATION_APP_NAME}:database"
-    )
-    await ops_test.model.relate(APPLICATION_APP_NAME, UBUNTU_PRO_APP_NAME)
-    async with ops_test.fast_forward("60s"):
-        await ops_test.model.wait_for_idle(
-            apps=[
-                MYSQL_APP_NAME,
-                MYSQL_ROUTER_APP_NAME,
-                APPLICATION_APP_NAME,
-                UBUNTU_PRO_APP_NAME,
-            ],
-            status="active",
-            raise_on_blocked=True,
-            timeout=SLOW_TIMEOUT,
-        )
 
 
-async def test_landscape_client(ops_test, series):
-    await ops_test.model.deploy(
+def test_landscape_client(juju: jubilant_backports.Juju, base):
+    juju.deploy(
         LANDSCAPE_CLIENT_APP_NAME,
-        application_name=LANDSCAPE_CLIENT_APP_NAME,
+        app=LANDSCAPE_CLIENT_APP_NAME,
         channel="latest/edge",
         config={
             "account-name": os.environ["LANDSCAPE_ACCOUNT_NAME"],
             "registration-key": os.environ["LANDSCAPE_REGISTRATION_KEY"],
             "ppa": "ppa:landscape/self-hosted-beta",
         },
-        series=series,
+        base=base,
     )
-    await ops_test.model.relate(APPLICATION_APP_NAME, LANDSCAPE_CLIENT_APP_NAME)
-    async with ops_test.fast_forward("60s"):
-        await ops_test.model.wait_for_idle(
-            apps=[
-                MYSQL_APP_NAME,
-                MYSQL_ROUTER_APP_NAME,
-                APPLICATION_APP_NAME,
-                LANDSCAPE_CLIENT_APP_NAME,
-            ],
-            status="active",
-            raise_on_blocked=True,
-            timeout=SLOW_TIMEOUT,
-        )
+    juju.integrate(APPLICATION_APP_NAME, LANDSCAPE_CLIENT_APP_NAME)
+
+    juju.wait(
+        ready=wait_for_apps_status(
+            jubilant_backports.all_active,
+            MYSQL_APP_NAME,
+            MYSQL_ROUTER_APP_NAME,
+            APPLICATION_APP_NAME,
+            UBUNTU_PRO_APP_NAME,
+        ),
+        timeout=SLOW_TIMEOUT,
+    )

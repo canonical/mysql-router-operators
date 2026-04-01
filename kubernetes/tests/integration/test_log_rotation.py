@@ -2,14 +2,14 @@
 # Copyright 2022 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-import asyncio
 import logging
 from pathlib import Path
 
+import jubilant_backports
 import pytest
 import yaml
-from pytest_operator.plugin import OpsTest
 
+from . import architecture
 from .helpers import (
     APPLICATION_DEFAULT_APP_NAME,
     MYSQL_DEFAULT_APP_NAME,
@@ -20,6 +20,7 @@ from .helpers import (
     rotate_mysqlrouter_logs,
     stop_running_flush_mysqlrouter_job,
     stop_running_log_rotate_executor,
+    wait_for_apps_status,
     write_content_to_file_in_unit,
 )
 
@@ -35,91 +36,78 @@ MODEL_CONFIG = {"logging-config": "<root>=INFO;unit=DEBUG"}
 
 
 @pytest.mark.abort_on_fail
-async def test_log_rotation(ops_test: OpsTest, charm, series):
+def test_log_rotation(juju: jubilant_backports.Juju, charm, ubuntu_base):
     """Test log rotation."""
-    await ops_test.model.set_config(MODEL_CONFIG)
+    juju.model_config({"logging-config": MODEL_CONFIG["logging-config"]})
 
     mysqlrouter_resources = {
         "mysql-router-image": METADATA["resources"]["mysql-router-image"]["upstream-source"]
     }
 
     logger.info("Deploying mysql, mysqlrouter and application")
-    applications = await asyncio.gather(
-        ops_test.model.deploy(
-            MYSQL_APP_NAME,
-            channel="8.0/edge",
-            application_name=MYSQL_APP_NAME,
-            config={"profile": "testing"},
-            series=series,
-            num_units=3,
-            trust=True,  # Necessary after a6f1f01: Fix/endpoints as k8s services (#142)
-        ),
-        ops_test.model.deploy(
-            charm,
-            application_name=MYSQL_ROUTER_APP_NAME,
-            resources=mysqlrouter_resources,
-            series=series,
-            num_units=1,
-            trust=True,
-        ),
-        ops_test.model.deploy(
-            APPLICATION_APP_NAME,
-            channel="latest/edge",
-            application_name=APPLICATION_APP_NAME,
-            series=series,
-            num_units=1,
-        ),
+    juju.deploy(
+        MYSQL_APP_NAME,
+        channel="8.0/edge",
+        app=MYSQL_APP_NAME,
+        config={"profile": "testing"},
+        base=ubuntu_base,
+        num_units=3,
+        trust=True,  # Necessary after a6f1f01: Fix/endpoints as k8s services (#142)
+        constraints={"arch": architecture.architecture},
+    )
+    juju.deploy(
+        charm,
+        app=MYSQL_ROUTER_APP_NAME,
+        resources=mysqlrouter_resources,
+        base=ubuntu_base,
+        num_units=1,
+        trust=True,
+    )
+    juju.deploy(
+        APPLICATION_APP_NAME,
+        channel="latest/edge",
+        app=APPLICATION_APP_NAME,
+        base=ubuntu_base,
+        num_units=1,
+        constraints={"arch": architecture.architecture},
     )
 
-    mysql_app, mysql_router_app, application_app = applications
+    logger.info("Relating mysql, mysqlrouter and application")
+    # Relate the database with mysqlrouter
+    juju.integrate(f"{MYSQL_ROUTER_APP_NAME}:backend-database", f"{MYSQL_APP_NAME}:database")
+    # Relate mysqlrouter with application next
+    juju.integrate(f"{APPLICATION_APP_NAME}:database", f"{MYSQL_ROUTER_APP_NAME}:database")
 
-    async with ops_test.fast_forward():
-        logger.info("Waiting for mysqlrouter to be in BlockedStatus")
-        await ops_test.model.block_until(
-            lambda: ops_test.model.applications[MYSQL_ROUTER_APP_NAME].status == "blocked",
-            timeout=SLOW_TIMEOUT,
-        )
+    juju.wait(
+        ready=wait_for_apps_status(
+            jubilant_backports.all_active,
+            MYSQL_APP_NAME,
+            MYSQL_ROUTER_APP_NAME,
+            APPLICATION_APP_NAME,
+        ),
+        timeout=SLOW_TIMEOUT,
+    )
 
-        logger.info("Relating mysql, mysqlrouter and application")
-        # Relate the database with mysqlrouter
-        await ops_test.model.relate(
-            f"{MYSQL_ROUTER_APP_NAME}:backend-database", f"{MYSQL_APP_NAME}:database"
-        )
-        # Relate mysqlrouter with application next
-        await ops_test.model.relate(
-            f"{APPLICATION_APP_NAME}:database", f"{MYSQL_ROUTER_APP_NAME}:database"
-        )
-
-        await asyncio.gather(
-            ops_test.model.block_until(lambda: mysql_app.status == "active", timeout=SLOW_TIMEOUT),
-            ops_test.model.block_until(
-                lambda: mysql_router_app.status == "active", timeout=SLOW_TIMEOUT
-            ),
-            ops_test.model.block_until(
-                lambda: application_app.status == "active", timeout=SLOW_TIMEOUT
-            ),
-        )
-
-    unit = mysql_router_app.units[0]
+    unit_name = f"{MYSQL_ROUTER_APP_NAME}/0"
     logger.info("Stopping the logrotate executor pebble service")
-    await stop_running_log_rotate_executor(ops_test, unit.name)
+    stop_running_log_rotate_executor(juju, unit_name)
 
     logger.info("Stopping any running logrotate jobs")
-    await stop_running_flush_mysqlrouter_job(ops_test, unit.name)
+    stop_running_flush_mysqlrouter_job(juju, unit_name)
 
     logger.info("Removing existing archive directory")
-    await delete_file_or_directory_in_unit(
-        ops_test,
-        unit.name,
+    delete_file_or_directory_in_unit(
+        juju,
+        unit_name,
         "/var/log/mysqlrouter/archive_mysqlrouter/",
     )
 
     logger.info("Writing some data mysqlrouter log file")
     log_path = "/var/log/mysqlrouter/mysqlrouter.log"
-    await write_content_to_file_in_unit(ops_test, unit, log_path, "test mysqlrouter content\n")
+    write_content_to_file_in_unit(juju, unit_name, log_path, "test mysqlrouter content\n")
 
     logger.info("Ensuring only log files exist")
-    ls_la_output = await ls_la_in_unit(ops_test, unit.name, "/var/log/mysqlrouter/")
+    ls_la_output = ls_la_in_unit(juju, unit_name, "/var/log/mysqlrouter/")
 
     assert len(ls_la_output) == 1, f"❌ files other than log files exist {ls_la_output}"
     directories = [line.split()[-1] for line in ls_la_output]
@@ -128,10 +116,10 @@ async def test_log_rotation(ops_test: OpsTest, charm, series):
     )
 
     logger.info("Executing logrotate")
-    await rotate_mysqlrouter_logs(ops_test, unit.name)
+    rotate_mysqlrouter_logs(juju, unit_name)
 
     logger.info("Ensuring log files and archive directories exist")
-    ls_la_output = await ls_la_in_unit(ops_test, unit.name, "/var/log/mysqlrouter/")
+    ls_la_output = ls_la_in_unit(juju, unit_name, "/var/log/mysqlrouter/")
 
     assert len(ls_la_output) == 2, (
         f"❌ unexpected files/directories in log directory: {ls_la_output}"
@@ -143,24 +131,24 @@ async def test_log_rotation(ops_test: OpsTest, charm, series):
     ]), f"❌ unexpected files/directories in log directory: {ls_la_output}"
 
     logger.info("Ensuring log files was rotated")
-    file_contents = await read_contents_from_file_in_unit(
-        ops_test, unit, "/var/log/mysqlrouter/mysqlrouter.log"
+    file_contents = read_contents_from_file_in_unit(
+        juju, unit_name, "/var/log/mysqlrouter/mysqlrouter.log"
     )
     assert "test mysqlrouter content" not in file_contents, (
         "❌ log file mysqlrouter.log not rotated"
     )
 
-    ls_la_output = await ls_la_in_unit(
-        ops_test,
-        unit.name,
+    ls_la_output = ls_la_in_unit(
+        juju,
+        unit_name,
         "/var/log/mysqlrouter/archive_mysqlrouter/",
     )
     assert len(ls_la_output) == 1, f"❌ more than 1 file in archive directory: {ls_la_output}"
 
     filename = ls_la_output[0].split()[-1]
-    file_contents = await read_contents_from_file_in_unit(
-        ops_test,
-        unit,
+    file_contents = read_contents_from_file_in_unit(
+        juju,
+        unit_name,
         f"/var/log/mysqlrouter/archive_mysqlrouter/{filename}",
     )
     assert "test mysqlrouter content" in file_contents, "❌ log file mysqlrouter.log not rotated"

@@ -2,20 +2,20 @@
 # Copyright 2022 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-import asyncio
 import logging
 
+import jubilant_backports
 import pytest
 import requests
 import tenacity
-from pytest_operator.plugin import OpsTest
 
-from . import architecture, juju_
+from . import architecture
 from .helpers import (
     APPLICATION_DEFAULT_APP_NAME,
     MYSQL_DEFAULT_APP_NAME,
     MYSQL_ROUTER_DEFAULT_APP_NAME,
     get_tls_certificate_issuer,
+    wait_for_apps_status,
 )
 
 logger = logging.getLogger(__name__)
@@ -27,130 +27,107 @@ GRAFANA_AGENT_APP_NAME = "grafana-agent"
 SLOW_TIMEOUT = 25 * 60
 RETRY_TIMEOUT = 3 * 60
 
-if juju_.is_3_or_higher:
-    tls_app_name = "self-signed-certificates"
-    tls_channel = "1/stable"
-    tls_config = {"ca-common-name": "Test CA"}
-    tls_series = "noble"
-else:
-    tls_app_name = "tls-certificates-operator"
-    tls_channel = "legacy/edge" if architecture.architecture == "arm64" else "legacy/stable"
-    tls_config = {"generate-self-signed-certificates": "true", "ca-common-name": "Test CA"}
-    tls_series = "jammy"
+TLS_APP_NAME = "self-signed-certificates"
+TLS_CHANNEL = "1/stable"
+TLS_CONFIG = {"ca-common-name": "Test CA"}
+TLS_BASE = "ubuntu@22.04"
 
 
 @pytest.mark.abort_on_fail
-async def test_exporter_endpoint(ops_test: OpsTest, charm, series) -> None:
+def test_exporter_endpoint(juju: jubilant_backports.Juju, charm, ubuntu_base) -> None:
     """Test that the exporter endpoint works when related with TLS"""
     logger.info("Deploying all the applications")
 
-    # deploy mysqlrouter with num_units=None since it's a subordinate charm
-    # and will be installed with the related consumer application
-    applications = await asyncio.gather(
-        ops_test.model.deploy(
-            MYSQL_APP_NAME,
-            channel="8.0/edge",
-            application_name=MYSQL_APP_NAME,
-            config={"profile": "testing"},
-            num_units=1,
-        ),
-        ops_test.model.deploy(
-            charm,
-            application_name=MYSQL_ROUTER_APP_NAME,
-            num_units=0,
-            series=series,
-        ),
-        ops_test.model.deploy(
-            APPLICATION_APP_NAME,
-            application_name=APPLICATION_APP_NAME,
-            num_units=1,
-            # MySQL Router and Grafana agent are subordinate -
-            # they will use the series of the principal charm
-            series=series,
-            channel="latest/edge",
-        ),
-        ops_test.model.deploy(
-            GRAFANA_AGENT_APP_NAME,
-            application_name=GRAFANA_AGENT_APP_NAME,
-            num_units=0,
-            channel="1/stable",
-            series=series,
-        ),
+    juju.deploy(
+        MYSQL_APP_NAME,
+        channel="8.0/edge",
+        app=MYSQL_APP_NAME,
+        config={"profile": "testing"},
+        num_units=1,
+        constraints={"arch": architecture.architecture},
     )
-
-    [mysql_app, mysql_router_app, mysql_test_app, grafana_agent_app] = applications
+    juju.deploy(
+        charm,
+        app=MYSQL_ROUTER_APP_NAME,
+        base=ubuntu_base,
+    )
+    juju.deploy(
+        APPLICATION_APP_NAME,
+        app=APPLICATION_APP_NAME,
+        num_units=1,
+        # MySQL Router and Grafana agent are subordinate -
+        # they will use the series of the principal charm
+        base=ubuntu_base,
+        channel="latest/edge",
+        config={"sleep_interval": 1000},
+    )
+    juju.deploy(
+        GRAFANA_AGENT_APP_NAME,
+        app=GRAFANA_AGENT_APP_NAME,
+        channel="1/stable",
+        base=ubuntu_base,
+    )
 
     logger.info("Relating mysqlrouter and grafana-agent with mysql-test-app")
 
-    await ops_test.model.relate(
-        f"{MYSQL_ROUTER_APP_NAME}:database", f"{APPLICATION_APP_NAME}:database"
+    juju.integrate(f"{MYSQL_ROUTER_APP_NAME}:database", f"{APPLICATION_APP_NAME}:database")
+
+    juju.integrate(f"{APPLICATION_APP_NAME}:juju-info", f"{GRAFANA_AGENT_APP_NAME}:juju-info")
+    juju.integrate(f"{MYSQL_ROUTER_APP_NAME}:backend-database", f"{MYSQL_APP_NAME}:database")
+
+    juju.wait(
+        ready=wait_for_apps_status(
+            jubilant_backports.all_active,
+            MYSQL_ROUTER_APP_NAME,
+            MYSQL_APP_NAME,
+            APPLICATION_APP_NAME,
+        ),
+        timeout=SLOW_TIMEOUT,
     )
 
-    await ops_test.model.relate(
-        f"{APPLICATION_APP_NAME}:juju-info", f"{GRAFANA_AGENT_APP_NAME}:juju-info"
+    logger.info("Relating mysqlrouter with mysql")
+
+    juju.wait(
+        ready=lambda status: (
+            status.apps[MYSQL_APP_NAME].app_status.current == "active"
+            and status.apps[MYSQL_ROUTER_APP_NAME].app_status.current == "active"
+            and status.apps[APPLICATION_APP_NAME].app_status.current == "active"
+            and status.apps[GRAFANA_AGENT_APP_NAME].app_status.current == "blocked"
+        ),
+        timeout=SLOW_TIMEOUT,
     )
 
-    async with ops_test.fast_forward():
-        await asyncio.gather(
-            ops_test.model.block_until(lambda: mysql_app.status == "active", timeout=SLOW_TIMEOUT),
-            ops_test.model.block_until(
-                lambda: mysql_router_app.status == "blocked", timeout=SLOW_TIMEOUT
-            ),
-            ops_test.model.block_until(
-                lambda: mysql_test_app.status == "waiting", timeout=SLOW_TIMEOUT
-            ),
-            ops_test.model.block_until(
-                lambda: grafana_agent_app.status == "blocked", timeout=SLOW_TIMEOUT
-            ),
-        )
+    mysql_router_unit_name = f"{MYSQL_ROUTER_APP_NAME}/0"
 
-        logger.info("Relating mysqlrouter with mysql")
-
-        await ops_test.model.relate(
-            f"{MYSQL_ROUTER_APP_NAME}:backend-database", f"{MYSQL_APP_NAME}:database"
-        )
-
-        await asyncio.gather(
-            ops_test.model.block_until(lambda: mysql_app.status == "active", timeout=SLOW_TIMEOUT),
-            ops_test.model.block_until(
-                lambda: mysql_router_app.status == "active", timeout=SLOW_TIMEOUT
-            ),
-            ops_test.model.block_until(
-                lambda: mysql_test_app.status == "active", timeout=SLOW_TIMEOUT
-            ),
-            ops_test.model.block_until(
-                lambda: grafana_agent_app.status == "blocked", timeout=SLOW_TIMEOUT
-            ),
-        )
-
-    mysql_router_unit = mysql_router_app.units[0]
-
-    issuer = await get_tls_certificate_issuer(
-        ops_test,
-        mysql_router_unit.name,
+    issuer = get_tls_certificate_issuer(
+        juju,
+        mysql_router_unit_name,
         socket="/var/snap/charmed-mysql/common/run/mysqlrouter/mysql.sock",
     )
     assert "Issuer: CN = MySQL_Router_Auto_Generated_CA_Certificate" in issuer, (
         "Expected mysqlrouter autogenerated certificate"
     )
 
-    logger.info(f"Deploying {tls_app_name}")
-    await ops_test.model.deploy(
-        tls_app_name,
-        application_name=tls_app_name,
-        channel=tls_channel,
-        config=tls_config,
-        series=tls_series,
+    logger.info(f"Deploying {TLS_APP_NAME}")
+    juju.deploy(
+        TLS_APP_NAME,
+        app=TLS_APP_NAME,
+        channel=TLS_CHANNEL,
+        config=TLS_CONFIG,
+        base=TLS_BASE,
     )
-    await ops_test.model.wait_for_idle([tls_app_name], status="active", timeout=SLOW_TIMEOUT)
-
-    logger.info(f"Relating mysqlrouter with {tls_app_name}")
-
-    await ops_test.model.relate(
-        f"{MYSQL_ROUTER_APP_NAME}:certificates", f"{tls_app_name}:certificates"
+    juju.wait(
+        ready=lambda status: status.apps[TLS_APP_NAME].app_status.current == "active",
+        timeout=SLOW_TIMEOUT,
     )
 
-    unit_address = await mysql_test_app.units[0].get_public_address()
+    logger.info(f"Relating mysqlrouter with {TLS_APP_NAME}")
+
+    juju.integrate(f"{MYSQL_ROUTER_APP_NAME}:certificates", f"{TLS_APP_NAME}:certificates")
+
+    status = juju.status()
+    unit_name = f"{APPLICATION_APP_NAME}/0"
+    unit_address = status.apps[APPLICATION_APP_NAME].units[unit_name].public_address
 
     for attempt in tenacity.Retrying(
         reraise=True,
@@ -168,9 +145,7 @@ async def test_exporter_endpoint(ops_test: OpsTest, charm, series) -> None:
                 assert False, "❌ can connect to metrics endpoint without relation with cos"
 
     logger.info("Relating mysqlrouter with grafana agent")
-    await ops_test.model.relate(
-        f"{GRAFANA_AGENT_APP_NAME}:cos-agent", f"{MYSQL_ROUTER_APP_NAME}:cos-agent"
-    )
+    juju.integrate(f"{GRAFANA_AGENT_APP_NAME}:cos-agent", f"{MYSQL_ROUTER_APP_NAME}:cos-agent")
 
     for attempt in tenacity.Retrying(
         reraise=True,
@@ -191,18 +166,19 @@ async def test_exporter_endpoint(ops_test: OpsTest, charm, series) -> None:
         wait=tenacity.wait_fixed(10),
     ):
         with attempt:
-            issuer = await get_tls_certificate_issuer(
-                ops_test,
-                mysql_router_unit.name,
+            issuer = get_tls_certificate_issuer(
+                juju,
+                mysql_router_unit_name,
                 socket="/var/snap/charmed-mysql/common/run/mysqlrouter/mysql.sock",
             )
             assert "CN = Test CA" in issuer, (
-                f"Expected mysqlrouter certificate from {tls_app_name}"
+                f"Expected mysqlrouter certificate from {TLS_APP_NAME}"
             )
 
     logger.info("Removing relation between mysqlrouter and grafana agent")
-    await mysql_router_app.remove_relation(
-        f"{GRAFANA_AGENT_APP_NAME}:cos-agent", f"{MYSQL_ROUTER_APP_NAME}:cos-agent"
+    juju.remove_relation(
+        f"{GRAFANA_AGENT_APP_NAME}:cos-agent",
+        f"{MYSQL_ROUTER_APP_NAME}:cos-agent",
     )
 
     for attempt in tenacity.Retrying(
@@ -220,9 +196,10 @@ async def test_exporter_endpoint(ops_test: OpsTest, charm, series) -> None:
             else:
                 assert False, "❌ can connect to metrics endpoint without relation with cos"
 
-    logger.info(f"Removing relation between mysqlrouter and {tls_app_name}")
-    await mysql_router_app.remove_relation(
-        f"{MYSQL_ROUTER_APP_NAME}:certificates", f"{tls_app_name}:certificates"
+    logger.info(f"Removing relation between mysqlrouter and {TLS_APP_NAME}")
+    juju.remove_relation(
+        f"{MYSQL_ROUTER_APP_NAME}:certificates",
+        f"{TLS_APP_NAME}:certificates",
     )
 
     for attempt in tenacity.Retrying(
@@ -231,9 +208,9 @@ async def test_exporter_endpoint(ops_test: OpsTest, charm, series) -> None:
         wait=tenacity.wait_fixed(10),
     ):
         with attempt:
-            issuer = await get_tls_certificate_issuer(
-                ops_test,
-                mysql_router_unit.name,
+            issuer = get_tls_certificate_issuer(
+                juju,
+                mysql_router_unit_name,
                 socket="/var/snap/charmed-mysql/common/run/mysqlrouter/mysql.sock",
             )
             assert "Issuer: CN = MySQL_Router_Auto_Generated_CA_Certificate" in issuer, (

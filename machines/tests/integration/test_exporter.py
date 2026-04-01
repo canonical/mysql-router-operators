@@ -2,14 +2,14 @@
 # Copyright 2022 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-import asyncio
 import logging
 
+import jubilant_backports
 import pytest
 import requests
 import tenacity
-from pytest_operator.plugin import OpsTest
 
+from . import architecture
 from .helpers import (
     APPLICATION_DEFAULT_APP_NAME,
     MYSQL_DEFAULT_APP_NAME,
@@ -27,91 +27,58 @@ RETRY_TIMEOUT = 3 * 60
 
 
 @pytest.mark.abort_on_fail
-async def test_exporter_endpoint(ops_test: OpsTest, charm, series) -> None:
+def test_exporter_endpoint(juju: jubilant_backports.Juju, charm, ubuntu_base) -> None:
     """Test that exporter endpoint is functional."""
     logger.info("Deploying all the applications")
 
-    # deploy mysqlrouter with num_units=None since it's a subordinate charm
-    # and will be installed with the related consumer application
-    applications = await asyncio.gather(
-        ops_test.model.deploy(
-            MYSQL_APP_NAME,
-            channel="8.0/edge",
-            application_name=MYSQL_APP_NAME,
-            config={"profile": "testing"},
-            num_units=1,
-        ),
-        ops_test.model.deploy(
-            charm,
-            application_name=MYSQL_ROUTER_APP_NAME,
-            num_units=0,
-            series=series,
-        ),
-        ops_test.model.deploy(
-            APPLICATION_APP_NAME,
-            application_name=APPLICATION_APP_NAME,
-            num_units=1,
-            # MySQL Router and Grafana agent are subordinate -
-            # they will use the series of the principal charm
-            series=series,
-            channel="latest/edge",
-        ),
-        ops_test.model.deploy(
-            GRAFANA_AGENT_APP_NAME,
-            application_name=GRAFANA_AGENT_APP_NAME,
-            num_units=0,
-            channel="1/stable",
-            series=series,
-        ),
+    juju.deploy(
+        MYSQL_APP_NAME,
+        channel="8.0/edge",
+        app=MYSQL_APP_NAME,
+        config={"profile": "testing"},
+        num_units=1,
+        constraints={"arch": architecture.architecture},
     )
-
-    [mysql_app, mysql_router_app, mysql_test_app, grafana_agent_app] = applications
+    juju.deploy(
+        charm,
+        app=MYSQL_ROUTER_APP_NAME,
+        base=ubuntu_base,
+    )
+    juju.deploy(
+        APPLICATION_APP_NAME,
+        app=APPLICATION_APP_NAME,
+        num_units=1,
+        # MySQL Router and Grafana agent are subordinate -
+        # they will use the series of the principal charm
+        base=ubuntu_base,
+        channel="latest/edge",
+    )
+    juju.deploy(
+        GRAFANA_AGENT_APP_NAME,
+        app=GRAFANA_AGENT_APP_NAME,
+        channel="1/stable",
+        base=ubuntu_base,
+    )
 
     logger.info("Relating mysqlrouter and grafana-agent with mysql-test-app")
 
-    await ops_test.model.relate(
-        f"{MYSQL_ROUTER_APP_NAME}:database", f"{APPLICATION_APP_NAME}:database"
+    juju.integrate(f"{MYSQL_ROUTER_APP_NAME}:database", f"{APPLICATION_APP_NAME}:database")
+    juju.integrate(f"{MYSQL_ROUTER_APP_NAME}:backend-database", f"{MYSQL_APP_NAME}:database")
+    juju.integrate(f"{APPLICATION_APP_NAME}:juju-info", f"{GRAFANA_AGENT_APP_NAME}:juju-info")
+
+    juju.wait(
+        ready=lambda status: (
+            status.apps[MYSQL_APP_NAME].app_status == "active"
+            and status.apps[MYSQL_ROUTER_APP_NAME].app_status == "active"
+            and status.apps[APPLICATION_APP_NAME].app_status == "active"
+            and status.apps[GRAFANA_AGENT_APP_NAME].app_status == "blocked"
+        ),
+        timeout=SLOW_TIMEOUT,
     )
 
-    await ops_test.model.relate(
-        f"{APPLICATION_APP_NAME}:juju-info", f"{GRAFANA_AGENT_APP_NAME}:juju-info"
-    )
-
-    async with ops_test.fast_forward():
-        await asyncio.gather(
-            ops_test.model.block_until(lambda: mysql_app.status == "active", timeout=SLOW_TIMEOUT),
-            ops_test.model.block_until(
-                lambda: mysql_router_app.status == "blocked", timeout=SLOW_TIMEOUT
-            ),
-            ops_test.model.block_until(
-                lambda: mysql_test_app.status == "waiting", timeout=SLOW_TIMEOUT
-            ),
-            ops_test.model.block_until(
-                lambda: grafana_agent_app.status == "blocked", timeout=SLOW_TIMEOUT
-            ),
-        )
-
-        logger.info("Relating mysqlrouter with mysql")
-
-        await ops_test.model.relate(
-            f"{MYSQL_ROUTER_APP_NAME}:backend-database", f"{MYSQL_APP_NAME}:database"
-        )
-
-        await asyncio.gather(
-            ops_test.model.block_until(lambda: mysql_app.status == "active", timeout=SLOW_TIMEOUT),
-            ops_test.model.block_until(
-                lambda: mysql_router_app.status == "active", timeout=SLOW_TIMEOUT
-            ),
-            ops_test.model.block_until(
-                lambda: mysql_test_app.status == "active", timeout=SLOW_TIMEOUT
-            ),
-            ops_test.model.block_until(
-                lambda: grafana_agent_app.status == "blocked", timeout=SLOW_TIMEOUT
-            ),
-        )
-
-    unit = mysql_test_app.units[0]
-    unit_address = await unit.get_public_address()
+    status = juju.status()
+    unit_name = f"{APPLICATION_APP_NAME}/0"
+    unit_address = status.apps[APPLICATION_APP_NAME].units[unit_name].public_address
 
     try:
         requests.get(f"http://{unit_address}:9152/metrics", stream=False)
@@ -121,9 +88,7 @@ async def test_exporter_endpoint(ops_test: OpsTest, charm, series) -> None:
         assert False, "❌ can connect to metrics endpoint without relation with cos"
 
     logger.info("Relating mysqlrouter with grafana agent")
-    await ops_test.model.relate(
-        f"{GRAFANA_AGENT_APP_NAME}:cos-agent", f"{MYSQL_ROUTER_APP_NAME}:cos-agent"
-    )
+    juju.integrate(f"{GRAFANA_AGENT_APP_NAME}:cos-agent", f"{MYSQL_ROUTER_APP_NAME}:cos-agent")
 
     for attempt in tenacity.Retrying(
         reraise=True,
@@ -139,8 +104,9 @@ async def test_exporter_endpoint(ops_test: OpsTest, charm, series) -> None:
             response.close()
 
     logger.info("Removing relation between mysqlrouter and grafana agent")
-    await mysql_router_app.remove_relation(
-        f"{GRAFANA_AGENT_APP_NAME}:cos-agent", f"{MYSQL_ROUTER_APP_NAME}:cos-agent"
+    juju.remove_relation(
+        f"{GRAFANA_AGENT_APP_NAME}:cos-agent",
+        f"{MYSQL_ROUTER_APP_NAME}:cos-agent",
     )
 
     for attempt in tenacity.Retrying(

@@ -3,13 +3,12 @@
 # See LICENSE file for licensing details.
 
 
-import asyncio
 import logging
 from pathlib import Path
 
+import jubilant_backports
 import pytest
 import yaml
-from pytest_operator.plugin import OpsTest
 
 from .helpers import (
     APPLICATION_DEFAULT_APP_NAME,
@@ -20,6 +19,7 @@ from .helpers import (
     get_server_config_credentials,
     get_unit_address,
     scale_application,
+    wait_for_apps_status,
 )
 
 logger = logging.getLogger(__name__)
@@ -34,84 +34,68 @@ MODEL_CONFIG = {"logging-config": "<root>=INFO;unit=DEBUG"}
 
 
 @pytest.mark.abort_on_fail
-async def test_database_relation(ops_test: OpsTest, charm, series):
+def test_database_relation(juju: jubilant_backports.Juju, charm, ubuntu_base):
     """Test the database relation."""
-    await ops_test.model.set_config(MODEL_CONFIG)
+    juju.model_config({"logging-config": MODEL_CONFIG["logging-config"]})
 
     mysqlrouter_resources = {
         "mysql-router-image": METADATA["resources"]["mysql-router-image"]["upstream-source"]
     }
 
     logger.info("Deploying mysql, mysqlrouter and application")
-    applications = await asyncio.gather(
-        ops_test.model.deploy(
-            MYSQL_APP_NAME,
-            channel="8.0/edge",
-            application_name=MYSQL_APP_NAME,
-            config={"profile": "testing"},
-            series=series,
-            num_units=3,
-            trust=True,  # Necessary after a6f1f01: Fix/endpoints as k8s services (#142)
-        ),
-        ops_test.model.deploy(
-            charm,
-            application_name=MYSQL_ROUTER_APP_NAME,
-            resources=mysqlrouter_resources,
-            series=series,
-            num_units=1,
-            trust=True,
-        ),
-        ops_test.model.deploy(
-            APPLICATION_APP_NAME,
-            channel="latest/edge",
-            application_name=APPLICATION_APP_NAME,
-            series=series,
-            num_units=1,
-        ),
+    juju.deploy(
+        MYSQL_APP_NAME,
+        app=MYSQL_APP_NAME,
+        channel="8.0/edge",
+        config={"profile": "testing"},
+        base=ubuntu_base,
+        num_units=3,
+        trust=True,  # Necessary after a6f1f01: Fix/endpoints as k8s services (#142)
+    )
+    juju.deploy(
+        charm,
+        app=MYSQL_ROUTER_APP_NAME,
+        resources=mysqlrouter_resources,
+        base=ubuntu_base,
+        num_units=1,
+        trust=True,
+    )
+    juju.deploy(
+        APPLICATION_APP_NAME,
+        channel="latest/edge",
+        app=APPLICATION_APP_NAME,
+        base=ubuntu_base,
+        num_units=1,
     )
 
-    mysql_app, application_app = applications[0], applications[2]
+    logger.info("Relating mysql, mysqlrouter and application")
+    # Relate the database with mysqlrouter
+    juju.integrate(f"{MYSQL_ROUTER_APP_NAME}:backend-database", f"{MYSQL_APP_NAME}:database")
+    # Relate mysqlrouter with application next
+    juju.integrate(f"{APPLICATION_APP_NAME}:database", f"{MYSQL_ROUTER_APP_NAME}:database")
 
-    async with ops_test.fast_forward():
-        logger.info("Waiting for mysqlrouter to be in BlockedStatus")
-        await ops_test.model.block_until(
-            lambda: ops_test.model.applications[MYSQL_ROUTER_APP_NAME].status == "blocked",
-            timeout=SLOW_TIMEOUT,
-        )
-
-        logger.info("Relating mysql, mysqlrouter and application")
-        # Relate the database with mysqlrouter
-        await ops_test.model.relate(
-            f"{MYSQL_ROUTER_APP_NAME}:backend-database", f"{MYSQL_APP_NAME}:database"
-        )
-        # Relate mysqlrouter with application next
-        await ops_test.model.relate(
-            f"{APPLICATION_APP_NAME}:database", f"{MYSQL_ROUTER_APP_NAME}:database"
-        )
-
-        await ops_test.model.wait_for_idle(
-            apps=[MYSQL_ROUTER_APP_NAME], status="active", timeout=SLOW_TIMEOUT
-        )
-
-        await ops_test.model.wait_for_idle(
-            apps=[MYSQL_APP_NAME, MYSQL_ROUTER_APP_NAME, APPLICATION_APP_NAME],
-            status="active",
-            raise_on_blocked=True,
-            timeout=SLOW_TIMEOUT,
-        )
+    juju.wait(
+        ready=wait_for_apps_status(
+            jubilant_backports.all_active,
+            MYSQL_APP_NAME,
+            MYSQL_ROUTER_APP_NAME,
+            APPLICATION_APP_NAME,
+        ),
+        timeout=SLOW_TIMEOUT,
+    )
 
     # Ensure that the data inserted by sample application is present in the database
-    application_unit = application_app.units[0]
-    inserted_data = await get_inserted_data_by_application(application_unit)
+    application_unit = f"{APPLICATION_APP_NAME}/0"
+    inserted_data = get_inserted_data_by_application(juju, application_unit)
 
-    mysql_unit = mysql_app.units[0]
-    mysql_unit_address = await get_unit_address(ops_test, mysql_unit.name)
-    server_config_credentials = await get_server_config_credentials(mysql_unit)
+    mysql_unit = f"{MYSQL_APP_NAME}/0"
+    mysql_unit_address = get_unit_address(juju, mysql_unit)
+    server_config_credentials = get_server_config_credentials(juju, mysql_unit)
 
     select_inserted_data_sql = [
         f"SELECT data FROM continuous_writes.random_data WHERE data = '{inserted_data}'",
     ]
-    selected_data = await execute_queries_against_unit(
+    selected_data = execute_queries_against_unit(
         mysql_unit_address,
         server_config_credentials["username"],
         server_config_credentials["password"],
@@ -122,11 +106,11 @@ async def test_database_relation(ops_test: OpsTest, charm, series):
     assert inserted_data == selected_data[0]
 
     # Ensure that both mysqlrouter and the application can be scaled up and down
-    await scale_application(ops_test, MYSQL_ROUTER_APP_NAME, 2)
+    scale_application(juju, MYSQL_ROUTER_APP_NAME, 2)
     # Scaling the application will ensure that it can read the inserted data
     # from the mysqlrouter connection before going into an active status
-    await scale_application(ops_test, APPLICATION_APP_NAME, 2)
+    scale_application(juju, APPLICATION_APP_NAME, 2)
 
     # Disabled until juju fixes k8s scaledown: https://bugs.launchpad.net/juju/+bug/1977582
-    # await scale_application(ops_test, MYSQL_ROUTER_APP_NAME, 1)
-    # await scale_application(ops_test, APPLICATION_APP_NAME, 1)
+    # scale_application(juju, MYSQL_ROUTER_APP_NAME, 1)
+    # scale_application(juju, APPLICATION_APP_NAME, 1)

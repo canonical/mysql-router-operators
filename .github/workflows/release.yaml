@@ -19,6 +19,7 @@ jobs:
     with:
       track: '8.4'
     permissions:
+      actions: read
       contents: write  # Needed to create git tag
 
   ci-tests:

@@ -33,7 +33,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Install terraform
         run: |
           sudo snap install terraform --classic
@@ -58,7 +58,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Install tox & poetry
         run: |
           pipx install tox
@@ -74,7 +74,7 @@ jobs:
           - kubernetes
           - machines
     name: Build charm | ${{ matrix.path }}
-    uses: canonical/data-platform-workflows/.github/workflows/build_charm.yaml@v42.0.1
+    uses: canonical/data-platform-workflows/.github/workflows/build_charm.yaml@v48.1.1
     with:
       path-to-charm-directory: ${{ matrix.path }}
 

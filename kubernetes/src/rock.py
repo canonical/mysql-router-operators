@@ -59,14 +59,15 @@ class _Path(common.container.Path):
         self._container.remove_path(self)
         logger.debug(f"Deleted file {self=}")
 
-    def mkdir(self):
-        self._container.make_dir(self, user=_UNIX_USERNAME, group=_UNIX_USERNAME)
-
-    def rmtree(self):
-        self._container.remove_path(self, recursive=True)
-
     def exists(self) -> bool:
         return self._container.exists(self)
+
+    def empty(self):
+        self._container.exec(
+            command=["find", str(self), "-mindepth", "1", "-delete"],
+            user=_UNIX_USERNAME,
+            group=_UNIX_USERNAME,
+        ).wait()
 
 
 class Rock(common.container.Container):

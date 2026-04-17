@@ -44,12 +44,12 @@ class Path(pathlib.PurePosixPath, abc.ABC):
         """Remove this file or link."""
 
     @abc.abstractmethod
-    def mkdir(self):
-        """Create a new directory at this path."""
+    def exists(self):
+        """Checks this file existence."""
 
     @abc.abstractmethod
-    def rmtree(self):
-        """Recursively delete the directory tree at this path."""
+    def empty(self):
+        """Empty the directory."""
 
 
 class CalledProcessError(subprocess.CalledProcessError):
@@ -73,6 +73,11 @@ class Container(abc.ABC):
     def router_config_directory(self) -> Path:
         """MySQL Router configuration directory"""
         return self.path("/etc/mysqlrouter")
+
+    @property
+    def router_data_directory(self) -> Path:
+        """MySQL Router data directory"""
+        return self.path("/var/lib/mysqlrouter")
 
     @property
     def router_config_file(self) -> Path:

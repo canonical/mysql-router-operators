@@ -125,12 +125,8 @@ class _Path(pathlib.PosixPath, common.container.Path):
         shutil.chown(self, user=user, group=group)
         return return_value
 
-    def mkdir(self, *args, **kwargs) -> None:
-        super().mkdir(*args, **kwargs)
-        shutil.chown(self, user=_UNIX_USERNAME, group=_UNIX_USERNAME)
-
-    def rmtree(self):
-        shutil.rmtree(self)
+    def empty(self):
+        subprocess.check_call(["find", str(self), "-mindepth", "1", "-delete"])
 
 
 class Snap(common.container.Container):

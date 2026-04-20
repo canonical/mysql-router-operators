@@ -146,6 +146,7 @@ class Snap(common.container.Container):
             mysql_shell_command=f"{self._snap_name}.mysqlsh",
             mysql_router_password_command=f"{self._snap_name}.mysqlrouter-passwd",
             unit_name=unit_name,
+            unix_user=_UNIX_USERNAME,
         )
 
     @property

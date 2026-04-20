@@ -83,6 +83,7 @@ class Rock(common.container.Container):
             mysql_shell_command="mysqlsh",
             mysql_router_password_command="mysqlrouter_passwd",
             unit_name=unit.name,
+            unix_user=_UNIX_USERNAME,
         )
         self._container = unit.get_container(CONTAINER_NAME)
 
@@ -122,8 +123,8 @@ class Rock(common.container.Container):
                     "summary": "MySQL Router",
                     "command": command,
                     "startup": startup,
-                    "user": _UNIX_USERNAME,
-                    "group": _UNIX_USERNAME,
+                    "user": self.unix_user,
+                    "group": self.unix_user,
                 },
             },
         })
@@ -181,8 +182,8 @@ class Rock(common.container.Container):
                     "summary": "MySQL Router Exporter",
                     "command": "/start-mysql-router-exporter.sh",
                     "startup": startup,
-                    "user": _UNIX_USERNAME,
-                    "group": _UNIX_USERNAME,
+                    "user": self.unix_user,
+                    "group": self.unix_user,
                     "environment": environment,
                 },
             },
@@ -219,10 +220,10 @@ class Rock(common.container.Container):
                 self._LOGROTATE_EXECUTOR_SERVICE_NAME: {
                     "override": "replace",
                     "summary": "Logrotate executor",
-                    "command": "python3 /logrotate_executor.py",
+                    "command": f"python3 /home/{self.unix_user}/logrotate_executor.py",
                     "startup": startup,
-                    "user": _UNIX_USERNAME,
-                    "group": _UNIX_USERNAME,
+                    "user": self.unix_user,
+                    "group": self.unix_user,
                 },
             },
         })
@@ -243,7 +244,7 @@ class Rock(common.container.Container):
     ) -> str:
         try:
             process = self._container.exec(
-                command, user=_UNIX_USERNAME, group=_UNIX_USERNAME, timeout=timeout, stdin=input
+                command, user=self.unix_user, group=self.unix_user, timeout=timeout, stdin=input
             )
             output, _ = process.wait_output()
         except ops.pebble.ExecError as e:

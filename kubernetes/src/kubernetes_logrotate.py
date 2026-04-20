@@ -15,11 +15,11 @@ logger = logging.getLogger(__name__)
 class LogRotate(common.logrotate.LogRotate):
     """logrotate implementation for k8s"""
 
-    _SYSTEM_USER = "mysql"
-
     def __init__(self, *, container_: common.container.Container):
         super().__init__(container_=container_)
-        self._logrotate_executor = self._container.path("/logrotate_executor.py")
+        self._logrotate_executor = self._container.path(
+            f"/home/{container_.unix_user}/logrotate_executor.py"
+        )
 
     def enable(self) -> None:
         super().enable()

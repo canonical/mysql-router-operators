@@ -47,7 +47,6 @@ class Workload:
         self._container = container_
         self._logrotate = logrotate_
         self._cos = cos_
-        self._router_data_directory = self._container.path("/var/lib/mysqlrouter")
         self._tls_key_file = self._container.router_config_directory / "custom-key.pem"
         self._tls_certificate_file = (
             self._container.router_config_directory / "custom-certificate.pem"
@@ -167,10 +166,8 @@ class Workload:
         logger.info("Disabling MySQL Router service")
         self._container.update_mysql_router_service(enabled=False)
         self._logrotate.disable()
-        self._container.router_config_directory.rmtree()
-        self._container.router_config_directory.mkdir()
-        self._router_data_directory.rmtree()
-        self._router_data_directory.mkdir()
+        self._container.router_config_directory.empty()
+        self._container.router_data_directory.empty()
         logger.info("Disabled MySQL Router service")
 
     def reconcile(

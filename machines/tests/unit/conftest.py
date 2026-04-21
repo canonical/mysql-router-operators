@@ -141,8 +141,7 @@ def machine_patch(monkeypatch):
     monkeypatch.setattr("snap._Path.read_text", lambda *args, **kwargs: "")
     monkeypatch.setattr("snap._Path.write_text", lambda *args, **kwargs: None)
     monkeypatch.setattr("snap._Path.unlink", lambda *args, **kwargs: None)
-    monkeypatch.setattr("snap._Path.mkdir", lambda *args, **kwargs: None)
-    monkeypatch.setattr("snap._Path.rmtree", lambda *args, **kwargs: None)
+    monkeypatch.setattr("snap._Path.empty", lambda *args, **kwargs: None)
 
     def _network_get(*args, **kwargs) -> dict:
         """Patch for the not-yet-implemented testing backend needed for `bind_address`.

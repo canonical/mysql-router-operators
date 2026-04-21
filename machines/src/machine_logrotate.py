@@ -17,20 +17,17 @@ ROOT_USER = "root"
 class LogRotate(common.logrotate.LogRotate):
     """logrotate cron configuration"""
 
-    _SYSTEM_USER = "snap_daemon"
-
     def __init__(self, *, container_: common.container.Container):
         super().__init__(container_=container_)
         self._cron_file = self._container.path("/etc/cron.d/flush_mysqlrouter_logs")
 
     def enable(self) -> None:
-        super().enable()
-
         logger.debug("Adding cron job for logrotate")
+        super().enable()
 
         # cron needs the file to be owned by root
         self._cron_file.write_text(
-            "* * * * * snap_daemon logrotate -f -s /tmp/logrotate.status /etc/logrotate.d/flush_mysqlrouter_logs\n\n",
+            f"* * * * * {self._container.unix_user} logrotate -f -s /tmp/logrotate.status /etc/logrotate.d/flush_mysqlrouter_logs\n\n",
             user=ROOT_USER,
             group=ROOT_USER,
         )

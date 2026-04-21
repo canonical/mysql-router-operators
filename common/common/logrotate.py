@@ -22,13 +22,7 @@ class LogRotate(abc.ABC):
 
     def __init__(self, *, container_: container.Container):
         self._container = container_
-
         self._logrotate_config = self._container.path("/etc/logrotate.d/flush_mysqlrouter_logs")
-
-    @property
-    @abc.abstractmethod
-    def _SYSTEM_USER(self) -> str:  # noqa
-        """The system user that mysqlrouter runs as."""
 
     def enable(self) -> None:
         """Enable logrotate."""
@@ -38,10 +32,9 @@ class LogRotate(abc.ABC):
             (pathlib.Path(__file__).parent / "templates/logrotate.j2").read_text()
         )
 
-        log_file_path = self._container.path("/var/log/mysqlrouter/mysqlrouter.log")
         rendered = template.render(
-            log_file_path=str(log_file_path),
-            system_user=self._SYSTEM_USER,
+            log_file_path=self._container.path("/var/log/mysqlrouter/mysqlrouter.log"),
+            system_user=self._container.unix_user,
         )
         self._logrotate_config.write_text(rendered)
 

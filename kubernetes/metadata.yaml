@@ -18,9 +18,12 @@ website:
   - https://chat.charmhub.io/charmhub/channels/data-platform
 maintainers:
   - Canonical Data Platform <data-platform@lists.launchpad.net>
+charm-user: non-root
 
 containers:
   mysql-router:
+    uid: 584788
+    gid: 584788
     resource: mysql-router-image
 
 provides:
@@ -64,7 +67,7 @@ resources:
   mysql-router-image:
     type: oci-image
     description: OCI image for mysql-router
-    upstream-source: ghcr.io/canonical/charmed-mysql@sha256:5e3ab326cb01f31a9e096ada50cb87ebd27671a990ad5e4f565ca5d1e5c48a3b
+    upstream-source: ghcr.io/canonical/charmed-mysql@sha256:4d799ad141a7bf54969670a1670b2b84163e8bd98330d48edcb3899a1140f846
 
 assumes:
   - k8s-api

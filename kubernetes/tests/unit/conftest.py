@@ -79,8 +79,7 @@ def kubernetes_patch(monkeypatch):
     monkeypatch.setattr("rock._Path.read_text", lambda *args, **kwargs: "")
     monkeypatch.setattr("rock._Path.write_text", lambda *args, **kwargs: None)
     monkeypatch.setattr("rock._Path.unlink", lambda *args, **kwargs: None)
-    monkeypatch.setattr("rock._Path.mkdir", lambda *args, **kwargs: None)
-    monkeypatch.setattr("rock._Path.rmtree", lambda *args, **kwargs: None)
+    monkeypatch.setattr("rock._Path.empty", lambda *args, **kwargs: None)
     monkeypatch.setattr("lightkube.Client", lambda *args, **kwargs: None)
     monkeypatch.setattr(
         "charm.KubernetesRouterCharm._reconcile_service", lambda *args, **kwargs: None

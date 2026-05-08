@@ -53,23 +53,3 @@ jobs:
       charmhub-token: ${{ secrets.CHARMHUB_TOKEN }}
     permissions:
       contents: write  # Needed to create git tags
-
-  mirror:
-    strategy:
-      matrix:
-        charm:
-          - path: kubernetes
-            repo: canonical/mysql-router-k8s-operator
-          - path: machines
-            repo: canonical/mysql-router-operator
-    name: Mirror charm | ${{ matrix.charm.path }}
-    needs:
-      - release
-    uses: canonical/data-platform-workflows/.github/workflows/_mirror_charm.yaml@v49
-    with:
-      path-to-charm-directory: ${{ matrix.charm.path }}
-      repository: ${{ matrix.charm.repo }}
-    secrets:
-      token: ${{ secrets.MIRROR_REPOS_PAT }}
-    permissions:
-      contents: read

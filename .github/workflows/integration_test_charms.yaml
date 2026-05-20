@@ -8,6 +8,13 @@ on:
           Use canonical/data-platform-workflows build_charm.yaml to build the charm(s)
         required: true
         type: string
+    secrets:
+      UBUNTU_PRO_TOKEN:
+        required: true
+      LANDSCAPE_ACCOUNT_NAME:
+        required: true
+      LANDSCAPE_REGISTRATION_KEY:
+        required: true
 
 jobs:
   integration-test:
@@ -22,16 +29,21 @@ jobs:
     with:
       artifact-prefix: ${{ inputs.artifact-prefix }}
       path-to-charm-directory: ${{ matrix.path }}
-    secrets: inherit
+    secrets:
+      UBUNTU_PRO_TOKEN: ${{ secrets.UBUNTU_PRO_TOKEN }}
+      LANDSCAPE_ACCOUNT_NAME: ${{ secrets.LANDSCAPE_ACCOUNT_NAME }}
+      LANDSCAPE_REGISTRATION_KEY: ${{ secrets.LANDSCAPE_REGISTRATION_KEY }}
+    permissions: {}
 
   allure-report:
-    # TODO future improvement: use concurrency group for job
     name: Publish Allure report
     if: ${{ !cancelled() && github.event_name == 'schedule' && github.run_attempt == '1' }}
     needs:
       - integration-test
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    permissions:
+      contents: write
     steps:
       - name: Download Allure
         # Following instructions from https://allurereport.org/docs/install-for-linux/#install-from-a-deb-package
@@ -52,10 +64,11 @@ jobs:
       # git push origin gh-pages-beta
       # )
       - name: Checkout GitHub pages branch
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ref: gh-pages-beta
           path: repo/
+          persist-credentials: false
       - name: Download default test results
         # Default test results in case the integration tests time out or runner set up fails
         # (So that Allure report will show "unknown"/"failed" test result, instead of omitting the test)

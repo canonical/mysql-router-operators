@@ -16,6 +16,7 @@ jobs:
     name: Tiobe scan
     runs-on: [self-hosted, tiobe]
     timeout-minutes: 60
+    permissions: {}
     steps:
       - name: Checkout the project
         uses: actions/checkout@v6

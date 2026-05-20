@@ -16,12 +16,25 @@ on:
     - cron: '53 0 * * *'  # Daily at 00:53 UTC
   # Triggered on push by .github/workflows/release.yaml
   workflow_call:
+    secrets:
+      UBUNTU_PRO_TOKEN:
+        required: true
+      LANDSCAPE_ACCOUNT_NAME:
+        required: true
+      LANDSCAPE_REGISTRATION_KEY:
+        required: true
     outputs:
       artifact-prefix:
         description: build_charm.yaml `artifact-prefix` output
         value: ${{ jobs.build.outputs.artifact-prefix }}
 
 jobs:
+  lint-workflows:
+    name: Lint workflows
+    uses: canonical/data-platform-workflows/.github/workflows/lint_workflows.yaml@v49
+    permissions:
+      contents: read
+
   lint:
     strategy:
       matrix:
@@ -31,9 +44,12 @@ jobs:
     name: Lint | ${{ matrix.path }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    permissions: {}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
       - name: Install terraform
         run: |
           sudo snap install terraform --classic
@@ -56,9 +72,12 @@ jobs:
     name: Unit test | ${{ matrix.path }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    permissions: {}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
       - name: Install tox & poetry
         run: |
           pipx install tox
@@ -74,7 +93,7 @@ jobs:
           - kubernetes
           - machines
     name: Build charm | ${{ matrix.path }}
-    uses: canonical/data-platform-workflows/.github/workflows/build_charm.yaml@v48.1.1
+    uses: canonical/data-platform-workflows/.github/workflows/build_charm.yaml@v49
     with:
       path-to-charm-directory: ${{ matrix.path }}
     permissions:
@@ -84,12 +103,16 @@ jobs:
   integration-test:
     name: Integration test charm
     needs:
+      - lint-workflows
       - lint
       - unit-test
       - build
     uses: ./.github/workflows/integration_test_charms.yaml
     with:
       artifact-prefix: ${{ needs.build.outputs.artifact-prefix }}
-    secrets: inherit
+    secrets:
+      UBUNTU_PRO_TOKEN: ${{ secrets.UBUNTU_PRO_TOKEN }}
+      LANDSCAPE_ACCOUNT_NAME: ${{ secrets.LANDSCAPE_ACCOUNT_NAME }}
+      LANDSCAPE_REGISTRATION_KEY: ${{ secrets.LANDSCAPE_REGISTRATION_KEY }}
     permissions:
       contents: write  # Needed for Allure Report

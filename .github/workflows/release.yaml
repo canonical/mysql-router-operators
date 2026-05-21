@@ -8,14 +8,13 @@ on:
       - '8.4/edge'
     paths-ignore:
       - 'docs/**'
+      - '.gitattributes'
       - '.github/renovate.json5'
-      - '.github/workflows/check_libs.yaml'
-      - '.github/workflows/sync_docs.yaml'
 
 jobs:
   tag:
     name: Create charm refresh compatibility version git tag
-    uses: canonical/data-platform-workflows/.github/workflows/tag_charm_edge.yaml@v48.1.1
+    uses: canonical/data-platform-workflows/.github/workflows/tag_charm_edge.yaml@v49
     with:
       track: '8.4'
     permissions:
@@ -27,7 +26,10 @@ jobs:
     needs:
       - tag
     uses: ./.github/workflows/ci.yaml
-    secrets: inherit
+    secrets:
+      UBUNTU_PRO_TOKEN: ${{ secrets.UBUNTU_PRO_TOKEN }}
+      LANDSCAPE_ACCOUNT_NAME: ${{ secrets.LANDSCAPE_ACCOUNT_NAME }}
+      LANDSCAPE_REGISTRATION_KEY: ${{ secrets.LANDSCAPE_REGISTRATION_KEY }}
     permissions:
       actions: read
       contents: write  # Needed for Allure Report
@@ -42,7 +44,7 @@ jobs:
     needs:
       - tag
       - ci-tests
-    uses: canonical/data-platform-workflows/.github/workflows/release_charm_edge.yaml@v48.1.1
+    uses: canonical/data-platform-workflows/.github/workflows/release_charm_edge.yaml@v49
     with:
       track: '8.4'
       path-to-charm-directory: ${{ matrix.path }}

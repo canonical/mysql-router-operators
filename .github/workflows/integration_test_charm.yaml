@@ -12,15 +12,25 @@ on:
         description: Relative path to charm directory from repository directory
         default: .
         type: string
+    secrets:
+      UBUNTU_PRO_TOKEN:
+        required: true
+      LANDSCAPE_ACCOUNT_NAME:
+        required: true
+      LANDSCAPE_REGISTRATION_KEY:
+        required: true
 
 jobs:
   collect-integration-tests:
     name: Collect spread jobs | ${{ inputs.path-to-charm-directory }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    permissions: {}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
       - name: Set up environment
         run: |
           sudo snap install charmcraft --classic
@@ -97,6 +107,7 @@ jobs:
       - collect-integration-tests
     runs-on: ${{ matrix.job.runner }}
     timeout-minutes: 226  # Sum of steps `timeout-minutes` + 5
+    permissions: {}
     steps:
       - name: Free up disk space
         timeout-minutes: 10
@@ -110,6 +121,8 @@ jobs:
       - name: Checkout
         timeout-minutes: 3
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
       - name: Install Python for tests
         uses: actions/setup-python@v6
         with:

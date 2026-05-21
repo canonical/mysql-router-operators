@@ -16,27 +16,18 @@ jobs:
     name: Tiobe scan
     runs-on: [self-hosted, tiobe]
     timeout-minutes: 60
+    permissions: {}
     steps:
       - name: Checkout the project
-        uses: actions/checkout@v5
-
-      - name: Install system dependencies
-        run: sudo apt-get update && sudo apt-get install -y python3-venv
-
-      - name: Install pipx
-        run: python3 -m pip install --user pipx && python3 -m pipx ensurepath
-
-      - name: Add pipx to PATH
-        run: echo "${HOME}/.local/bin" >> "${GITHUB_PATH}"
-
-      - name: Install tox and poetry using pipx
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Install tox & poetry
         run: |
           pipx install tox
           pipx install poetry
-
       - name: Run tox tests to create coverage.xml
         run: tox run -e unit
-
       - name: Run TICS analysis with github-action
         uses: tiobe/tics-github-action@v3
         with:

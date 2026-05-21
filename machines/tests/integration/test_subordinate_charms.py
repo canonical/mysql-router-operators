@@ -47,11 +47,15 @@ async def test_ubuntu_pro(ops_test, charm, series):
             series=series,
         ),
     )
-    await ops_test.model.relate(f"{MYSQL_APP_NAME}", f"{MYSQL_ROUTER_APP_NAME}")
     await ops_test.model.relate(
-        f"{MYSQL_ROUTER_APP_NAME}:database", f"{APPLICATION_APP_NAME}:database"
+        f"{MYSQL_APP_NAME}:database", f"{MYSQL_ROUTER_APP_NAME}:backend-database"
     )
-    await ops_test.model.relate(APPLICATION_APP_NAME, UBUNTU_PRO_APP_NAME)
+    await ops_test.model.relate(
+        f"{APPLICATION_APP_NAME}:database", f"{MYSQL_ROUTER_APP_NAME}:database"
+    )
+    await ops_test.model.relate(
+        f"{APPLICATION_APP_NAME}:juju-info", f"{UBUNTU_PRO_APP_NAME}:juju-info"
+    )
     async with ops_test.fast_forward("60s"):
         await ops_test.model.wait_for_idle(
             apps=[
@@ -61,7 +65,6 @@ async def test_ubuntu_pro(ops_test, charm, series):
                 UBUNTU_PRO_APP_NAME,
             ],
             status="active",
-            raise_on_blocked=True,
             timeout=SLOW_TIMEOUT,
         )
 

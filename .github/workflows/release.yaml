@@ -8,14 +8,13 @@ on:
       - dpe
     paths-ignore:
       - 'docs/**'
+      - '.gitattributes'
       - '.github/renovate.json5'
-      - '.github/workflows/check_libs.yaml'
-      - '.github/workflows/sync_docs.yaml'
 
 jobs:
   tag:
     name: Create charm refresh compatibility version git tag
-    uses: canonical/data-platform-workflows/.github/workflows/tag_charm_edge.yaml@v36.0.1
+    uses: canonical/data-platform-workflows/.github/workflows/tag_charm_edge.yaml@v49
     with:
       track: 'dpe'
     permissions:
@@ -26,7 +25,10 @@ jobs:
     needs:
       - tag
     uses: ./.github/workflows/ci.yaml
-    secrets: inherit
+    secrets:
+      UBUNTU_PRO_TOKEN: ${{ secrets.UBUNTU_PRO_TOKEN }}
+      LANDSCAPE_ACCOUNT_NAME: ${{ secrets.LANDSCAPE_ACCOUNT_NAME }}
+      LANDSCAPE_REGISTRATION_KEY: ${{ secrets.LANDSCAPE_REGISTRATION_KEY }}
     permissions:
       contents: write  # Needed for Allure Report
 
@@ -42,7 +44,7 @@ jobs:
     needs:
       - tag
       - ci-tests
-    uses: canonical/data-platform-workflows/.github/workflows/release_charm_edge.yaml@v36.0.1
+    uses: canonical/data-platform-workflows/.github/workflows/release_charm_edge.yaml@v49
     with:
       track: ${{ matrix.charm.track }}
       path-to-charm-directory: ${{ matrix.charm.path }}
@@ -63,9 +65,11 @@ jobs:
     name: Mirror charm | ${{ matrix.charm.path }}
     needs:
       - release
-    uses: canonical/data-platform-workflows/.github/workflows/_mirror_charm.yaml@v36.0.1
+    uses: canonical/data-platform-workflows/.github/workflows/_mirror_charm.yaml@v49
     with:
       path-to-charm-directory: ${{ matrix.charm.path }}
       repository: ${{ matrix.charm.repo }}
     secrets:
       token: ${{ secrets.MIRROR_REPOS_PAT }}
+    permissions:
+      contents: read

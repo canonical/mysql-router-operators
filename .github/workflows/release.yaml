@@ -20,17 +20,43 @@ jobs:
     permissions:
       contents: write  # Needed to create git tag
 
-  ci-tests:
-    name: Tests
+  build:
+    name: Build charm | ${{ matrix.path }}
     needs:
       - tag
-    uses: ./.github/workflows/ci.yaml
+    strategy:
+      fail-fast: false
+      matrix:
+        path:
+          - kubernetes
+          - machines
+    uses: canonical/data-platform-workflows/.github/workflows/build_charm.yaml@v49
+    with:
+      path-to-charm-directory: ${{ matrix.path }}
+    permissions:
+      actions: read
+      contents: read
+
+  integration-test:
+    name: Integration tests
+    needs:
+      - build
+    strategy:
+      fail-fast: false
+      matrix:
+        path:
+          - kubernetes
+          - machines
+    uses: ./.github/workflows/integration_test.yaml
+    with:
+      artifact-prefix: ${{ needs.build.outputs.artifact-prefix }}
+      path-to-charm-directory: ${{ matrix.path }}
     secrets:
       UBUNTU_PRO_TOKEN: ${{ secrets.UBUNTU_PRO_TOKEN }}
       LANDSCAPE_ACCOUNT_NAME: ${{ secrets.LANDSCAPE_ACCOUNT_NAME }}
       LANDSCAPE_REGISTRATION_KEY: ${{ secrets.LANDSCAPE_REGISTRATION_KEY }}
     permissions:
-      contents: write  # Needed for Allure Report
+      actions: read
 
   release:
     strategy:
@@ -43,12 +69,13 @@ jobs:
     name: Release charm | ${{ matrix.charm.path }}
     needs:
       - tag
-      - ci-tests
+      - build
+      - integration-test
     uses: canonical/data-platform-workflows/.github/workflows/release_charm_edge.yaml@v49
     with:
       track: ${{ matrix.charm.track }}
       path-to-charm-directory: ${{ matrix.charm.path }}
-      artifact-prefix: ${{ needs.ci-tests.outputs.artifact-prefix }}
+      artifact-prefix: ${{ needs.build.outputs.artifact-prefix }}
     secrets:
       charmhub-token: ${{ secrets.CHARMHUB_TOKEN }}
     permissions:

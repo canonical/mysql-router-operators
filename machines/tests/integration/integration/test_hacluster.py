@@ -10,7 +10,7 @@ import pytest
 import tenacity
 from pytest_operator.plugin import OpsTest
 
-from .helpers import (
+from ..helpers import (
     MYSQL_DEFAULT_APP_NAME,
     MYSQL_ROUTER_DEFAULT_APP_NAME,
     execute_queries_against_unit,

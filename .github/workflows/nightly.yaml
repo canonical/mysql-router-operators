@@ -67,6 +67,9 @@ jobs:
   allure-report:
     name: Publish Allure report
     if: ${{ !cancelled() && github.event_name == 'workflow_dispatch' && github.run_attempt == '1' }}
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
     needs:
       - integration-test
       - release-test
@@ -99,6 +102,23 @@ jobs:
           ref: gh-pages-beta
           path: repo/
           persist-credentials: false
+      - name: Parse branch name
+        id: branch
+        shell: python
+        run: |
+          import os
+
+          if not os.environ["VAR_REF"].startswith("refs/heads/"):
+              raise Exception(
+                  "Allure Report generation assumes `workflow_dispatch` is triggered on a branch"
+              )
+          output = f"branch={os.environ["VAR_REF_NAME"].replace(".", "_").replace("/", "_")}"
+          print(output)
+          with open(os.environ["GITHUB_OUTPUT"], "a") as file:
+              file.write(output)
+        env:
+          VAR_REF: ${{ github.ref }}
+          VAR_REF_NAME: ${{ github.ref_name }}
       - name: Download default test results
         # Default test results in case the integration tests time out or runner set up fails
         # (So that Allure report will show "unknown"/"failed" test result, instead of omitting the test)
@@ -156,11 +176,13 @@ jobs:
               default_result.path.rename(actual_results / default_result.path.name)
       - name: Load test report history
         run: |
-          if [[ -d repo/_latest/history/ ]]
+          if [[ -d "repo/${ALLURE_REPORT_DIR}/_latest/history/" ]]
           then
-            echo 'Loading history'
-            cp -r repo/_latest/history/ allure-results/
+            echo "Loading history"
+            cp -r "repo/${ALLURE_REPORT_DIR}/_latest/history/" allure-results/
           fi
+        env:
+          ALLURE_REPORT_DIR: ${{ steps.branch.outputs.branch }}
       - name: Create executor.json
         shell: python
         run: |
@@ -170,10 +192,10 @@ jobs:
           DATA = {
               "name": "GitHub Actions",
               "type": "github",
-              "buildOrder": ${{ github.run_number }},  # TODO future improvement: use run ID
+              "buildOrder": ${{ github.run_id }},
               "buildName": "Run ${{ github.run_id }}",
               "buildUrl": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-              "reportUrl": "../${{ github.run_number }}/",
+              "reportUrl": "../${{ github.run_id }}/",
           }
           with open("allure-results/executor.json", "w") as file:
               json.dump(DATA, file)
@@ -182,24 +204,29 @@ jobs:
       - name: Create index.html
         shell: python
         run: |
+          import os
+          
           DATA = f"""<!DOCTYPE html>
           <meta charset="utf-8">
           <meta http-equiv="cache-control" content="no-cache">
-          <meta http-equiv="refresh" content="0; url=${{ github.run_number }}">
+          <meta http-equiv="refresh" content="0; url=${{ github.run_id }}">
           """
-          with open("repo/index.html", "w") as file:
+          report_dir = os.environ["ALLURE_REPORT_DIR"]
+          with open(f"repo/{report_dir}/index.html", "w") as file:
               file.write(DATA)
+        env:
+          ALLURE_REPORT_DIR: ${{ steps.branch.outputs.branch }}
       - name: Update GitHub pages branch
         working-directory: repo/
         # TODO future improvement: commit message
         run: |
-          mkdir '${{ github.run_number }}'
+          mkdir '${{ github.run_id }}'
           rm -f _latest
-          ln -s '${{ github.run_number }}' _latest
-          cp -r ../allure-report/. _latest/
-          git add .
+          ln -s '${{ github.run_id }}' _latest
+          cp -r ../../allure-report/. _latest/
+          git add ..
           git config user.name "GitHub Actions"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "Allure report ${{ github.run_number }}"
+          git commit -m "Allure report ${{ github.run_id }}"
           # Uses token set in checkout step
           git push origin gh-pages-beta

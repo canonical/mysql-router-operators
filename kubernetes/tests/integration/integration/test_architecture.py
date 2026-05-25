@@ -7,7 +7,7 @@ from pathlib import Path
 import yaml
 from pytest_operator.plugin import OpsTest
 
-from . import markers
+from .. import markers
 
 METADATA = yaml.safe_load(Path("./metadata.yaml").read_text())
 MYSQL_ROUTER_APP_NAME = METADATA["name"]

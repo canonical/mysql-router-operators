@@ -127,10 +127,6 @@ jobs:
         uses: actions/checkout@v6
         with:
           persist-credentials: false
-      - name: Install Python for tests
-        uses: actions/setup-python@v6
-        with:
-          python-version: '3.12'
       - name: Set up environment
         timeout-minutes: 5
         run: |

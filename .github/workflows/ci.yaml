@@ -12,21 +12,6 @@ on:
       - '**.md'
       - '.gitattributes'
       - '.github/renovate.json5'
-  schedule:
-    - cron: '53 0 * * *'  # Daily at 00:53 UTC
-  # Triggered on push by .github/workflows/release.yaml
-  workflow_call:
-    secrets:
-      UBUNTU_PRO_TOKEN:
-        required: true
-      LANDSCAPE_ACCOUNT_NAME:
-        required: true
-      LANDSCAPE_REGISTRATION_KEY:
-        required: true
-    outputs:
-      artifact-prefix:
-        description: build_charm.yaml `artifact-prefix` output
-        value: ${{ jobs.build.outputs.artifact-prefix }}
 
 jobs:
   lint-workflows:
@@ -101,18 +86,25 @@ jobs:
       contents: read
 
   integration-test:
-    name: Integration test charm
+    name: Integration tests
     needs:
       - lint-workflows
       - lint
       - unit-test
       - build
-    uses: ./.github/workflows/integration_test_charms.yaml
+    strategy:
+      fail-fast: false
+      matrix:
+        path:
+          - kubernetes
+          - machines
+    uses: ./.github/workflows/integration_test.yaml
     with:
       artifact-prefix: ${{ needs.build.outputs.artifact-prefix }}
+      path-to-charm-directory: ${{ matrix.path }}
     secrets:
       UBUNTU_PRO_TOKEN: ${{ secrets.UBUNTU_PRO_TOKEN }}
       LANDSCAPE_ACCOUNT_NAME: ${{ secrets.LANDSCAPE_ACCOUNT_NAME }}
       LANDSCAPE_REGISTRATION_KEY: ${{ secrets.LANDSCAPE_REGISTRATION_KEY }}
     permissions:
-      contents: write  # Needed for Allure Report
+      actions: read

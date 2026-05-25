@@ -80,20 +80,16 @@ backends:
       EOF
 
       sudo passwd --delete "$USER"
-      
-      sudo systemctl reload ssh || sudo systemctl restart ssh
 
       ADDRESS localhost
     # HACK: spread does not pass environment variables set on runner
     # Manually pass specific environment variables
     environment:
       CI: '$(HOST: echo $CI)'
-      LD_LIBRARY_PATH: '$(HOST: echo $LD_LIBRARY_PATH)'
-      PKG_CONFIG_PATH: '$(HOST: echo $PKG_CONFIG_PATH)'
     systems:
-      - ubuntu-22.04:
+      - ubuntu-24.04:
           username: runner
-      - ubuntu-22.04-arm:
+      - ubuntu-24.04-arm:
           username: runner
           variants:
             - -juju29
@@ -111,7 +107,6 @@ environment:
   PATH: $PATH:$(pipx environment --value PIPX_BIN_DIR)
   CONCIERGE_JUJU_CHANNEL/juju36: 3.6/stable
   CONCIERGE_JUJU_CHANNEL/juju29: 2.9/stable
-  pythonLocation: '$(HOST: echo $pythonLocation)'
 prepare: |
   snap refresh --hold
   chown -R root:root "$SPREAD_PATH"
@@ -122,7 +117,6 @@ prepare: |
   concierge prepare --trace
 
   pipx install tox poetry
-  poetry env use $pythonLocation/bin/python
 prepare-each: |
   cd "$SPREAD_PATH"
   if [[ $SPREAD_VARIANT == *"juju29"* ]]
@@ -137,5 +131,3 @@ prepare-each: |
   # Unable to set constraint on all models because of Juju bug:
   # https://bugs.launchpad.net/juju/+bug/2065050
   juju set-model-constraints arch="$(dpkg --print-architecture)"
-  
-  poetry env use $pythonLocation/bin/python

@@ -13,13 +13,13 @@ import tomli
 import tomli_w
 from pytest_operator.plugin import OpsTest
 
-from .helpers import (
+from ..helpers import (
     APPLICATION_DEFAULT_APP_NAME,
     MYSQL_DEFAULT_APP_NAME,
     MYSQL_ROUTER_DEFAULT_APP_NAME,
     ensure_all_units_continuous_writes_incrementing,
 )
-from .juju_ import run_action
+from ..juju_ import run_action
 
 logger = logging.getLogger(__name__)
 

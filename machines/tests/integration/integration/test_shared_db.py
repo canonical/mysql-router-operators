@@ -9,7 +9,7 @@
 # import pytest
 # from pytest_operator.plugin import OpsTest
 #
-# from .helpers import execute_queries_on_unit, get_server_config_credentials
+# from ..helpers import execute_queries_on_unit, get_server_config_credentials
 #
 # logger = logging.getLogger(__name__)
 #

@@ -8,8 +8,8 @@ import pytest
 import tenacity
 from pytest_operator.plugin import OpsTest
 
-from . import architecture, juju_
-from .helpers import (
+from .. import architecture, juju_
+from ..helpers import (
     APPLICATION_DEFAULT_APP_NAME,
     MYSQL_DEFAULT_APP_NAME,
     MYSQL_ROUTER_DEFAULT_APP_NAME,

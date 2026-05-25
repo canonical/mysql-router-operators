@@ -6,7 +6,7 @@ import asyncio
 
 from pytest_operator.plugin import OpsTest
 
-from . import markers
+from .. import markers
 
 MYSQL_ROUTER_APP_NAME = "mysql-router"
 MYSQL_TEST_APP_NAME = "mysql-test-app"

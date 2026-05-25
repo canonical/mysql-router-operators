@@ -573,7 +573,7 @@ async def ensure_all_units_continuous_writes_incrementing(
                     max_written_value = await get_max_written_value_in_database(
                         ops_test, unit, operator_credentials
                     )
-                    assert max_written_value >= last_max_written_value, (
+                    assert max_written_value > last_max_written_value, (
                         "Continuous writes not incrementing"
                     )
 

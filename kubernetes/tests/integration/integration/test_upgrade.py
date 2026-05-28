@@ -62,7 +62,7 @@ async def test_deploy_edge(ops_test: OpsTest) -> None:
             MYSQL_ROUTER_APP_NAME,
             MYSQL_ROUTER_APP_NAME,
             "--channel=8.4/edge",
-            "--base=ubuntu@24.04",
+            "--base=ubuntu@26.04",
             "--num-units=3",
             "--trust",
         ),
@@ -71,7 +71,7 @@ async def test_deploy_edge(ops_test: OpsTest) -> None:
             APPLICATION_APP_NAME,
             APPLICATION_APP_NAME,
             "--channel=latest/edge",
-            "--base=ubuntu@24.04",
+            "--base=ubuntu@26.04",
             "--num-units=1",
         ),
     )

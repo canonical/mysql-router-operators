@@ -2,7 +2,7 @@
 
 Please follow the [Tutorial](/t/12334) to deploy the charm on LXD.
 
-Short story for your Ubuntu 24.04 LTS:
+Short story for your Ubuntu 26.04 LTS:
 ```shell
 sudo snap install multipass
 multipass launch --cpus 4 --memory 8G --disk 30G --name my-vm charm-dev # tune CPU/RAM/HDD accordingly to your needs
@@ -34,8 +34,8 @@ mysql-test-app/0*  active    idle   1        10.3.217.209
 mysql/0*           active    idle   0        10.3.217.119    3306,33060/tcp  Primary
 
 Machine  State    Address       Inst id        Base          AZ  Message
-0        started  10.3.217.119  juju-d458a0-0  ubuntu@24.04      Running
-1        started  10.3.217.209  juju-d458a0-1  ubuntu@24.04      Running
+0        started  10.3.217.119  juju-d458a0-0  ubuntu@26.04      Running
+1        started  10.3.217.209  juju-d458a0-1  ubuntu@26.04      Running
 ```
 
 Check the [Testing](/t/12324) reference to test your deployment.

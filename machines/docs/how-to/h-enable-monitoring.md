@@ -104,8 +104,8 @@ mysql-test-app/0*   active	  idle         1  10.205.193.82
 mysql/0*        	active	  idle         0  10.205.193.13   3306,33060/tcp  Primary
 
 Machine  State	Address    	Inst id    	Base      	AZ  Message
-0    	started  10.205.193.13  juju-65afbd-0  ubuntu@24.04  	Running
-1    	started  10.205.193.82  juju-65afbd-1  ubuntu@24.04  	Running
+0    	started  10.205.193.13  juju-65afbd-0  ubuntu@26.04  	Running
+1    	started  10.205.193.82  juju-65afbd-1  ubuntu@26.04  	Running
 ```
 
 Example of `juju status` on the COS K8s model:

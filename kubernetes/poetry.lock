@@ -554,6 +554,7 @@ develop = true
 charm-api = ">=0.1.2"
 charm-refresh = ">=3.1.0.2"
 jinja2 = ">=3.1.6"
+mysql-shell-client = {version = ">=1.0.0", extras = ["contrib"]}
 ops = ">=2.9.0"
 requests = ">=2.32.5"
 tenacity = ">=9.1.2"
@@ -1375,6 +1376,24 @@ dns-srv = ["dnspython (==2.6.1)"]
 gssapi = ["gssapi (==1.8.3)"]
 telemetry = ["opentelemetry-api (==1.33.1)", "opentelemetry-exporter-otlp-proto-http (==1.33.1)", "opentelemetry-sdk (==1.33.1)"]
 webauthn = ["fido2 (==1.1.2)"]
+
+[[package]]
+name = "mysql-shell-client"
+version = "1.0.0"
+description = "Python client for MySQL Shell"
+optional = false
+python-versions = ">=3.10"
+groups = ["main"]
+files = [
+    {file = "mysql_shell_client-1.0.0-py3-none-any.whl", hash = "sha256:0290f006fb9a9d6f020706f556218aca4a299fd2cc77f7c83d749e09ce610492"},
+    {file = "mysql_shell_client-1.0.0.tar.gz", hash = "sha256:5ac925daee320cc8e0cd750434b3392cde46ebf3ba6e159900cd4e77a3cadc21"},
+]
+
+[package.dependencies]
+ops = {version = ">=2.0", optional = true, markers = "extra == \"contrib\""}
+
+[package.extras]
+contrib = ["ops (>=2.0)"]
 
 [[package]]
 name = "oauthlib"

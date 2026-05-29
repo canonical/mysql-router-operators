@@ -9,6 +9,7 @@ import dataclasses
 import logging
 
 import charm_refresh
+import mysql_shell
 import ops
 
 from . import container, lifecycle, logrotate, server_exceptions, workload
@@ -127,6 +128,13 @@ class MySQLRouterCharm(ops.CharmBase, abc.ABC):
     @abc.abstractmethod
     def _read_only_endpoints(self, *, event) -> str:
         """MySQL Router read-only endpoint"""
+
+    @abc.abstractmethod
+    def build_shell_executor(
+        self,
+        connection_info: database_requires.CompleteConnectionInformation,
+    ) -> mysql_shell.BaseExecutor:
+        """Build the MySQL Shell executor object"""
 
     @abc.abstractmethod
     def is_externally_accessible(self, *, event) -> bool | None:

@@ -220,21 +220,6 @@ class Container(abc.ABC):
         args.insert(0, self._mysql_router_command)
         return self._run_command(args, timeout=timeout)
 
-    def run_mysql_shell(
-        self,
-        args: list[str],
-        *,
-        timeout: int = None,
-        input: str = None,  # noqa: A002 Match subprocess.run()
-    ) -> str:
-        """Run MySQL Shell command.
-
-        Raises:
-            CalledProcessError: Command returns non-zero exit code
-        """
-        args.insert(0, self._mysql_shell_command)
-        return self._run_command(args, timeout=timeout, input=input)
-
     @abc.abstractmethod
     def path(self, *args) -> Path:
         """Container filesystem path"""

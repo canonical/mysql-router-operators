@@ -28,6 +28,8 @@ import common.workload
 import ops.log
 import tenacity
 from charms.tempo_coordinator_k8s.v0.charm_tracing import trace_charm
+from mysql_shell.executors import LocalExecutor
+from mysql_shell.models import ConnectionDetails
 
 import machine_logrotate
 import machine_workload
@@ -161,6 +163,20 @@ class MachineSubordinateRouterCharm(common.abstract_charm.MySQLRouterCharm):
             return f"{self.host_address}:{self._READ_ONLY_PORT}"
         else:
             return f"file://{self._container.path('/run/mysqlrouter/mysqlro.sock')}"
+
+    def build_shell_executor(
+        self,
+        connection_info: common.relations.database_requires.CompleteConnectionInformation,
+    ) -> LocalExecutor:
+        """Build the MySQL Shell executor object"""
+        conn_details = ConnectionDetails(
+            username=connection_info.username,
+            password=connection_info.password,
+            host=connection_info.host,
+            port=connection_info.port,
+        )
+
+        return LocalExecutor(conn_details, self._container._mysql_shell_command)
 
     def is_externally_accessible(self, *, event) -> bool | None:
         return self._database_provides.external_connectivity(event)

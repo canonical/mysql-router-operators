@@ -30,8 +30,8 @@ lint = [
 unit = [
     "pytest~=8.4",
     "pytest-xdist~=3.8",
-    "pytest-cov~=6.2",
-    "ops-scenario==6.0.3",  # 6.0.4 requires ops >= 2.12
+    "pytest-cov~=7.1",
+    "ops-scenario==8.7.1",  # 6.0.4 requires ops >= 2.12
 ]
 integration = [
     "pytest~=8.4",

@@ -18,6 +18,7 @@ jobs:
     with:
       track: 'dpe'
     permissions:
+      actions: read
       contents: write  # Needed to create git tag
 
   build:
@@ -79,4 +80,5 @@ jobs:
     secrets:
       charmhub-token: ${{ secrets.CHARMHUB_TOKEN }}
     permissions:
+      actions: read
       contents: write  # Needed to create git tags

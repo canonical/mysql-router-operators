@@ -68,7 +68,7 @@ class Shell:
     def _get_mysql_roles(self, name_pattern: str) -> set[str]:
         """Returns a set with the MySQL roles."""
         logger.debug(f"Getting MySQL roles with {name_pattern=}")
-        roles = self._instance_client.search_instance_roles("%")
+        roles = self._instance_client.search_instance_roles(name_pattern)
         logger.debug(f"MySQL roles found for {name_pattern=}: {len(roles)}")
 
         return {role.rolename for role in roles}

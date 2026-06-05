@@ -59,7 +59,6 @@ def patch(monkeypatch):
         lambda *args, **kwargs: None,
     )
     monkeypatch.setattr("common.workload.RunningWorkload._router_username", "")
-    monkeypatch.setattr("common.mysql_shell.Shell._run_code", lambda *args, **kwargs: None)
     monkeypatch.setattr(
         "common.mysql_shell.Shell._get_mysql_databases", lambda *args, **kwargs: set()
     )
@@ -68,7 +67,7 @@ def patch(monkeypatch):
         "common.mysql_shell.Shell.get_mysql_router_user_for_unit", lambda *args, **kwargs: None
     )
     monkeypatch.setattr(
-        "common.mysql_shell.Shell.is_router_in_cluster_set", lambda *args, **kwargs: True
+        "common.mysql_shell.Shell.get_routers_in_cluster_set", lambda *args, **kwargs: set()
     )
     monkeypatch.setattr("charm_refresh.Machines", _MockRefresh)
     monkeypatch.setattr("charm_refresh.snap_name", lambda: "charmed-mysql")
@@ -78,6 +77,12 @@ def patch(monkeypatch):
     monkeypatch.setattr(
         "common.relations.database_requires.RelationEndpoint.does_relation_exist",
         lambda *args, **kwargs: True,
+    )
+    monkeypatch.setattr(
+        "mysql_shell.executors.LocalExecutor.execute_sql", lambda *args, **kwargs: []
+    )
+    monkeypatch.setattr(
+        "mysql_shell.executors.LocalExecutor.execute_py", lambda *args, **kwargs: "{}"
     )
 
 

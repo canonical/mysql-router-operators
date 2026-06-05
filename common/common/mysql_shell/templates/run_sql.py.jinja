@@ -1,3 +1,0 @@
-{% for statement in statements %}
-session.run_sql("{{ statement|replace('"', '\\"') }}")
-{% endfor %}

@@ -36,6 +36,8 @@ import ops
 import ops.log
 import tenacity
 from charms.tempo_coordinator_k8s.v0.charm_tracing import trace_charm
+from mysql_shell.models import ConnectionDetails
+from mysql_shell_contrib.executors import PebbleExecutor
 
 import kubernetes_logrotate
 import migration_from_refresh_v2
@@ -156,6 +158,22 @@ class KubernetesRouterCharm(common.abstract_charm.MySQLRouterCharm):
                 return ops.MaintenanceStatus("Waiting for K8s service connectivity")
             else:
                 return ops.BlockedStatus("K8s service not connectable")
+
+    def build_shell_executor(
+        self,
+        connection_info: common.relations.database_requires.CompleteConnectionInformation,
+    ) -> PebbleExecutor:
+        """Build the MySQL Shell executor object"""
+        conn_details = ConnectionDetails(
+            username=connection_info.username,
+            password=connection_info.password,
+            host=connection_info.host,
+            port=connection_info.port,
+        )
+
+        executor = PebbleExecutor(conn_details, self._container._mysql_shell_command)
+        executor.set_container(self._container._container)
+        return executor
 
     def is_externally_accessible(self, *, event) -> bool | None:
         """No-op since this charm is exposed with the expose-external config."""

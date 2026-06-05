@@ -226,7 +226,9 @@ class RunningWorkload(Workload):
     def shell(self) -> mysql_shell.Shell:
         """MySQL Shell"""
         return mysql_shell.Shell(
-            _container=self._container, _connection_info=self._connection_info
+            executor=self._charm.build_shell_executor(
+                self._connection_info,
+            ),
         )
 
     @property
@@ -391,18 +393,17 @@ class RunningWorkload(Workload):
                 "`key`, `certificate`, and `certificate_authority` arguments required when tls=True"
             )
 
-        # If the host or port changes, MySQL Router will receive topology change
-        # notifications from MySQL.
+        # If the host or port changes, MySQL Router will receive a topology change notification.
         # Therefore, if the host or port changes, we do not need to restart MySQL Router.
         is_charm_exposed = self._charm.is_externally_accessible(event=event)
         socket_file_exists = self._container.path("/run/mysqlrouter/mysql.sock").exists()
-        require_rebootstrap = is_charm_exposed == socket_file_exists
+
         # If the router is not in the cluster set, disable to restart it
         # This can happen when the server is scaled to zero and back
-        require_rebootstrap = require_rebootstrap or not self.shell.is_router_in_cluster_set(
-            self._router_id
-        )
-        if require_rebootstrap:
+        if any((
+            is_charm_exposed == socket_file_exists,
+            self._router_id not in self.shell.get_routers_in_cluster_set()
+        )):
             self._disable_router()
 
         # `self._custom_certificate` will change after we enable/disable TLS

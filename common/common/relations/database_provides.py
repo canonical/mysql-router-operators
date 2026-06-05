@@ -118,7 +118,7 @@ class _RelationThatRequestedUser(_Relation):
         # persist in MySQL but will not persist in the databag. Therefore, we lose the user's
         # password and need to re-create the user.)
         logger.debug("Deleting user if exists before creating user")
-        shell.delete_user(username, must_exist=False)
+        shell.delete_user(username)
         logger.debug("Deleted user if exists before creating user")
 
         password = shell.create_application_database(
@@ -178,7 +178,7 @@ class _RelationWithSharedUser(_Relation):
         # Delete user if exists
         # (If the user was previously deleted by this charm—but the hook failed—the user will be
         # deleted in MySQL but will persist in the databag.)
-        shell.delete_user(self._get_username(shell.username), must_exist=False)
+        shell.delete_user(self._get_username(shell.username))
 
 
 class RelationEndpoint:

@@ -60,6 +60,7 @@ common = {path = "../common", develop = true}
 ops = "^2.9.0, <2.10"
 tenacity = "^9.1.2"
 charm-refresh = "^3.1.0.2"
+charmlibs-snap = "^1.0.1"
 
 [tool.poetry.group.format]
 optional = true

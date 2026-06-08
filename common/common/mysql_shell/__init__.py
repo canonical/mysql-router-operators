@@ -7,9 +7,10 @@ https://dev.mysql.com/doc/mysql-shell/8.4/en/
 """
 
 import dataclasses
+import json
 import logging
 
-from mysql_shell.builders import QueryQuoter
+from mysql_shell.builders import ArgsQuoter, QueryQuoter
 from mysql_shell.executors import BaseExecutor
 from mysql_shell.clients import ClusterClient, InstanceClient
 from mysql_shell.models import User
@@ -38,7 +39,7 @@ class Shell:
     def __init__(self, executor: BaseExecutor) -> None:
         """Initialize the shell connection"""
         self._executor = executor
-        self._cluster_client = ClusterClient(self._executor)
+        self._cluster_client = ClusterClient(self._executor, ArgsQuoter())
         self._instance_client = InstanceClient(self._executor, QueryQuoter())
 
     @property
@@ -191,13 +192,30 @@ class Shell:
             router_id=users[0].attributes["router_id"],
         )
 
+    def get_routers_in_cluster(self) -> set[str]:
+        """Get MySQL Router instances in the current InnoDB Cluster."""
+        output = self._executor.execute_py("print(dba.get_cluster())")
+        output = json.loads(output)
+
+        cluster = output.get("name")
+        if not cluster:
+            set()
+
+        logger.debug(f"Getting MySQL Routers in cluster")
+        output = self._cluster_client.list_cluster_routers(cluster)
+        routers = output.get("routers", {})
+        logger.debug(f"MySQL Routers found for cluster")
+
+        return {router for router in routers.keys()}
+
     def get_routers_in_cluster_set(self) -> set[str]:
         """Get MySQL Router instances in the current InnoDB ClusterSet."""
         logger.debug(f"Getting MySQL Routers in cluster set")
         output = self._cluster_client.list_cluster_set_routers()
+        routers = output.get("routers", {})
         logger.debug(f"MySQL Routers found for cluster set")
 
-        return {router for router in output["routers"].keys()}
+        return {router for router in routers.keys()}
 
     def delete_user(self, username: str) -> None:
         """Delete user."""
@@ -206,3 +224,19 @@ class Shell:
         logger.debug(f"Deleting {username=}")
         self._instance_client.delete_instance_user(user)
         logger.debug(f"Deleted {username=}")
+
+    def disable_quorum_validation(self, router_id: str) -> None:
+        """Disables the quorum validation introduced in MySQL Router 8.2+."""
+        result = self._executor.execute_py("print(dba.get_cluster())")
+        result = json.loads(result)
+
+        cluster = result.get("name")
+        if not cluster:
+            return
+
+        self._cluster_client.update_router_within_cluster(
+            cluster_name=cluster,
+            router_name=router_id.split("::")[0],
+            router_mode=router_id.split("::")[1],
+            options={"unreachable_quorum_allowed_traffic": "ALL"},
+        )

@@ -569,9 +569,9 @@ develop = true
 charm-api = ">=0.1.2"
 charm-refresh = ">=3.1.0.2"
 jinja2 = ">=3.1.6"
-mysql-shell-client = {version = ">=1.0.0", extras = ["contrib"]}
+mysql-shell-client = {version = ">=1.1.0", extras = ["contrib"]}
 ops = ">=2.9.0"
-requests = ">=2.32.5"
+requests = ">=2.33.0"
 tenacity = ">=9.1.2"
 
 [package.source]
@@ -1394,14 +1394,14 @@ webauthn = ["fido2 (==1.1.2)"]
 
 [[package]]
 name = "mysql-shell-client"
-version = "1.0.0"
+version = "1.1.0"
 description = "Python client for MySQL Shell"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "mysql_shell_client-1.0.0-py3-none-any.whl", hash = "sha256:0290f006fb9a9d6f020706f556218aca4a299fd2cc77f7c83d749e09ce610492"},
-    {file = "mysql_shell_client-1.0.0.tar.gz", hash = "sha256:5ac925daee320cc8e0cd750434b3392cde46ebf3ba6e159900cd4e77a3cadc21"},
+    {file = "mysql_shell_client-1.1.0-py3-none-any.whl", hash = "sha256:32572eb58817f918756d3332cc4bf38d7d8483bcebfb8cc6fb74828d4394503f"},
+    {file = "mysql_shell_client-1.1.0.tar.gz", hash = "sha256:3c9368ec22251a63f1a1a8aea0f4c26c565acda1db906daa9c4ce4a739d60504"},
 ]
 
 [package.dependencies]

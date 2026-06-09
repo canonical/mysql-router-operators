@@ -25,8 +25,6 @@ parts:
       python3 -m pip install --user --break-system-packages poetry-plugin-export==1.9.0
 
       ln -sf "$HOME/.local/bin/poetry" /usr/local/bin/poetry
-
-      python3 -m pip install --user --break-system-packages charmcraftlocal
   # "charm-poetry" part name is arbitrary; use for consistency
   # Avoid using "charm" part name since that has special meaning to charmcraft
   charm-poetry:
@@ -52,8 +50,6 @@ parts:
       # Ubuntu 22.04 archive. Install rustc and cargo using rustup instead of the Ubuntu archive
       rustup set profile minimal
       rustup default 1.90.0  # renovate: charmcraft-rust-latest
-
-      "$HOME/.local/bin/charmcraftlocal" update-lock -v
 
       craftctl default
       

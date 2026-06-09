@@ -56,6 +56,8 @@ requires-poetry = ">=2.2.0"
 [tool.poetry.dependencies]
 python = "^3.12"
 common = {path = "../common", develop = true}
+# adaptation of ClusterClient required
+mysql-shell-client = {version = "^1.0.0, <1.1.0", extras = ["contrib"]}
 # breaking change in ops 2.10.0: https://github.com/canonical/operator/pull/1091#issuecomment-1888644075
 ops = "^2.9.0, <2.10"
 tenacity = "^9.1.2"

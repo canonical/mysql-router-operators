@@ -556,7 +556,7 @@ charm-refresh = ">=3.1.0.2"
 jinja2 = ">=3.1.6"
 mysql-shell-client = {version = ">=1.0.0", extras = ["contrib"]}
 ops = ">=2.9.0"
-requests = ">=2.32.5"
+requests = ">=2.33.0"
 tenacity = ">=9.1.2"
 
 [package.source]
@@ -2862,4 +2862,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "edb525f7cf2f2abf10611e09e031e023f2f2d340a250cab7f51c9ff0add2fa17"
+content-hash = "59f625aed71a1ac44e5748dc85e757292c9a35f93b9a49f6980b56c30d4701a8"

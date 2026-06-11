@@ -10,7 +10,7 @@ import subprocess
 import typing
 
 import charm_refresh
-import charms.operator_libs_linux.v2.snap as snap_lib
+import charmlibs.snap as snap_lib
 import common.container
 import ops
 import tenacity

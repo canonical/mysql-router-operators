@@ -932,7 +932,7 @@
               "uid": "${prometheusds}"
             },
             "editorMode": "code",
-            "expr": "route_connections_byte_to_server{router_hostname=\"$host\"}",
+            "expr": "mysqlrouter_route_connections_byte_to_server{router_hostname=\"$host\"}",
             "format": "table",
             "hide": false,
             "instant": true,
@@ -946,7 +946,7 @@
               "uid": "${prometheusds}"
             },
             "editorMode": "code",
-            "expr": "route_connections_byte_from_server{router_hostname=\"$host\"}",
+            "expr": "mysqlrouter_route_connections_byte_from_server{router_hostname=\"$host\"}",
             "format": "table",
             "hide": false,
             "instant": true,
@@ -959,7 +959,7 @@
               "uid": "${prometheusds}"
             },
             "editorMode": "code",
-            "expr": "route_connections_time_connected_to_server{router_hostname=\"$host\"}",
+            "expr": "mysqlrouter_route_connections_time_connected_to_server{router_hostname=\"$host\"}",
             "format": "table",
             "instant": true,
             "intervalFactor": 1,
@@ -971,7 +971,7 @@
               "uid": "${prometheusds}"
             },
             "editorMode": "code",
-            "expr": "route_connections_time_last_received_from_server{router_hostname=\"$host\"}",
+            "expr": "mysqlrouter_route_connections_time_last_received_from_server{router_hostname=\"$host\"}",
             "format": "table",
             "instant": true,
             "refId": "D"
@@ -982,7 +982,7 @@
               "uid": "${prometheusds}"
             },
             "editorMode": "code",
-            "expr": "route_connections_time_last_sent_to_server{router_hostname=\"$host\"}",
+            "expr": "mysqlrouter_route_connections_time_last_sent_to_server{router_hostname=\"$host\"}",
             "format": "table",
             "instant": true,
             "refId": "E"
@@ -993,7 +993,7 @@
               "uid": "${prometheusds}"
             },
             "editorMode": "code",
-            "expr": "route_connections_time_started{router_hostname=\"$host\"}",
+            "expr": "mysqlrouter_route_connections_time_started{router_hostname=\"$host\"}",
             "format": "table",
             "instant": true,
             "refId": "F"
@@ -1139,7 +1139,7 @@
               "uid": "${prometheusds}"
             },
             "editorMode": "code",
-            "expr": "route_connections_byte_from_server{router_hostname=\"$host\"}",
+            "expr": "mysqlrouter_route_connections_byte_from_server{router_hostname=\"$host\"}",
             "instant": false,
             "intervalFactor": 3,
             "legendFormat": "from_server {{name}} - {{source_address}} -> {{destination_address}}",
@@ -1151,7 +1151,7 @@
               "uid": "${prometheusds}"
             },
             "editorMode": "code",
-            "expr": "route_connections_byte_to_server{outer_hostname=\"$host\"}",
+            "expr": "mysqlrouter_route_connections_byte_to_server{outer_hostname=\"$host\"}",
             "instant": false,
             "intervalFactor": 3,
             "legendFormat": "to_server {{name}} - {{destination_address}} -> {{source_address}}",

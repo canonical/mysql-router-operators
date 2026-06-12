@@ -70,33 +70,22 @@ async def test_database_relation(ops_test: OpsTest, charm, series):
     )
 
     mysql_app, application_app = applications[0], applications[2]
+    logger.info("Relating mysql, mysqlrouter and application")
+    # Relate the database with mysqlrouter
+    await ops_test.model.relate(
+        f"{MYSQL_ROUTER_APP_NAME}:backend-database", f"{MYSQL_APP_NAME}:database"
+    )
+    # Relate mysqlrouter with application next
+    await ops_test.model.relate(
+        f"{APPLICATION_APP_NAME}:database", f"{MYSQL_ROUTER_APP_NAME}:database"
+    )
 
     async with ops_test.fast_forward():
-        logger.info("Waiting for mysqlrouter to be in BlockedStatus")
-        await ops_test.model.block_until(
-            lambda: ops_test.model.applications[MYSQL_ROUTER_APP_NAME].status == "blocked",
-            timeout=SLOW_TIMEOUT,
-        )
+        logger.info("Waiting for test-app to be in active")
 
-        logger.info("Relating mysql, mysqlrouter and application")
-        # Relate the database with mysqlrouter
-        await ops_test.model.relate(
-            f"{MYSQL_ROUTER_APP_NAME}:backend-database", f"{MYSQL_APP_NAME}:database"
-        )
-        # Relate mysqlrouter with application next
-        await ops_test.model.relate(
-            f"{APPLICATION_APP_NAME}:database", f"{MYSQL_ROUTER_APP_NAME}:database"
-        )
-
+        # mysql-test-app only becomes active when connection to DB is successful
         await ops_test.model.wait_for_idle(
-            apps=[MYSQL_ROUTER_APP_NAME], status="active", timeout=SLOW_TIMEOUT
-        )
-
-        await ops_test.model.wait_for_idle(
-            apps=[MYSQL_APP_NAME, MYSQL_ROUTER_APP_NAME, APPLICATION_APP_NAME],
-            status="active",
-            raise_on_blocked=True,
-            timeout=SLOW_TIMEOUT,
+            apps=[APPLICATION_APP_NAME], status="active", timeout=SLOW_TIMEOUT
         )
 
     # Ensure that the data inserted by sample application is present in the database

@@ -251,6 +251,16 @@ class Snap(common.container.Container):
         if self._snap.present:
             _raise_if_snap_installed_not_by_this_charm(unit=unit, model_uuid=model_uuid)
             return
+
+        # Create /sbin symlinks for fuse mount helpers, missing on
+        # resolute where /sbin and /usr/sbin are not merged,
+        # causing snapd's syscheck to fail.
+        for helper in ["mount.fuse", "mount.fuse3"]:
+            src = pathlib.Path(f"/usr/sbin/{helper}")
+            dst = pathlib.Path(f"/sbin/{helper}")
+            if src.exists() and not dst.exists():
+                dst.symlink_to(src)
+
         # Install snap
         logger.info(f"Installing snap revision {repr(snap_revision)}")
         unit.status = ops.MaintenanceStatus("Installing snap")

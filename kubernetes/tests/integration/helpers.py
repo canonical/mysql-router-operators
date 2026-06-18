@@ -222,7 +222,9 @@ async def write_content_to_file_in_unit(
 
         subprocess.run(
             [
-                "microk8s.kubectl",
+                "sudo",
+                "k8s",
+                "kubectl",
                 "cp",
                 "-n",
                 ops_test.model.info.name,
@@ -254,7 +256,9 @@ async def read_contents_from_file_in_unit(
     with tempfile.NamedTemporaryFile(mode="r+", dir=pathlib.Path.home()) as temp_file:
         subprocess.run(
             [
-                "microk8s.kubectl",
+                "sudo",
+                "k8s",
+                "kubectl",
                 "cp",
                 "-n",
                 ops_test.model.info.name,

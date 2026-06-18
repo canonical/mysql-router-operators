@@ -91,36 +91,39 @@ async def test_expose_external(ops_test, charm) -> None:
     """Test the expose-external config option."""
     await ops_test.model.set_config(MODEL_CONFIG)
 
-    mysql_router_resources = {
-        "mysql-router-image": METADATA["resources"]["mysql-router-image"]["upstream-source"]
-    }
+    resource_args = [
+        f"--resource=mysql-router-image={METADATA['resources']['mysql-router-image']['upstream-source']}",
+    ]
 
     logger.info("Deploying mysql-k8s, mysql-router-k8s and data-integrator")
     await asyncio.gather(
-        ops_test.model.deploy(
+        ops_test.juju(
+            "deploy",
             MYSQL_APP_NAME,
-            channel="8.4/edge",
-            application_name=MYSQL_APP_NAME,
-            config={"profile": "testing"},
-            base="ubuntu@24.04",
-            num_units=1,
-            trust=True,
+            MYSQL_APP_NAME,
+            "--channel=8.4/edge",
+            "--config=profile=testing",
+            "--base=ubuntu@24.04",
+            "--num-units=1",
+            "--trust",
         ),
-        ops_test.model.deploy(
+        ops_test.juju(
+            "deploy",
             charm,
-            application_name=MYSQL_ROUTER_APP_NAME,
-            base="ubuntu@24.04",
-            resources=mysql_router_resources,
-            num_units=1,
-            trust=True,
+            MYSQL_ROUTER_APP_NAME,
+            *resource_args,
+            "--base=ubuntu@24.04",
+            "--num-units=1",
+            "--trust",
         ),
-        ops_test.model.deploy(
+        ops_test.juju(
+            "deploy",
             DATA_INTEGRATOR,
-            channel="latest/edge",
-            application_name=DATA_INTEGRATOR,
-            base="ubuntu@24.04",
-            config={"database-name": TEST_DATABASE_NAME},
-            num_units=1,
+            DATA_INTEGRATOR,
+            "--channel=latest/edge",
+            "--base=ubuntu@24.04",
+            f"--config=database-name={TEST_DATABASE_NAME}",
+            "--num-units=1",
         ),
     )
 
@@ -179,11 +182,13 @@ async def test_expose_external_with_tls(ops_test: OpsTest) -> None:
     )
 
     logger.info("Deploying TLS operator")
-    await ops_test.model.deploy(
+    await ops_test.juju(
+        "deploy",
         TLS_APP_NAME,
-        channel="1/stable",
-        config={"ca-common-name": "Test CA"},
-        base="ubuntu@24.04",
+        TLS_APP_NAME,
+        "--channel=1/stable",
+        "--config=ca-common-name=Test CA",
+        "--base=ubuntu@24.04",
     )
     async with ops_test.fast_forward("60s"):
         await ops_test.model.wait_for_idle(

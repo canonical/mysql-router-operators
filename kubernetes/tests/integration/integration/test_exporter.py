@@ -34,52 +34,55 @@ RETRY_TIMEOUT = 3 * 60
 @pytest.mark.abort_on_fail
 async def test_exporter_endpoint(ops_test: OpsTest, charm) -> None:
     """Test that exporter endpoint is functional."""
-    mysqlrouter_resources = {
-        "mysql-router-image": METADATA["resources"]["mysql-router-image"]["upstream-source"]
-    }
+    resource_args = [
+        f"--resource=mysql-router-image={METADATA['resources']['mysql-router-image']['upstream-source']}",
+    ]
 
     logger.info("Deploying all the applications")
-
-    applications = await asyncio.gather(
-        ops_test.model.deploy(
+    await asyncio.gather(
+        ops_test.juju(
+            "deploy",
             MYSQL_APP_NAME,
-            channel="8.4/edge",
-            application_name=MYSQL_APP_NAME,
-            config={"profile": "testing"},
-            base="ubuntu@24.04",
-            num_units=1,
-            trust=True,
+            MYSQL_APP_NAME,
+            "--channel=8.4/edge",
+            "--config=profile=testing",
+            "--base=ubuntu@24.04",
+            "--num-units=1",
+            "--trust",
         ),
-        ops_test.model.deploy(
+        ops_test.juju(
+            "deploy",
             charm,
-            application_name=MYSQL_ROUTER_APP_NAME,
-            base="ubuntu@24.04",
-            resources=mysqlrouter_resources,
-            num_units=1,
-            trust=True,
+            MYSQL_ROUTER_APP_NAME,
+            *resource_args,
+            "--base=ubuntu@24.04",
+            "--num-units=1",
+            "--trust",
         ),
-        ops_test.model.deploy(
+        ops_test.juju(
+            "deploy",
             APPLICATION_APP_NAME,
-            channel="latest/edge",
-            application_name=APPLICATION_APP_NAME,
-            base="ubuntu@24.04",
-            num_units=1,
+            APPLICATION_APP_NAME,
+            "--channel=latest/edge",
+            "--base=ubuntu@24.04",
+            "--num-units=1",
         ),
-        ops_test.model.deploy(
+        ops_test.juju(
+            "deploy",
             GRAFANA_AGENT_APP_NAME,
-            application_name=GRAFANA_AGENT_APP_NAME,
-            num_units=1,
-            base="ubuntu@22.04",
-            channel="1/stable",
+            GRAFANA_AGENT_APP_NAME,
+            "--channel=1/stable",
+            "--base=ubuntu@22.04",
+            "--num-units=1",
         ),
     )
 
-    [_, mysqlrouter_app, __, ___] = applications
+    mysqlrouter_app = ops_test.model.applications[MYSQL_ROUTER_APP_NAME]
 
     async with ops_test.fast_forward("60s"):
         logger.info("Waiting for mysqlrouter to be in BlockedStatus")
         await ops_test.model.block_until(
-            lambda: ops_test.model.applications[MYSQL_ROUTER_APP_NAME].status == "blocked",
+            lambda: mysqlrouter_app.status == "blocked",
             timeout=SLOW_TIMEOUT,
         )
 

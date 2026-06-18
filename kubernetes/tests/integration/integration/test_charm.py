@@ -37,45 +37,56 @@ async def test_database_relation(ops_test: OpsTest, charm):
     """Test the database relation."""
     await ops_test.model.set_config(MODEL_CONFIG)
 
-    mysqlrouter_resources = {
-        "mysql-router-image": METADATA["resources"]["mysql-router-image"]["upstream-source"]
-    }
+    resource_args = [
+        f"--resource=mysql-router-image={METADATA['resources']['mysql-router-image']['upstream-source']}",
+    ]
 
     logger.info("Deploying mysql, mysqlrouter and application")
-    applications = await asyncio.gather(
-        ops_test.model.deploy(
+    await asyncio.gather(
+        ops_test.juju(
+            "deploy",
             MYSQL_APP_NAME,
-            channel="8.4/edge",
-            application_name=MYSQL_APP_NAME,
-            config={"profile": "testing"},
-            base="ubuntu@24.04",
-            num_units=3,
-            trust=True,  # Necessary after a6f1f01: Fix/endpoints as k8s services (#142)
+            MYSQL_APP_NAME,
+            "--channel=8.4/edge",
+            "--config=profile=testing",
+            "--base=ubuntu@24.04",
+            "--num-units=3",
+            "--trust",
         ),
-        ops_test.model.deploy(
+        ops_test.juju(
+            "deploy",
             charm,
-            application_name=MYSQL_ROUTER_APP_NAME,
-            base="ubuntu@24.04",
-            resources=mysqlrouter_resources,
-            num_units=1,
-            trust=True,
+            MYSQL_ROUTER_APP_NAME,
+            *resource_args,
+            "--base=ubuntu@24.04",
+            "--num-units=1",
+            "--trust",
         ),
-        ops_test.model.deploy(
+        ops_test.juju(
+            "deploy",
             APPLICATION_APP_NAME,
-            channel="latest/edge",
-            application_name=APPLICATION_APP_NAME,
-            base="ubuntu@24.04",
-            num_units=1,
+            APPLICATION_APP_NAME,
+            "--channel=latest/edge",
+            "--base=ubuntu@24.04",
+            "--num-units=1",
         ),
     )
 
-    mysql_app, application_app = applications[0], applications[2]
+    mysql_app = ops_test.model.applications[MYSQL_APP_NAME]
+    mysql_router_app = ops_test.model.applications[MYSQL_ROUTER_APP_NAME]
+    application_app = ops_test.model.applications[APPLICATION_APP_NAME]
 
     async with ops_test.fast_forward():
         logger.info("Waiting for mysqlrouter to be in BlockedStatus")
-        await ops_test.model.block_until(
-            lambda: ops_test.model.applications[MYSQL_ROUTER_APP_NAME].status == "blocked",
-            timeout=SLOW_TIMEOUT,
+        await asyncio.gather(
+            ops_test.model.block_until(
+                lambda: mysql_app.status == "active",
+                timeout=SLOW_TIMEOUT,
+            ),
+            ops_test.model.block_until(
+                lambda: mysql_router_app.status == "blocked",
+                timeout=SLOW_TIMEOUT,
+            ),
         )
 
         logger.info("Relating mysql, mysqlrouter and application")

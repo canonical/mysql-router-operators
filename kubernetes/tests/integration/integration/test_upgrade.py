@@ -36,7 +36,9 @@ MYSQL_ROUTER_APP_NAME = MYSQL_ROUTER_DEFAULT_APP_NAME
 APPLICATION_APP_NAME = APPLICATION_DEFAULT_APP_NAME
 
 METADATA = yaml.safe_load(Path("./metadata.yaml").read_text())
-RESOURCES = {"mysql-router-image": METADATA["resources"]["mysql-router-image"]["upstream-source"]}
+RESOURCE_ARGS = [
+    f"--resource=mysql-router-image={METADATA['resources']['mysql-router-image']['upstream-source']}",
+]
 
 
 @pytest.mark.abort_on_fail
@@ -45,28 +47,31 @@ async def test_deploy_edge(ops_test: OpsTest) -> None:
     logger.info("Deploying all applications")
 
     await asyncio.gather(
-        ops_test.model.deploy(
+        ops_test.juju(
+            "deploy",
             MYSQL_APP_NAME,
-            channel="8.4/edge",
-            application_name=MYSQL_APP_NAME,
-            config={"profile": "testing"},
-            base="ubuntu@24.04",
-            num_units=1,
-            trust=True,  # Necessary after a6f1f01: Fix/endpoints as k8s services (#142)
+            MYSQL_APP_NAME,
+            "--channel=8.4/edge",
+            "--config=profile=testing",
+            "--base=ubuntu@24.04",
+            "--num-units=1",
+            "--trust",
         ),
-        ops_test.model.deploy(
+        ops_test.juju(
+            "deploy",
             MYSQL_ROUTER_APP_NAME,
-            application_name=MYSQL_ROUTER_APP_NAME,
-            num_units=3,
-            channel="8.4/edge",
-            base="ubuntu@24.04",
+            MYSQL_ROUTER_APP_NAME,
+            "--channel=8.4/edge",
+            "--base=ubuntu@24.04",
+            "--num-units=3",
         ),
-        ops_test.model.deploy(
+        ops_test.juju(
+            "deploy",
             APPLICATION_APP_NAME,
-            channel="latest/edge",
-            application_name=APPLICATION_APP_NAME,
-            base="ubuntu@24.04",
-            num_units=1,
+            APPLICATION_APP_NAME,
+            "--channel=latest/edge",
+            "--base=ubuntu@24.04",
+            "--num-units=1",
         ),
     )
 
@@ -95,7 +100,7 @@ async def test_upgrade_from_edge(ops_test: OpsTest, charm) -> None:
     mysql_router_application = ops_test.model.applications[MYSQL_ROUTER_APP_NAME]
 
     logger.info("Refresh the charm")
-    await mysql_router_application.refresh(path=charm, resources=RESOURCES)
+    await ops_test.juju("refresh", MYSQL_ROUTER_APP_NAME, f"--path={charm}", *RESOURCE_ARGS)
 
     # sleep to ensure that active status from before re-refresh does not affect below check
     time.sleep(15)
@@ -171,7 +176,7 @@ async def test_fail_and_rollback(ops_test: OpsTest, charm, continuous_writes) ->
     create_invalid_upgrade_charm(fault_charm)
 
     logger.info("Refreshing mysql router with an invalid charm")
-    await mysql_router_application.refresh(path=fault_charm, resources=RESOURCES)
+    await ops_test.juju("refresh", MYSQL_ROUTER_APP_NAME, f"--path={fault_charm}", *RESOURCE_ARGS)
 
     # Highest to lowest unit number
     refresh_order = sorted(
@@ -192,7 +197,7 @@ async def test_fail_and_rollback(ops_test: OpsTest, charm, continuous_writes) ->
     await ensure_all_units_continuous_writes_incrementing(ops_test)
 
     logger.info("Re-refresh the charm")
-    await mysql_router_application.refresh(path=charm, resources=RESOURCES)
+    await ops_test.juju("refresh", MYSQL_ROUTER_APP_NAME, f"--path={charm}", *RESOURCE_ARGS)
 
     # sleep to ensure that active status from before re-refresh does not affect below check
     time.sleep(15)

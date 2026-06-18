@@ -38,26 +38,29 @@ async def test_deploy_edge(ops_test: OpsTest, ubuntu_base) -> None:
     """Simple test to ensure that mysql, mysqlrouter and application charms deploy."""
     logger.info("Deploying all applications")
     await asyncio.gather(
-        ops_test.model.deploy(
+        ops_test.juju(
+            "deploy",
             MYSQL_APP_NAME,
-            application_name=MYSQL_APP_NAME,
-            num_units=1,
-            channel="8.4/edge",
-            config={"profile": "testing"},
+            MYSQL_APP_NAME,
+            "--channel=8.4/edge",
+            "--config=profile=testing",
+            "--num-units=1",
         ),
-        ops_test.model.deploy(
+        ops_test.juju(
+            "deploy",
             MYSQL_ROUTER_APP_NAME,
-            application_name=MYSQL_ROUTER_APP_NAME,
-            num_units=1,
-            channel="8.4/edge",
-            base=ubuntu_base,
+            MYSQL_ROUTER_APP_NAME,
+            "--channel=8.4/edge",
+            f"--base={ubuntu_base}",
+            "--num-units=1",
         ),
-        ops_test.model.deploy(
+        ops_test.juju(
+            "deploy",
             TEST_APP_NAME,
-            application_name=TEST_APP_NAME,
-            num_units=3,
-            channel="latest/edge",
-            base=ubuntu_base,
+            TEST_APP_NAME,
+            "--channel=latest/edge",
+            f"--base={ubuntu_base}",
+            "--num-units=3",
         ),
     )
 
@@ -90,7 +93,7 @@ async def test_upgrade_from_edge(ops_test: OpsTest, charm, continuous_writes) ->
     create_valid_upgrade_charm(temporary_charm)
 
     logger.info("Refresh the charm")
-    await mysql_router_application.refresh(path=temporary_charm)
+    await ops_test.juju("refresh", MYSQL_ROUTER_APP_NAME, f"--path={temporary_charm}")
 
     # sleep to ensure that active status from before re-refresh does not affect below check
     time.sleep(15)
@@ -177,7 +180,7 @@ async def test_fail_and_rollback(ops_test: OpsTest, charm, continuous_writes) ->
     create_invalid_upgrade_charm(fault_charm)
 
     logger.info("Refreshing mysql router with an invalid charm")
-    await mysql_router_application.refresh(path=fault_charm)
+    await ops_test.juju("refresh", MYSQL_ROUTER_APP_NAME, f"--path={fault_charm}")
 
     logger.info("Wait for upgrade to fail")
     await ops_test.model.block_until(
@@ -191,7 +194,7 @@ async def test_fail_and_rollback(ops_test: OpsTest, charm, continuous_writes) ->
     await ensure_all_units_continuous_writes_incrementing(ops_test)
 
     logger.info("Re-refresh the charm")
-    await mysql_router_application.refresh(path="./upgrade.charm")
+    await ops_test.juju("refresh", MYSQL_ROUTER_APP_NAME, "--path=./upgrade.charm")
 
     logger.info("Wait for the charm to be rolled back")
     await ops_test.model.wait_for_idle(

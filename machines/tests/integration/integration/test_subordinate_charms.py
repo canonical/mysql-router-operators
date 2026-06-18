@@ -19,32 +19,33 @@ LANDSCAPE_CLIENT_APP_NAME = "landscape-client"
 
 async def test_ubuntu_pro(ops_test, charm, ubuntu_base):
     await asyncio.gather(
-        ops_test.model.deploy(
+        ops_test.juju(
+            "deploy",
             MYSQL_APP_NAME,
-            channel="8.4/edge",
-            application_name=MYSQL_APP_NAME,
-            config={"profile": "testing"},
+            MYSQL_APP_NAME,
+            "--channel=8.4/edge",
+            "--config=profile=testing",
         ),
-        ops_test.model.deploy(
+        ops_test.juju(
+            "deploy",
             charm,
-            application_name=MYSQL_ROUTER_APP_NAME,
-            # deploy mysqlrouter with num_units=None since it's a subordinate charm
-            num_units=None,
-            base=ubuntu_base,
+            MYSQL_ROUTER_APP_NAME,
+            f"--base={ubuntu_base}",
         ),
-        ops_test.model.deploy(
+        ops_test.juju(
+            "deploy",
             APPLICATION_APP_NAME,
-            application_name=APPLICATION_APP_NAME,
-            channel="latest/edge",
-            # MySQL Router is subordinate—it will use the series of the principal charm
-            base=ubuntu_base,
+            APPLICATION_APP_NAME,
+            "--channel=latest/edge",
+            f"--base={ubuntu_base}",
         ),
-        ops_test.model.deploy(
+        ops_test.juju(
+            "deploy",
             UBUNTU_PRO_APP_NAME,
-            application_name=UBUNTU_PRO_APP_NAME,
-            channel="latest/edge",
-            config={"token": os.environ["UBUNTU_PRO_TOKEN"]},
-            base=ubuntu_base,
+            UBUNTU_PRO_APP_NAME,
+            "--channel=latest/edge",
+            f"--config=token={os.environ['UBUNTU_PRO_TOKEN']}",
+            f"--base={ubuntu_base}",
         ),
     )
     await ops_test.model.relate(
@@ -70,16 +71,15 @@ async def test_ubuntu_pro(ops_test, charm, ubuntu_base):
 
 
 async def test_landscape_client(ops_test, ubuntu_base):
-    await ops_test.model.deploy(
+    await ops_test.juju(
+        "deploy",
         LANDSCAPE_CLIENT_APP_NAME,
-        application_name=LANDSCAPE_CLIENT_APP_NAME,
-        channel="latest/edge",
-        config={
-            "account-name": os.environ["LANDSCAPE_ACCOUNT_NAME"],
-            "registration-key": os.environ["LANDSCAPE_REGISTRATION_KEY"],
-            "ppa": "ppa:landscape/self-hosted-beta",
-        },
-        base=ubuntu_base,
+        LANDSCAPE_CLIENT_APP_NAME,
+        "--channel=latest/edge",
+        "--config=ppa=ppa:landscape/self-hosted-beta",
+        f"--config=account-name={os.environ['LANDSCAPE_ACCOUNT_NAME']}",
+        f"--config=registration-key={os.environ['LANDSCAPE_REGISTRATION_KEY']}",
+        f"--base={ubuntu_base}",
     )
     await ops_test.model.relate(APPLICATION_APP_NAME, LANDSCAPE_CLIENT_APP_NAME)
     async with ops_test.fast_forward("60s"):

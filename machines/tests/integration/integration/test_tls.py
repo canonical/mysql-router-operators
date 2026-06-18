@@ -32,38 +32,41 @@ async def test_build_deploy_and_relate(ops_test: OpsTest, charm, ubuntu_base) ->
     logger.info("Deploy and relate all applications")
     async with ops_test.fast_forward():
         # deploy mysql first
-        await ops_test.model.deploy(
+        await ops_test.juju(
+            "deploy",
             MYSQL_APP_NAME,
-            channel="8.4/edge",
-            application_name=MYSQL_APP_NAME,
-            config={"profile": "testing"},
+            MYSQL_APP_NAME,
+            "--channel=8.4/edge",
+            "--config=profile=testing",
             # TODO: Check again when switching to 8.4/edge channel
             # MySQL Router 8.4 requires cluster quorum for R/W traffic,
             # because of the unreachable_quorum_allowed_traffic config option
             # (only observable upon process restart)
-            num_units=3,
+            "--num-units=3",
         )
 
         # tls, test app and router
         await asyncio.gather(
-            ops_test.model.deploy(
+            ops_test.juju(
+                "deploy",
                 charm,
-                application_name=MYSQL_ROUTER_APP_NAME,
-                num_units=None,
-                base=ubuntu_base,
+                MYSQL_ROUTER_APP_NAME,
+                f"--base={ubuntu_base}",
             ),
-            ops_test.model.deploy(
+            ops_test.juju(
+                "deploy",
                 TLS_APP_NAME,
-                application_name=TLS_APP_NAME,
-                channel="1/stable",
-                config={"ca-common-name": "Test CA"},
-                base="ubuntu@24.04",
+                TLS_APP_NAME,
+                "--channel=1/stable",
+                "--config=ca-common-name=Test CA",
+                "--base=ubuntu@24.04",
             ),
-            ops_test.model.deploy(
+            ops_test.juju(
+                "deploy",
                 TEST_APP_NAME,
-                application_name=TEST_APP_NAME,
-                channel="latest/edge",
-                base=ubuntu_base,
+                TEST_APP_NAME,
+                "--channel=latest/edge",
+                f"--base={ubuntu_base}",
             ),
         )
 

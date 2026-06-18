@@ -42,11 +42,7 @@ async def test_exporter_endpoint(ops_test: OpsTest, charm, ubuntu_base) -> None:
             channel="8.4/edge",
             application_name=MYSQL_APP_NAME,
             config={"profile": "testing"},
-            # TODO: Check again when switching to 8.4/edge channel
-            # MySQL Router 8.4 requires cluster quorum for R/W traffic,
-            # because of the unreachable_quorum_allowed_traffic config option
-            # (only observable upon process restart)
-            num_units=3,
+            num_units=1,
         ),
         ops_test.model.deploy(
             charm,

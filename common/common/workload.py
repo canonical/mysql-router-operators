@@ -373,6 +373,12 @@ class RunningWorkload(Workload):
         )
         logger.debug("Enabled MySQL Router exporter service")
 
+    def _disable_router_quorum(self) -> None:
+        """Disable router quorum validations."""
+        logger.info("Disabling MySQL Router quorum validations")
+        self.shell.disable_quorum_validation(self._router_id)
+        logger.info("Disabled MySQL Router quorum validations")
+
     def reconcile(
         self,
         *,
@@ -418,6 +424,9 @@ class RunningWorkload(Workload):
 
         if not self._container.mysql_router_service_enabled:
             self._enable_router(event=event, tls=tls, unit_name=unit_name)
+
+        # Disable quorum validation
+        self._disable_router_quorum()
 
         if (not self._container.mysql_router_exporter_service_enabled and exporter_config) or (
             self._container.mysql_router_exporter_service_enabled

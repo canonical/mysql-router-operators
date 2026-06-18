@@ -192,22 +192,6 @@ class Shell:
             router_id=users[0].attributes["router_id"],
         )
 
-    def get_routers_in_cluster(self) -> set[str]:
-        """Get MySQL Router instances in the current InnoDB Cluster."""
-        output = self._executor.execute_py("print(dba.get_cluster())")
-        output = json.loads(output)
-
-        cluster = output.get("name")
-        if not cluster:
-            set()
-
-        logger.debug(f"Getting MySQL Routers in cluster")
-        output = self._cluster_client.list_cluster_routers(cluster)
-        routers = output.get("routers", {})
-        logger.debug(f"MySQL Routers found for cluster")
-
-        return {router for router in routers.keys()}
-
     def get_routers_in_cluster_set(self) -> set[str]:
         """Get MySQL Router instances in the current InnoDB ClusterSet."""
         logger.debug(f"Getting MySQL Routers in cluster set")

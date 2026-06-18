@@ -425,9 +425,8 @@ class RunningWorkload(Workload):
         if not self._container.mysql_router_service_enabled:
             self._enable_router(event=event, tls=tls, unit_name=unit_name)
 
-        # If the router is in the cluster set, disable quorum validation
-        if self._router_id in self.shell.get_routers_in_cluster_set():
-            self._disable_router_quorum()
+        # Disable quorum validation
+        self._disable_router_quorum()
 
         if (not self._container.mysql_router_exporter_service_enabled and exporter_config) or (
             self._container.mysql_router_exporter_service_enabled

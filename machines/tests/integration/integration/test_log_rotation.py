@@ -35,30 +35,33 @@ async def test_log_rotation(ops_test: OpsTest, charm, ubuntu_base) -> None:
 
     # deploy mysqlrouter with num_units=None since it's a subordinate charm
     # and will be installed with the related consumer application
-    applications = await asyncio.gather(
-        ops_test.model.deploy(
+    await asyncio.gather(
+        ops_test.juju(
+            "deploy",
             MYSQL_APP_NAME,
-            channel="8.4/edge",
-            application_name=MYSQL_APP_NAME,
-            config={"profile": "testing"},
-            num_units=1,
+            MYSQL_APP_NAME,
+            "--channel=8.4/edge",
+            "--config=profile=testing",
+            "--num-units=1",
         ),
-        ops_test.model.deploy(
+        ops_test.juju(
+            "deploy",
             charm,
-            application_name=MYSQL_ROUTER_APP_NAME,
-            num_units=None,
+            MYSQL_ROUTER_APP_NAME,
         ),
-        ops_test.model.deploy(
+        ops_test.juju(
+            "deploy",
             APPLICATION_APP_NAME,
-            application_name=APPLICATION_APP_NAME,
-            num_units=1,
-            # MySQL Router is subordinate—it will use the series of the principal charm
-            base=ubuntu_base,
-            channel="latest/edge",
+            APPLICATION_APP_NAME,
+            "--channel=latest/edge",
+            f"--base={ubuntu_base}",
+            "--num-units=1",
         ),
     )
 
-    mysql_app, mysql_router_app, application_app = applications
+    mysql_app = ops_test.model.applications[MYSQL_APP_NAME]
+    mysql_router_app = ops_test.model.applications[MYSQL_ROUTER_APP_NAME]
+    application_app = ops_test.model.applications[APPLICATION_APP_NAME]
     unit = application_app.units[0]
 
     logger.info("Relating mysqlrouter with mysql-test-app")

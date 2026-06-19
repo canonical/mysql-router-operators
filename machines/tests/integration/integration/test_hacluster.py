@@ -87,28 +87,33 @@ async def test_external_connectivity_vip_with_hacluster(
     # speed up test by firing update-status more frequently (for hacluster)
     async with ops_test.fast_forward("60s"):
         # deploy data-integrator with mysqlrouter
-        _, _, data_integrator_application = await asyncio.gather(
-            ops_test.model.deploy(
+        await asyncio.gather(
+            ops_test.juju(
+                "deploy",
                 MYSQL_APP_NAME,
-                channel="8.4/edge",
-                config={"profile": "testing"},
-                num_units=1,
+                MYSQL_APP_NAME,
+                "--channel=8.4/edge",
+                "--config=profile=testing",
+                "--num-units=1",
             ),
-            ops_test.model.deploy(
+            ops_test.juju(
+                "deploy",
                 charm,
-                application_name=MYSQL_ROUTER_APP_NAME,
-                num_units=None,
-                base=ubuntu_base,
+                MYSQL_ROUTER_APP_NAME,
+                f"--base={ubuntu_base}",
             ),
-            ops_test.model.deploy(
+            ops_test.juju(
+                "deploy",
                 DATA_INTEGRATOR_APP_NAME,
-                application_name=DATA_INTEGRATOR_APP_NAME,
-                channel="latest/stable",
-                base=ubuntu_base,
-                config={"database-name": TEST_DATABASE},
-                num_units=4,
+                DATA_INTEGRATOR_APP_NAME,
+                "--channel=latest/stable",
+                f"--base={ubuntu_base}",
+                f"--config=database-name={TEST_DATABASE}",
+                "--num-units=4",
             ),
         )
+
+        data_integrator_application = ops_test.model.applications[DATA_INTEGRATOR_APP_NAME]
 
         await ops_test.model.relate(
             f"{MYSQL_ROUTER_APP_NAME}:backend-database", f"{MYSQL_APP_NAME}:database"
@@ -144,9 +149,10 @@ async def test_external_connectivity_vip_with_hacluster(
         assert hostname in data_integrator_ips, "Hostname is not a data-integrator"
 
         logger.info("Deploy and relate hacluster")
-        await ops_test.model.deploy(
+        await ops_test.juju(
+            "deploy",
             HA_CLUSTER_APP_NAME,
-            channel="2.4/edge",
+            "--channel=2.4/edge",
         )
 
         await ops_test.model.relate(
@@ -254,12 +260,13 @@ async def test_tls_along_with_ha_cluster(ops_test: OpsTest, ubuntu_base) -> None
     """Ensure that mysqlrouter is externally accessible with TLS integration."""
     logger.info("Deploying TLS")
     async with ops_test.fast_forward("60s"):
-        await ops_test.model.deploy(
+        await ops_test.juju(
+            "deploy",
             TLS_APP_NAME,
-            application_name=TLS_APP_NAME,
-            channel="1/stable",
-            config={"ca-common-name": "Test CA"},
-            base="ubuntu@24.04",
+            TLS_APP_NAME,
+            "--channel=1/stable",
+            "--config=ca-common-name=Test CA",
+            "--base=ubuntu@24.04",
         )
 
     logger.info("Ensure auto-generated TLS cert before relation with TLS")

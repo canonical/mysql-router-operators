@@ -37,35 +37,38 @@ async def test_external_connectivity_with_data_integrator(
     logger.info("Deploy and relate all applications")
     async with ops_test.fast_forward():
         # deploy mysql first
-        await ops_test.model.deploy(
+        await ops_test.juju(
+            "deploy",
             MYSQL_APP_NAME,
-            channel="8.4/edge",
-            config={"profile": "testing"},
-            num_units=1,
+            MYSQL_APP_NAME,
+            "--channel=8.4/edge",
+            "--config=profile=testing",
+            "--num-units=1",
         )
-        data_integrator_config = {"database-name": TEST_DATABASE}
 
         # tls, data-integrator and router
         await asyncio.gather(
-            ops_test.model.deploy(
+            ops_test.juju(
+                "deploy",
                 charm,
-                application_name=MYSQL_ROUTER_APP_NAME,
-                num_units=None,
-                base=ubuntu_base,
+                MYSQL_ROUTER_APP_NAME,
+                f"--base={ubuntu_base}",
             ),
-            ops_test.model.deploy(
+            ops_test.juju(
+                "deploy",
                 TLS_APP_NAME,
-                application_name=TLS_APP_NAME,
-                channel="1/stable",
-                config={"ca-common-name": "Test CA"},
-                base="ubuntu@24.04",
+                TLS_APP_NAME,
+                "--channel=1/stable",
+                "--config=ca-common-name=Test CA",
+                "--base=ubuntu@24.04",
             ),
-            ops_test.model.deploy(
+            ops_test.juju(
+                "deploy",
                 DATA_INTEGRATOR_APP_NAME,
-                application_name=DATA_INTEGRATOR_APP_NAME,
-                channel="latest/stable",
-                base=ubuntu_base,
-                config=data_integrator_config,
+                DATA_INTEGRATOR_APP_NAME,
+                "--channel=latest/stable",
+                f"--config=database-name={TEST_DATABASE}",
+                f"--base={ubuntu_base}",
             ),
         )
 

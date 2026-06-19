@@ -37,47 +37,50 @@ RETRY_TIMEOUT = 3 * 60
 @pytest.mark.abort_on_fail
 async def test_exporter_endpoint(ops_test: OpsTest, charm) -> None:
     """Test that the exporter endpoint works when related with TLS"""
-    mysqlrouter_resources = {
-        "mysql-router-image": METADATA["resources"]["mysql-router-image"]["upstream-source"]
-    }
+    resource_args = [
+        f"--resource=mysql-router-image={METADATA['resources']['mysql-router-image']['upstream-source']}",
+    ]
 
     logger.info("Deploying all the applications")
-
     await asyncio.gather(
-        ops_test.model.deploy(
+        ops_test.juju(
+            "deploy",
             MYSQL_APP_NAME,
-            channel="8.4/edge",
-            application_name=MYSQL_APP_NAME,
-            config={"profile": "testing"},
-            base="ubuntu@24.04",
+            MYSQL_APP_NAME,
+            "--channel=8.4/edge",
+            "--config=profile=testing",
+            "--base=ubuntu@24.04",
             # TODO: Check again when switching to 8.4/edge channel
             # MySQL Router 8.4 requires cluster quorum for R/W traffic,
             # because of the unreachable_quorum_allowed_traffic config option
             # (only observable upon process restart)
-            num_units=3,
-            trust=True,
+            "--num-units=3",
+            "--trust",
         ),
-        ops_test.model.deploy(
+        ops_test.juju(
+            "deploy",
             charm,
-            application_name=MYSQL_ROUTER_APP_NAME,
-            base="ubuntu@24.04",
-            resources=mysqlrouter_resources,
-            num_units=1,
-            trust=True,
+            MYSQL_ROUTER_APP_NAME,
+            *resource_args,
+            "--base=ubuntu@24.04",
+            "--num-units=1",
+            "--trust",
         ),
-        ops_test.model.deploy(
+        ops_test.juju(
+            "deploy",
             APPLICATION_APP_NAME,
-            channel="latest/edge",
-            application_name=APPLICATION_APP_NAME,
-            base="ubuntu@24.04",
-            num_units=1,
+            APPLICATION_APP_NAME,
+            "--channel=latest/edge",
+            "--base=ubuntu@24.04",
+            "--num-units=1",
         ),
-        ops_test.model.deploy(
+        ops_test.juju(
+            "deploy",
             GRAFANA_AGENT_APP_NAME,
-            application_name=GRAFANA_AGENT_APP_NAME,
-            num_units=1,
-            base="ubuntu@22.04",
-            channel="1/stable",
+            GRAFANA_AGENT_APP_NAME,
+            "--channel=1/stable",
+            "--base=ubuntu@22.04",
+            "--num-units=1",
         ),
     )
 
@@ -121,12 +124,13 @@ async def test_exporter_endpoint(ops_test: OpsTest, charm) -> None:
     )
 
     logger.info(f"Deploying {TLS_APP_NAME}")
-    await ops_test.model.deploy(
+    await ops_test.juju(
+        "deploy",
         TLS_APP_NAME,
-        application_name=TLS_APP_NAME,
-        channel="1/stable",
-        config={"ca-common-name": "Test CA"},
-        base="ubuntu@24.04",
+        TLS_APP_NAME,
+        "--channel=1/stable",
+        "--config=ca-common-name=Test CA",
+        "--base=ubuntu@24.04",
     )
 
     await ops_test.model.wait_for_idle([TLS_APP_NAME], status="active", timeout=SLOW_TIMEOUT)

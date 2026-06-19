@@ -36,43 +36,46 @@ async def test_exporter_endpoint(ops_test: OpsTest, charm, ubuntu_base) -> None:
 
     # deploy mysqlrouter with num_units=None since it's a subordinate charm
     # and will be installed with the related consumer application
-    applications = await asyncio.gather(
-        ops_test.model.deploy(
+    await asyncio.gather(
+        ops_test.juju(
+            "deploy",
             MYSQL_APP_NAME,
-            channel="8.4/edge",
-            application_name=MYSQL_APP_NAME,
-            config={"profile": "testing"},
+            MYSQL_APP_NAME,
+            "--channel=8.4/edge",
+            "--config=profile=testing",
             # TODO: Check again when switching to 8.4/edge channel
             # MySQL Router 8.4 requires cluster quorum for R/W traffic,
             # because of the unreachable_quorum_allowed_traffic config option
             # (only observable upon process restart)
-            num_units=3,
+            "--num-units=3",
         ),
-        ops_test.model.deploy(
+        ops_test.juju(
+            "deploy",
             charm,
-            application_name=MYSQL_ROUTER_APP_NAME,
-            num_units=0,
-            base=ubuntu_base,
+            MYSQL_ROUTER_APP_NAME,
+            f"--base={ubuntu_base}",
         ),
-        ops_test.model.deploy(
+        ops_test.juju(
+            "deploy",
             APPLICATION_APP_NAME,
-            application_name=APPLICATION_APP_NAME,
-            num_units=1,
-            # MySQL Router and Grafana agent are subordinate -
-            # they will use the series of the principal charm
-            base=ubuntu_base,
-            channel="latest/edge",
+            APPLICATION_APP_NAME,
+            "--channel=latest/edge",
+            f"--base={ubuntu_base}",
+            "--num-units=1",
         ),
-        ops_test.model.deploy(
+        ops_test.juju(
+            "deploy",
             GRAFANA_AGENT_APP_NAME,
-            application_name=GRAFANA_AGENT_APP_NAME,
-            num_units=0,
-            channel="1/stable",
-            base=ubuntu_base,
+            GRAFANA_AGENT_APP_NAME,
+            "--channel=1/stable",
+            f"--base={ubuntu_base}",
         ),
     )
 
-    [mysql_app, mysql_router_app, mysql_test_app, grafana_agent_app] = applications
+    mysql_app = ops_test.model.applications[MYSQL_APP_NAME]
+    mysql_router_app = ops_test.model.applications[MYSQL_ROUTER_APP_NAME]
+    mysql_test_app = ops_test.model.applications[APPLICATION_APP_NAME]
+    grafana_agent_app = ops_test.model.applications[GRAFANA_AGENT_APP_NAME]
 
     logger.info("Relating mysqlrouter and grafana-agent with mysql-test-app")
 
@@ -129,12 +132,13 @@ async def test_exporter_endpoint(ops_test: OpsTest, charm, ubuntu_base) -> None:
     )
 
     logger.info(f"Deploying {TLS_APP_NAME}")
-    await ops_test.model.deploy(
+    await ops_test.juju(
+        "deploy",
         TLS_APP_NAME,
-        application_name=TLS_APP_NAME,
-        channel="1/stable",
-        config={"ca-common-name": "Test CA"},
-        base="ubuntu@24.04",
+        TLS_APP_NAME,
+        "--channel=1/stable",
+        "--config=ca-common-name=Test CA",
+        "--base=ubuntu@24.04",
     )
     await ops_test.model.wait_for_idle([TLS_APP_NAME], status="active", timeout=SLOW_TIMEOUT)
 

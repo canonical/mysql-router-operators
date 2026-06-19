@@ -64,6 +64,7 @@ async def test_deploy_edge(ops_test: OpsTest) -> None:
             "--channel=8.4/edge",
             "--base=ubuntu@24.04",
             "--num-units=3",
+            "--trust",
         ),
         ops_test.juju(
             "deploy",

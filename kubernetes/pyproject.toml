@@ -1,11 +1,6 @@
 # Copyright 2022 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-[project]
-name = "mysql-router-k8s-operator"
-version = "0.0.1"
-dynamic = ["dependencies", "requires-python"]
-
 [dependency-groups]
 charm-libs = [
     # data_platform_libs/v0/data_interfaces.py

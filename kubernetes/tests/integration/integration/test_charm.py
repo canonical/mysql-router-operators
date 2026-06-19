@@ -76,7 +76,7 @@ async def test_database_relation(ops_test: OpsTest, charm):
     mysql_router_app = ops_test.model.applications[MYSQL_ROUTER_APP_NAME]
     application_app = ops_test.model.applications[APPLICATION_APP_NAME]
 
-    async with ops_test.fast_forward():
+    async with ops_test.fast_forward("60s"):
         logger.info("Waiting for mysqlrouter to be in BlockedStatus")
         await asyncio.gather(
             ops_test.model.block_until(

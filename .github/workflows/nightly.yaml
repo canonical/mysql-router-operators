@@ -101,7 +101,7 @@ jobs:
         with:
           ref: gh-pages-beta
           path: repo/
-          persist-credentials: false
+          persist-credentials: true
       - name: Parse branch name
         id: branch
         shell: python

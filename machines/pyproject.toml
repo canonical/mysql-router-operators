@@ -18,7 +18,7 @@ charm-libs = [
     "pydantic",
     "cosl>=0.0.50",
     # tempo_coordinator_k8s/v0/charm_tracing.py
-    "opentelemetry-exporter-otlp-proto-http==1.21.0",
+    "opentelemetry-exporter-otlp-proto-http>=1.21.0",
 ]
 format = [
     "ruff~=0.12.11",

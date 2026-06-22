@@ -58,7 +58,7 @@ Both legacy and modern charms provide no plugins/extensions support.
 
 ### MySQL versions
 
-At the moment, the modern MySQL Router charm supports relation to the modern Charmed MySQL 8.4 (based on Noble/24.04 series) only.
+At the moment, the modern MySQL Router charm supports relation to the modern Charmed MySQL 8.4 (based on Resolute series) only.
 Please [contact us](/t/12323?channel=8.4/edge) if you need different versions/series.
 
 ### Architectures

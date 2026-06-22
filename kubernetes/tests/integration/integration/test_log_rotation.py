@@ -60,7 +60,7 @@ async def test_log_rotation(ops_test: OpsTest, charm):
             charm,
             MYSQL_ROUTER_APP_NAME,
             *resource_args,
-            "--base=ubuntu@24.04",
+            "--base=ubuntu@26.04",
             "--num-units=1",
             "--trust",
         ),
@@ -69,7 +69,7 @@ async def test_log_rotation(ops_test: OpsTest, charm):
             APPLICATION_APP_NAME,
             APPLICATION_APP_NAME,
             "--channel=latest/edge",
-            "--base=ubuntu@24.04",
+            "--base=ubuntu@26.04",
             "--num-units=1",
         ),
     )

@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 @pytest.fixture
 def ubuntu_base():
-    return "ubuntu@24.04"
+    return "ubuntu@26.04"
 
 
 @pytest.fixture

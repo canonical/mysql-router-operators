@@ -45,9 +45,9 @@ mysql/0*                 	 active	   idle         0  10.205.193.171  3306,33060/
 self-signed-certificates/0*  active	   idle         2  10.205.193.175             	 
 
 Machine  State	  Address         Inst id        Base          AZ  Message
-0    	 started  10.205.193.171  juju-3c2f36-0  ubuntu@24.04  	   Running
-1    	 started  10.205.193.227  juju-3c2f36-1  ubuntu@24.04  	   Running
-2    	 started  10.205.193.175  juju-3c2f36-2  ubuntu@24.04  	   Running
+0    	 started  10.205.193.171  juju-3c2f36-0  ubuntu@26.04  	   Running
+1    	 started  10.205.193.227  juju-3c2f36-1  ubuntu@26.04  	   Running
+2    	 started  10.205.193.175  juju-3c2f36-2  ubuntu@26.04  	   Running
 ```
 
 To enable TLS on Charmed MySQLRouter, integrate the two applications:

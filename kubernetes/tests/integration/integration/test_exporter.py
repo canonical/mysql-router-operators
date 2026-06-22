@@ -55,7 +55,7 @@ async def test_exporter_endpoint(ops_test: OpsTest, charm) -> None:
             charm,
             MYSQL_ROUTER_APP_NAME,
             *resource_args,
-            "--base=ubuntu@24.04",
+            "--base=ubuntu@26.04",
             "--num-units=1",
             "--trust",
         ),
@@ -64,7 +64,7 @@ async def test_exporter_endpoint(ops_test: OpsTest, charm) -> None:
             APPLICATION_APP_NAME,
             APPLICATION_APP_NAME,
             "--channel=latest/edge",
-            "--base=ubuntu@24.04",
+            "--base=ubuntu@26.04",
             "--num-units=1",
         ),
         ops_test.juju(

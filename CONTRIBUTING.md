@@ -69,8 +69,8 @@ juju model-config logging-config="<root>=INFO;unit=DEBUG"
 export MYSQL_ROUTER_IMAGE=$(yq -r '.["resources"]["mysql-router-image"]["upstream-source"]' kubernetes/metadata.yaml)
 
 # Deploy the K8s or VM charm
-(cd kubernetes && juju deploy ./mysql-router-k8s_ubuntu@24.04-amd64.charm --resource mysql-router-image=${MYSQL_ROUTER_IMAGE})
-(cd machines && juju deploy ./mysql-router_ubuntu@24.04-amd64.charm)
+(cd kubernetes && juju deploy ./mysql-router-k8s_ubuntu@26.04-amd64.charm --resource mysql-router-image=${MYSQL_ROUTER_IMAGE})
+(cd machines && juju deploy ./mysql-router_ubuntu@26.04-amd64.charm)
 ```
 
 ## Canonical Contributor Agreement

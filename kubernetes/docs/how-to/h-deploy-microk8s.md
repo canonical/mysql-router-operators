@@ -2,7 +2,7 @@
 
 Please follow the [MySQL Router K8s Tutorial](/t/12176) for technical details and explanations.
 
-Short story for your Ubuntu 24.04 LTS (`Wordpress` used as an client example for `MySQL Router`:
+Short story for your Ubuntu 26.04 LTS (`Wordpress` used as a client example for `MySQL Router`):
 ```shell
 sudo snap install multipass
 multipass launch --cpus 4 --memory 8G --disk 30G --name my-vm charm-dev # tune CPU/RAM/HDD accordingly to your needs

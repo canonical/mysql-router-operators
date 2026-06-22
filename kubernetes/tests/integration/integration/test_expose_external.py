@@ -112,7 +112,7 @@ async def test_expose_external(ops_test, charm) -> None:
             charm,
             MYSQL_ROUTER_APP_NAME,
             *resource_args,
-            "--base=ubuntu@24.04",
+            "--base=ubuntu@26.04",
             "--num-units=1",
             "--trust",
         ),

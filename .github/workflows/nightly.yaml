@@ -101,7 +101,7 @@ jobs:
         with:
           ref: gh-pages-beta
           path: repo/
-          persist-credentials: false
+          persist-credentials: true
       - name: Parse branch name
         id: branch
         shell: python
@@ -205,7 +205,7 @@ jobs:
         shell: python
         run: |
           import os
-          
+
           DATA = f"""<!DOCTYPE html>
           <meta charset="utf-8">
           <meta http-equiv="cache-control" content="no-cache">
@@ -217,7 +217,7 @@ jobs:
         env:
           ALLURE_REPORT_DIR: ${{ steps.branch.outputs.branch }}
       - name: Update GitHub pages branch
-        working-directory: repo/
+        working-directory: repo/${{ steps.branch.outputs.branch }}/
         # TODO future improvement: commit message
         run: |
           mkdir '${{ github.run_id }}'

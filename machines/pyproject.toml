@@ -34,7 +34,7 @@ unit = [
     "ops-scenario==6.0.3",  # 6.0.4 requires ops >= 2.12
 ]
 integration = [
-    "pytest~=8.4",
+    "pytest~=9.0",
     "pytest-operator~=0.43.1",
     "requests~=2.32",
     "juju~=3.6",

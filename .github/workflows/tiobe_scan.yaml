@@ -43,13 +43,17 @@ jobs:
           echo PATH="$PATH" >> "$GITHUB_ENV"
 
       - name: Run coverage tests
+        env:
+          OPERATOR: ${{ inputs.operator }}
         run: |
-          tox -e unit -c ${{ inputs.operator }}/tox.ini
+          tox -e unit -c "$OPERATOR/tox.ini"
 
       - name: Coverage reports for TICS
+        env:
+          OPERATOR: ${{ inputs.operator }}
         run: |
-          mkdir -p ${{ inputs.operator }}/.cover
-          cp ${{ inputs.operator }}/coverage.xml ${{ inputs.operator }}/.cover/cobertura.xml
+          mkdir -p "$OPERATOR/.cover"
+          cp "$OPERATOR/coverage.xml" "$OPERATOR/.cover/cobertura.xml"
 
       - name: TICS GitHub Action
         uses: tiobe/tics-github-action@v3

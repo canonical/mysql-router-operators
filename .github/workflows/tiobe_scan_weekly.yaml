@@ -11,6 +11,7 @@ on:
 jobs:
   TICS:
     name: TICS scan | ${{ matrix.project }}
+    permissions: {}  # Permissions defined in called workflow
     strategy:
       fail-fast: false
       matrix:
@@ -32,4 +33,5 @@ jobs:
       operator: ${{ matrix.operator }}
       ref: ${{ matrix.ref }}
       project: ${{ matrix.project }}
-    secrets: inherit
+    secrets:
+      TICSAUTHTOKEN: ${{ secrets.TICSAUTHTOKEN }}

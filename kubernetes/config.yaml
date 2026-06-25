@@ -2,6 +2,23 @@
 # See LICENSE file for licensing details.
 
 options:
+  connection-sharing:
+    description: |
+      Enable MySQL Router connection pooling and sharing.
+
+      When enabled, MySQL Router pools server connections and shares them between
+      client connections. This reduces the number of connections to the MySQL server
+      and frees resources bound to idle connections.
+
+      Note: Connection sharing has some limitations - certain SQL features like
+      GET DIAGNOSTICS, LAST_INSERT_ID(), SQL_CALC_FOUND_ROWS, GET_LOCK(), user
+      variables, temporary tables, and prepared statements may not work as expected
+      or will prevent connection pooling until the connection is reset.
+
+      See https://dev.mysql.com/doc/mysql-router/8.0/en/mysql-router-general-features-connection-sharing.html
+    type: boolean
+    default: false
+
   expose-external:
     description: |
       String to determine how to expose the MySQLRouter externally from the Kubernetes cluster.

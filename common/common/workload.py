@@ -252,7 +252,7 @@ class RunningWorkload(Workload):
     def _get_bootstrap_command(
         self, *, event, connection_info: "database_requires.ConnectionInformation"
     ) -> list[str]:
-        return [
+        command = [
             "--bootstrap",
             connection_info.username
             + ":"
@@ -273,6 +273,15 @@ class RunningWorkload(Workload):
             "--conf-set-option",
             "metadata_cache:bootstrap.ttl=5",
         ]
+        # Add connection sharing options if enabled
+        if self._charm.config.get("connection-sharing"):
+            command.extend([
+                "--conf-set-option",
+                "routing:bootstrap_rw.connection_sharing=1",
+                "--conf-set-option",
+                "routing:bootstrap_ro.connection_sharing=1",
+            ])
+        return command
 
     def _bootstrap_router(self, *, event, tls: bool) -> None:
         """Bootstrap MySQL Router."""
@@ -325,6 +334,26 @@ class RunningWorkload(Workload):
         config = configparser.ConfigParser()
         config.read_string(config_file_text)
         return config["metadata_cache:bootstrap"]["user"]
+
+    @staticmethod
+    def _parse_connection_sharing_from_config(config_file_text: str) -> bool:
+        """Check if connection sharing is enabled in the router config file."""
+        config = configparser.ConfigParser()
+        config.read_string(config_file_text)
+        # Check if connection_sharing is set to 1 in routing:bootstrap_rw section
+        try:
+            return config.get("routing:bootstrap_rw", "connection_sharing") == "1"
+        except (configparser.NoSectionError, configparser.NoOptionError):
+            return False
+
+    @property
+    def _router_connection_sharing_enabled(self) -> bool:
+        """Read connection sharing state from MySQL Router config file."""
+        if not self._container.router_config_file.exists():
+            return False
+        return self._parse_connection_sharing_from_config(
+            self._container.router_config_file.read_text()
+        )
 
     @property
     def _router_username(self) -> str:
@@ -414,6 +443,18 @@ class RunningWorkload(Workload):
                 "`key`, `certificate`, and `certificate_authority` arguments required when tls=True"
             )
 
+        # Check if connection sharing config has changed
+        connection_sharing_config = bool(self._charm.config.get("connection-sharing"))
+        connection_sharing_changed = (
+            self._container.mysql_router_service_enabled
+            and connection_sharing_config != self._router_connection_sharing_enabled
+        )
+        if connection_sharing_changed:
+            logger.info(
+                f"Connection sharing config changed to {connection_sharing_config}, "
+                "rebootstrapping router"
+            )
+
         # If the router is not in the cluster set, disable to restart it
         # This can happen when the server is scaled to zero and back
         try:
@@ -433,6 +474,7 @@ class RunningWorkload(Workload):
         if any((
             self._router_running_correctly(event) is False,
             self._router_id not in cluster_set_routers,
+            connection_sharing_changed,
         )):
             self._disable_router()
 

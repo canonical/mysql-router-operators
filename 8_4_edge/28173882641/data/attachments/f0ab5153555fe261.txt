@@ -1,0 +1,45 @@
+[32mINFO    [0m integration.integration.test_tls:test_tls.py:120 Relating TLS with mysqlrouter
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[32mINFO    [0m integration.integration.test_tls:test_tls.py:123 Getting certificate issuer after relating with tls operator
+[32mINFO    [0m integration.integration.test_tls:test_tls.py:138 Removing relation TLS with mysqlrouter
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller     Cloud/Region  Version  SLA          Timestamp
+testing  concierge-k8s  k8s           3.6.24   unsupported  14:04:27Z
+
+App                       Version  Status       Scale  Charm                     Channel      Rev  Address         Exposed  Message
+mysql-k8s                 8.4      maintenance      3  mysql-k8s                 8.4/edge     417  10.152.183.46   no       joining the cluster
+mysql-router-k8s          8.4.8    active           1  mysql-router-k8s                         0  10.152.183.222  no       
+mysql-test-app            0.0.2    active           1  mysql-test-app            latest/edge  148  10.152.183.159  no       Last written value=151
+self-signed-certificates           active           1  self-signed-certificates  1/stable     586  10.152.183.221  no       
+
+Unit                         Workload     Agent      Address     Ports  Message
+mysql-k8s/0*                 active       idle       10.1.0.95          
+mysql-k8s/1                  active       idle       10.1.0.142         
+mysql-k8s/2                  maintenance  executing  10.1.0.139         joining the cluster
+mysql-router-k8s/0*          active       executing  10.1.0.169         
+mysql-test-app/0*            active       idle       10.1.0.158         Last written value=151
+self-signed-certificates/0*  active       idle       10.1.0.148         
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+unit-mysql-k8s-0: 14:01:26 ERROR juju.worker.proxyupdater error writing apt proxy config file: open /etc/apt/apt.conf.d/95-juju-proxy-settings: permission denied
+unit-mysql-router-k8s-0: 14:01:30 ERROR juju.worker.proxyupdater error writing apt proxy config file: open /etc/apt/apt.conf.d/95-juju-proxy-settings: permission denied
+unit-mysql-k8s-1: 14:01:30 ERROR juju.worker.proxyupdater error writing apt proxy config file: open /etc/apt/apt.conf.d/95-juju-proxy-settings: permission denied
+unit-mysql-k8s-2: 14:01:32 ERROR juju.worker.proxyupdater error writing apt proxy config file: open /etc/apt/apt.conf.d/95-juju-proxy-settings: permission denied
+unit-mysql-k8s-0: 14:02:21 ERROR unit.mysql-k8s/0.juju-log database-peers:1: mysql_k8s_helpers:Cannot connect to the pebble in the mysql container to check binlogs collector
+unit-mysql-k8s-0: 14:02:21 ERROR unit.mysql-k8s/0.juju-log database-peers:1: __main__:Failed to reconcile binlogs collection during peer relation event
+unit-mysql-k8s-1: 14:02:23 ERROR unit.mysql-k8s/1.juju-log database-peers:1: mysql_k8s_helpers:Cannot connect to the pebble in the mysql container to check binlogs collector
+unit-mysql-k8s-1: 14:02:23 ERROR unit.mysql-k8s/1.juju-log database-peers:1: __main__:Failed to reconcile binlogs collection during peer relation event
+unit-mysql-k8s-2: 14:02:23 ERROR unit.mysql-k8s/2.juju-log database-peers:1: mysql_k8s_helpers:Cannot connect to the pebble in the mysql container to check binlogs collector
+unit-mysql-k8s-2: 14:02:23 ERROR unit.mysql-k8s/2.juju-log database-peers:1: __main__:Failed to reconcile binlogs collection during peer relation event
+unit-mysql-k8s-0: 14:02:30 ERROR unit.mysql-k8s/0.juju-log database-peers:1: root:Failed to check for instance mysql-k8s-0.mysql-k8s-endpoints.testing.svc.cluster.local.:33062 config
+unit-mysql-k8s-0: 14:02:30 ERROR unit.mysql-k8s/0.juju-log database-peers:1: mysql_k8s_helpers:Binlogs collector service does not exist
+unit-mysql-k8s-0: 14:02:30 ERROR unit.mysql-k8s/0.juju-log database-peers:1: __main__:Failed to reconcile binlogs collection during peer relation event
+unit-mysql-k8s-1: 14:03:21 ERROR unit.mysql-k8s/1.juju-log database-peers:1: root:Failed to stop instance replication
+unit-mysql-k8s-2: 14:03:22 ERROR unit.mysql-k8s/2.juju-log database-peers:1: root:Failed to stop instance replication
+unit-mysql-k8s-1: 14:03:25 ERROR unit.mysql-k8s/1.juju-log database-peers:1: root:Failed to attach instance mysql-k8s-1.mysql-k8s-endpoints.testing.svc.cluster.local.:3306 to cluster cluster-4da0f161e9a76a6a3c2bfaabe3782c5f
+unit-mysql-k8s-2: 14:04:04 ERROR unit.mysql-k8s/2.juju-log database-peers:1: root:Failed to stop instance replication
+unit-mysql-k8s-2: 14:04:09 ERROR unit.mysql-k8s/2.juju-log database-peers:1: root:Failed to attach instance mysql-k8s-2.mysql-k8s-endpoints.testing.svc.cluster.local.:3306 to cluster cluster-4da0f161e9a76a6a3c2bfaabe3782c5f
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...

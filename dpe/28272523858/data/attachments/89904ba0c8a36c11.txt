@@ -1,0 +1,68 @@
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[32mINFO    [0m pytest_operator.plugin:plugin.py:806 Connecting to existing model concierge-microk8s:testing on unspecified cloud
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHSession received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHTunneler received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SecretsRevoker received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[32mINFO    [0m integration.integration.test_charm:test_charm.py:44 Deploying mysql, mysqlrouter and application
+[32mINFO    [0m juju.model:__init__.py:2301 Deploying ch:amd64/jammy/mysql-k8s-423
+[32mINFO    [0m juju.model:__init__.py:2301 Deploying ch:amd64/jammy/mysql-test-app-147
+[32mINFO    [0m juju.model:__init__.py:2301 Deploying local:jammy/mysql-router-k8s-0
+[32mINFO    [0m integration.integration.test_charm:test_charm.py:73 Relating mysql, mysqlrouter and application
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[32mINFO    [0m integration.integration.test_charm:test_charm.py:84 Waiting for test-app to be in active
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-test-app/0 [allocating] waiting: installing agent
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-test-app/0 [allocating] waiting: installing agent
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-test-app/0 [idle] blocked: Relate with database provider
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-test-app/0 [idle] blocked: Relate with database provider
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-test-app/0 [idle] blocked: Relate with database provider
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-test-app/0 [executing] active: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s (waiting for exactly 2 units, current : 1)
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s/0 [executing] active: 
+  mysql-router-k8s/1 [executing] waiting: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s/1 [executing] active: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-test-app (waiting for exactly 2 units, current : 1)
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s (waiting for exactly 1 units, current : 2)
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s/0 [idle] active: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-test-app (waiting for exactly 1 units, current : 2)
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller          Cloud/Region        Version  SLA          Timestamp
+testing  concierge-microk8s  microk8s/localhost  3.6.24   unsupported  00:47:45Z
+
+App               Version  Status  Scale  Charm             Channel      Rev  Address         Exposed  Message
+mysql-k8s         8.0.45   active      3  mysql-k8s         8.0/edge     423  10.152.183.37   no       
+mysql-router-k8s  8.0.45   active      1  mysql-router-k8s                 0  10.152.183.158  no       
+mysql-test-app    0.0.2    active      1  mysql-test-app    latest/edge  147  10.152.183.21   no       
+
+Unit                 Workload  Agent  Address     Ports  Message
+mysql-k8s/0          active    idle   10.1.71.79         
+mysql-k8s/1          active    idle   10.1.71.80         
+mysql-k8s/2*         active    idle   10.1.71.82         Primary
+mysql-router-k8s/0*  active    idle   10.1.71.76         
+mysql-test-app/0*    active    idle   10.1.71.77         
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+unit-mysql-k8s-0: 00:43:59 ERROR unit.mysql-k8s/0.juju-log database-peers:2: Failed to stop instance replication
+unit-mysql-k8s-0: 00:44:00 ERROR unit.mysql-k8s/0.juju-log database-peers:2: Failed to attach instance mysql-k8s-0.mysql-k8s-endpoints.testing.svc.cluster.local.:3306 to cluster cluster-e7f68d1c59239a9c0b6ff3b8ae2a4e38
+unit-mysql-k8s-1: 00:44:32 ERROR unit.mysql-k8s/1.juju-log database-peers:2: Failed to stop instance replication
+unit-mysql-k8s-1: 00:44:34 ERROR unit.mysql-k8s/1.juju-log database-peers:2: Failed to attach instance mysql-k8s-1.mysql-k8s-endpoints.testing.svc.cluster.local.:3306 to cluster cluster-e7f68d1c59239a9c0b6ff3b8ae2a4e38
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...

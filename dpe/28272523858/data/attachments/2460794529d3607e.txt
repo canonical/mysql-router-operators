@@ -1,0 +1,38 @@
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller     Cloud/Region         Version  SLA          Timestamp
+testing  concierge-lxd  localhost/localhost  3.6.24   unsupported  00:50:19Z
+
+App             Version  Status       Scale  Charm           Channel      Rev  Exposed  Message
+mysql           8.0.45   active           1  mysql           8.0/edge     504  no       
+mysql-router    8.0.39   maintenance      3  mysql-router                   0  no       Refreshing. To pause refresh, run `juju config mysql-router pause-after-unit-refresh=all`
+mysql-test-app  0.0.2    active           3  mysql-test-app  latest/edge  147  no       
+
+Unit               Workload  Agent  Machine  Public address  Ports           Message
+mysql-test-app/0   active    idle   0        10.252.57.147                   
+  mysql-router/2   active    idle            10.252.57.147                   Router 8.0.39 running; Snap revision 121; Charm version dpe/1.74.0
+mysql-test-app/1   active    idle   1        10.252.57.78                    
+  mysql-router/1   active    idle            10.252.57.78                    Router 8.0.39 running; Snap revision 121; Charm version dpe/1.74.0
+mysql-test-app/2*  active    idle   2        10.252.57.220                   
+  mysql-router/0*  error     idle            10.252.57.220                   hook failed: "refresh-v-three-relation-changed"
+mysql/0*           active    idle   3        10.252.57.52    3306,33060/tcp  Primary
+
+Machine  State    Address        Inst id        Base          AZ             Message
+0        started  10.252.57.147  juju-e35350-0  ubuntu@22.04  runnervmmklqx  Running
+1        started  10.252.57.78   juju-e35350-1  ubuntu@22.04  runnervmmklqx  Running
+2        started  10.252.57.220  juju-e35350-2  ubuntu@22.04  runnervmmklqx  Running
+3        started  10.252.57.52   juju-e35350-3  ubuntu@22.04  runnervmmklqx  Running
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+machine-2: 00:40:57 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 00:40:57 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 00:42:35 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 00:42:35 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 00:42:59 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 00:42:59 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 00:43:18 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 00:43:18 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-mysql-0: 00:44:44 ERROR unit.mysql/0.juju-log Failed command: fuser 3306/tcp; user=None; group=None
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...

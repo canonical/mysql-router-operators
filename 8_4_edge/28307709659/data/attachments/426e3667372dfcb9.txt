@@ -1,0 +1,40 @@
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[32mINFO    [0m pytest_operator.plugin:plugin.py:806 Connecting to existing model concierge-k8s:testing on unspecified cloud
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHSession received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHTunneler received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SecretsRevoker received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[32mINFO    [0m integration.integration.test_log_rotation:test_log_rotation.py:46 Deploying mysql, mysqlrouter and application
+[32mINFO    [0m integration.integration.test_log_rotation:test_log_rotation.py:82 Waiting for mysqlrouter to be in BlockedStatus
+[32mINFO    [0m integration.integration.test_log_rotation:test_log_rotation.py:88 Relating mysql, mysqlrouter and application
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller     Cloud/Region  Version  SLA          Timestamp
+testing  concierge-k8s  k8s           3.6.24   unsupported  02:49:52Z
+
+App               Version  Status       Scale  Charm             Channel      Rev  Address         Exposed  Message
+mysql-k8s         8.4      maintenance      3  mysql-k8s         8.4/edge     417  10.152.183.133  no       joining the cluster
+mysql-router-k8s  8.4.8    waiting          1  mysql-router-k8s                 0  10.152.183.99   no       Waiting for mysql-k8s app on backend-database endpoint
+mysql-test-app    0.0.2    blocked          1  mysql-test-app    latest/edge  148  10.152.183.156  no       Relate with database provider
+
+Unit                 Workload     Agent  Address     Ports  Message
+mysql-k8s/0*         active       idle   10.1.0.66          Primary
+mysql-k8s/1          maintenance  idle   10.1.0.101         joining the cluster
+mysql-k8s/2          waiting      idle   10.1.0.139         waiting to join the cluster
+mysql-router-k8s/0*  waiting      idle   10.1.0.158         
+mysql-test-app/0*    blocked      idle   10.1.0.93          Relate with database provider
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+unit-mysql-router-k8s-0: 02:34:42 ERROR juju.worker.proxyupdater error writing apt proxy config file: open /etc/apt/apt.conf.d/95-juju-proxy-settings: permission denied
+unit-mysql-k8s-0: 02:34:48 ERROR juju.worker.proxyupdater error writing apt proxy config file: open /etc/apt/apt.conf.d/95-juju-proxy-settings: permission denied
+unit-mysql-k8s-1: 02:34:50 ERROR juju.worker.proxyupdater error writing apt proxy config file: open /etc/apt/apt.conf.d/95-juju-proxy-settings: permission denied
+unit-mysql-k8s-2: 02:34:51 ERROR juju.worker.proxyupdater error writing apt proxy config file: open /etc/apt/apt.conf.d/95-juju-proxy-settings: permission denied
+unit-mysql-k8s-1: 02:36:18 ERROR unit.mysql-k8s/1.juju-log database-peers:1: root:Failed to stop instance replication
+unit-mysql-k8s-1: 02:36:21 ERROR unit.mysql-k8s/1.juju-log database-peers:1: root:Failed to attach instance mysql-k8s-1.mysql-k8s-endpoints.testing.svc.cluster.local.:3306 to cluster cluster-7cc616e6dc973837994dc9d9c566c6f9
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...

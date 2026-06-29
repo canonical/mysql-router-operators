@@ -1,0 +1,48 @@
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller     Cloud/Region         Version  SLA          Timestamp
+testing  concierge-lxd  localhost/localhost  3.6.24   unsupported  01:23:37Z
+
+App              Version  Status  Scale  Charm            Channel        Rev  Exposed  Message
+data-integrator           active    3/4  data-integrator  latest/stable  417  no       
+hacluster        2.1.2    active    3/4  hacluster        2.4/stable     131  no       Unit is ready and clustered
+mysql            8.0.45   active      1  mysql            8.0/edge       504  no       
+mysql-router     8.0.45   active    3/4  mysql-router                      0  no       
+
+Unit                Workload  Agent  Machine  Public address  Ports           Message
+data-integrator/0   unknown   lost   0        10.163.163.138                  agent lost, see 'juju show-status-log data-integrator/0'
+  hacluster/0       unknown   lost            10.163.163.138                  agent lost, see 'juju show-status-log hacluster/0'
+  mysql-router/0    unknown   lost            10.163.163.138  6446-6447/tcp   agent lost, see 'juju show-status-log mysql-router/0'
+data-integrator/1   active    idle   1        10.163.163.55                   
+  hacluster/2       active    idle            10.163.163.55                   Unit is ready and clustered
+  mysql-router/2*   active    idle            10.163.163.55   6446-6447/tcp   
+data-integrator/2   active    idle   2        10.163.163.69                   
+  hacluster/1*      active    idle            10.163.163.69                   Unit is ready and clustered
+  mysql-router/1    active    idle            10.163.163.69   6446-6447/tcp   
+data-integrator/3*  active    idle   3        10.163.163.128                  
+  hacluster/4       active    idle            10.163.163.128                  Unit is ready and clustered
+  mysql-router/3    active    idle            10.163.163.128  6446-6447/tcp   
+mysql/0*            active    idle   4        10.163.163.102  3306,33060/tcp  Primary
+
+Machine  State    Address         Inst id        Base          AZ             Message
+0        down     10.163.163.138  juju-1496f6-0  ubuntu@22.04  runnervmmklqx  Stopped
+1        started  10.163.163.55   juju-1496f6-1  ubuntu@22.04  runnervmmklqx  Running
+2        started  10.163.163.69   juju-1496f6-2  ubuntu@22.04  runnervmmklqx  Running
+3        started  10.163.163.128  juju-1496f6-3  ubuntu@22.04  runnervmmklqx  Running
+4        started  10.163.163.102  juju-1496f6-4  ubuntu@22.04  runnervmmklqx  Running
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+machine-0: 00:49:45 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 00:49:45 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 00:51:46 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 00:51:46 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 00:51:47 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 00:51:47 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 00:52:26 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 00:52:26 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-4: 00:52:54 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-4: 00:52:54 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-mysql-0: 00:54:44 ERROR unit.mysql/0.juju-log Failed command: fuser 3306/tcp; user=None; group=None
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...

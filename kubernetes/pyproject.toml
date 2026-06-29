@@ -32,7 +32,6 @@ unit = [
 ]
 integration = [
     "pytest~=8.4",
-    "pytest-operator~=0.43.1",
     "requests~=2.32",
     "juju~=3.6",
     "jubilant~=1.4.0",

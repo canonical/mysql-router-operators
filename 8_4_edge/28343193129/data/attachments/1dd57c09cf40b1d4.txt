@@ -1,0 +1,72 @@
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[32mINFO    [0m pytest_operator.plugin:plugin.py:806 Connecting to existing model concierge-k8s:testing on unspecified cloud
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHSession received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHTunneler received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SecretsRevoker received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[32mINFO    [0m integration.integration.test_exporter_with_tls:test_exporter_with_tls.py:44 Deploying all the applications
+[32mINFO    [0m integration.integration.test_exporter_with_tls:test_exporter_with_tls.py:88 Waiting for mysqlrouter to be in BlockedStatus
+[32mINFO    [0m integration.integration.test_exporter_with_tls:test_exporter_with_tls.py:97 Relating mysql, mysqlrouter and application
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s/0 [idle] waiting: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router-k8s/0 [executing] active: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-k8s/0 [idle] active: Primary
+  mysql-k8s/1 [idle] active: 
+  mysql-k8s/2 [idle] active: 
+  mysql-router-k8s/0 [idle] active: 
+  mysql-test-app/0 [idle] active: Last written value=225
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-k8s/1 [idle] active: 
+  mysql-k8s/2 [idle] active: 
+[32mINFO    [0m integration.integration.test_exporter_with_tls:test_exporter_with_tls.py:129 Deploying self-signed-certificates
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  self-signed-certificates/0 [allocating] waiting: installing agent
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  self-signed-certificates/0 [idle] active: 
+[32mINFO    [0m integration.integration.test_exporter_with_tls:test_exporter_with_tls.py:141 Relating mysqlrouter with self-signed-certificates
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[32mINFO    [0m integration.integration.test_exporter_with_tls:test_exporter_with_tls.py:164 Relating mysqlrouter with grafana agent
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[32mINFO    [0m integration.integration.test_exporter_with_tls:test_exporter_with_tls.py:203 Removing relation between mysqlrouter and grafana agent
+[32mINFO    [0m integration.integration.test_exporter_with_tls:test_exporter_with_tls.py:223 Removing relation between mysqlrouter and self-signed-certificates
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller     Cloud/Region  Version  SLA          Timestamp
+testing  concierge-k8s  k8s           3.6.24   unsupported  02:58:58Z
+
+App                       Version  Status   Scale  Charm                     Channel      Rev  Address         Exposed  Message
+grafana-agent-k8s         0.40.4   blocked      1  grafana-agent-k8s         1/stable     164  10.152.183.60   no       Missing ['grafana-cloud-config']|['grafana-dashboards-provider'] for grafana-dashboards-consumer; ['grafana-cloud-con...
+mysql-k8s                 8.4      active       3  mysql-k8s                 8.4/edge     417  10.152.183.40   no       Healthy
+mysql-router-k8s          8.4.8    active       1  mysql-router-k8s                         0  10.152.183.20   no       
+mysql-test-app            0.0.2    active       1  mysql-test-app            latest/edge  148  10.152.183.200  no       Last written value=225
+self-signed-certificates           active       1  self-signed-certificates  1/stable     586  10.152.183.143  no       
+
+Unit                         Workload  Agent      Address     Ports  Message
+grafana-agent-k8s/0*         blocked   idle       10.1.0.44          Missing ['grafana-cloud-config']|['grafana-dashboards-provider'] for grafana-dashboards-consumer; ['grafana-cloud-con...
+mysql-k8s/0*                 active    idle       10.1.0.198         Primary
+mysql-k8s/1                  active    idle       10.1.0.187         
+mysql-k8s/2                  active    idle       10.1.0.253         
+mysql-router-k8s/0*          active    executing  10.1.0.243         
+mysql-test-app/0*            active    idle       10.1.0.155         Last written value=225
+self-signed-certificates/0*  active    idle       10.1.0.22          
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+unit-mysql-router-k8s-0: 02:53:53 ERROR juju.worker.proxyupdater error writing apt proxy config file: open /etc/apt/apt.conf.d/95-juju-proxy-settings: permission denied
+unit-mysql-k8s-0: 02:54:05 ERROR juju.worker.proxyupdater error writing apt proxy config file: open /etc/apt/apt.conf.d/95-juju-proxy-settings: permission denied
+unit-mysql-k8s-1: 02:54:08 ERROR juju.worker.proxyupdater error writing apt proxy config file: open /etc/apt/apt.conf.d/95-juju-proxy-settings: permission denied
+unit-mysql-k8s-2: 02:54:08 ERROR juju.worker.proxyupdater error writing apt proxy config file: open /etc/apt/apt.conf.d/95-juju-proxy-settings: permission denied
+unit-mysql-k8s-2: 02:55:08 ERROR unit.mysql-k8s/2.juju-log database-peers:2: root:Failed to stop instance replication
+unit-mysql-k8s-2: 02:55:10 ERROR unit.mysql-k8s/2.juju-log database-peers:2: root:Failed to attach instance mysql-k8s-2.mysql-k8s-endpoints.testing.svc.cluster.local.:3306 to cluster cluster-bf6a39101be5ca4018af1c4bc295acd5
+unit-mysql-k8s-1: 02:55:37 ERROR unit.mysql-k8s/1.juju-log database-peers:2: root:Failed to stop instance replication
+unit-mysql-k8s-1: 02:55:40 ERROR unit.mysql-k8s/1.juju-log database-peers:2: root:Failed to attach instance mysql-k8s-1.mysql-k8s-endpoints.testing.svc.cluster.local.:3306 to cluster cluster-bf6a39101be5ca4018af1c4bc295acd5
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...

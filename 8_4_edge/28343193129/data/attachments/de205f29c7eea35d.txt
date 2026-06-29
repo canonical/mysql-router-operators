@@ -1,0 +1,51 @@
+[32mINFO    [0m integration.integration.test_tls:test_tls.py:106 Relating TLS with mysqlrouter
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[32mINFO    [0m integration.integration.test_tls:test_tls.py:109 Getting certificate issuer after relating with tls operator
+[32mINFO    [0m integration.integration.test_tls:test_tls.py:123 Removing relation TLS with mysqlrouter
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller     Cloud/Region         Version  SLA          Timestamp
+testing  concierge-lxd  localhost/localhost  3.6.24   unsupported  03:00:48Z
+
+App                       Version  Status       Scale  Charm                     Channel      Rev  Exposed  Message
+mysql                     8.4      maintenance      3  mysql                     8.4/edge     501  no       Waiting for peer relation
+mysql-router              8.4.8    active           1  mysql-router                             0  no       
+mysql-test-app            0.0.2    active           1  mysql-test-app            latest/edge  148  no       Last written value=2514
+self-signed-certificates           active           1  self-signed-certificates  1/stable     586  no       
+
+Unit                         Workload     Agent      Machine  Public address  Ports           Message
+mysql-test-app/0*            active       idle       4        10.23.1.180                     Last written value=2514
+  mysql-router/0*            active       executing           10.23.1.180                     
+mysql/0*                     maintenance  idle       0        10.23.1.142     3306,33060/tcp  Waiting for peer relation
+mysql/1                      active       idle       1        10.23.1.100     3306,33060/tcp  
+mysql/2                      maintenance  idle       2        10.23.1.43      3306,33060/tcp  Waiting for peer relation
+self-signed-certificates/0*  active       idle       3        10.23.1.132                     
+
+Machine  State    Address      Inst id        Base          AZ             Message
+0        started  10.23.1.142  juju-a59983-0  ubuntu@24.04  runnervmdwk6p  Running
+1        started  10.23.1.100  juju-a59983-1  ubuntu@24.04  runnervmdwk6p  Running
+2        started  10.23.1.43   juju-a59983-2  ubuntu@24.04  runnervmdwk6p  Running
+3        started  10.23.1.132  juju-a59983-3  ubuntu@24.04  runnervmdwk6p  Running
+4        started  10.23.1.180  juju-a59983-4  ubuntu@26.04  runnervmdwk6p  Running
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+machine-0: 02:54:52 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 02:54:52 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-4: 02:55:13 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-4: 02:55:13 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 02:55:30 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 02:55:30 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 02:56:04 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 02:56:04 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 02:56:26 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 02:56:26 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-mysql-0: 02:56:51 ERROR unit.mysql/0.juju-log mysql_vm_helpers:Failed command: fuser 3306/tcp; user=None; group=None; stdout: ; stderr: 
+unit-mysql-1: 02:57:13 ERROR unit.mysql/1.juju-log mysql_vm_helpers:Failed command: fuser 3306/tcp; user=None; group=None; stdout: ; stderr: 
+unit-mysql-2: 02:57:52 ERROR unit.mysql/2.juju-log mysql_vm_helpers:Failed command: fuser 3306/tcp; user=None; group=None; stdout: ; stderr: 
+unit-mysql-1: 02:58:40 ERROR unit.mysql/1.juju-log database-peers:1: root:Failed to stop instance replication
+unit-mysql-1: 02:58:43 ERROR unit.mysql/1.juju-log database-peers:1: root:Failed to attach instance 10.23.1.100:3306 to cluster cluster-a4499b589d4ae650f526da6c4459083d
+unit-mysql-2: 02:59:29 ERROR unit.mysql/2.juju-log database-peers:1: root:Failed to stop instance replication
+unit-mysql-2: 02:59:32 ERROR unit.mysql/2.juju-log database-peers:1: root:Failed to attach instance 10.23.1.43:3306 to cluster cluster-a4499b589d4ae650f526da6c4459083d
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...

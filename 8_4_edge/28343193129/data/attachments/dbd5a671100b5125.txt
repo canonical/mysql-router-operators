@@ -1,0 +1,50 @@
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[32mINFO    [0m pytest_operator.plugin:plugin.py:806 Connecting to existing model concierge-k8s:testing on unspecified cloud
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHSession received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHTunneler received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SecretsRevoker received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[32mINFO    [0m integration.integration.test_log_rotation:test_log_rotation.py:46 Deploying mysql, mysqlrouter and application
+[32mINFO    [0m integration.integration.test_log_rotation:test_log_rotation.py:82 Waiting for mysqlrouter to be in BlockedStatus
+[32mINFO    [0m integration.integration.test_log_rotation:test_log_rotation.py:88 Relating mysql, mysqlrouter and application
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[32mINFO    [0m integration.integration.test_log_rotation:test_log_rotation.py:109 Stopping the logrotate executor pebble service
+[32mINFO    [0m integration.integration.test_log_rotation:test_log_rotation.py:112 Stopping any running logrotate jobs
+[32mINFO    [0m integration.integration.test_log_rotation:test_log_rotation.py:115 Removing existing archive directory
+[32mINFO    [0m integration.integration.test_log_rotation:test_log_rotation.py:122 Writing some data mysqlrouter log file
+[32mINFO    [0m integration.integration.test_log_rotation:test_log_rotation.py:126 Ensuring only log files exist
+[32mINFO    [0m integration.integration.test_log_rotation:test_log_rotation.py:135 Executing logrotate
+[32mINFO    [0m integration.integration.test_log_rotation:test_log_rotation.py:138 Ensuring log files and archive directories exist
+[32mINFO    [0m integration.integration.test_log_rotation:test_log_rotation.py:150 Ensuring log files was rotated
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller     Cloud/Region  Version  SLA          Timestamp
+testing  concierge-k8s  k8s           3.6.24   unsupported  02:56:44Z
+
+App               Version  Status  Scale  Charm             Channel      Rev  Address         Exposed  Message
+mysql-k8s         8.4      active      3  mysql-k8s         8.4/edge     417  10.152.183.181  no       
+mysql-router-k8s  8.4.8    active      1  mysql-router-k8s                 0  10.152.183.213  no       
+mysql-test-app    0.0.2    active      1  mysql-test-app    latest/edge  148  10.152.183.183  no       Last written value=788
+
+Unit                 Workload  Agent      Address     Ports  Message
+mysql-k8s/0          active    idle       10.1.0.207         
+mysql-k8s/1*         active    executing  10.1.0.173         Primary
+mysql-k8s/2          active    idle       10.1.0.2           
+mysql-router-k8s/0*  active    idle       10.1.0.116         
+mysql-test-app/0*    active    idle       10.1.0.70          Last written value=788
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+unit-mysql-router-k8s-0: 02:53:46 ERROR juju.worker.proxyupdater error writing apt proxy config file: open /etc/apt/apt.conf.d/95-juju-proxy-settings: permission denied
+unit-mysql-k8s-1: 02:53:50 ERROR juju.worker.proxyupdater error writing apt proxy config file: open /etc/apt/apt.conf.d/95-juju-proxy-settings: permission denied
+unit-mysql-k8s-0: 02:53:50 ERROR juju.worker.proxyupdater error writing apt proxy config file: open /etc/apt/apt.conf.d/95-juju-proxy-settings: permission denied
+unit-mysql-k8s-2: 02:53:53 ERROR juju.worker.proxyupdater error writing apt proxy config file: open /etc/apt/apt.conf.d/95-juju-proxy-settings: permission denied
+unit-mysql-k8s-0: 02:55:26 ERROR unit.mysql-k8s/0.juju-log database-peers:1: root:Failed to stop instance replication
+unit-mysql-k8s-0: 02:55:30 ERROR unit.mysql-k8s/0.juju-log database-peers:1: root:Failed to attach instance mysql-k8s-0.mysql-k8s-endpoints.testing.svc.cluster.local.:3306 to cluster cluster-4210972cf57dbb144b8f6cef04cffdf3
+unit-mysql-k8s-2: 02:56:02 ERROR unit.mysql-k8s/2.juju-log database-peers:1: root:Failed to stop instance replication
+unit-mysql-k8s-2: 02:56:07 ERROR unit.mysql-k8s/2.juju-log database-peers:1: root:Failed to attach instance mysql-k8s-2.mysql-k8s-endpoints.testing.svc.cluster.local.:3306 to cluster cluster-4210972cf57dbb144b8f6cef04cffdf3
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...

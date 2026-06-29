@@ -1,0 +1,91 @@
+[32mINFO    [0m integration.integration.test_tls:test_tls.py:120 Relating TLS with mysqlrouter
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[32mINFO    [0m integration.integration.test_tls:test_tls.py:123 Getting certificate issuer after relating with tls operator
+[32mINFO    [0m integration.integration.test_tls:test_tls.py:138 Removing relation TLS with mysqlrouter
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller     Cloud/Region  Version  SLA          Timestamp
+testing  concierge-k8s  k8s           3.6.24   unsupported  02:56:55Z
+
+App                       Version  Status  Scale  Charm                     Channel      Rev  Address         Exposed  Message
+mysql-k8s                 8.4      active      3  mysql-k8s                 8.4/edge     417  10.152.183.87   no       
+mysql-router-k8s          8.4.8    active      1  mysql-router-k8s                         0  10.152.183.246  no       
+mysql-test-app            0.0.2    active      1  mysql-test-app            latest/edge  148  10.152.183.71   no       Last written value=109
+self-signed-certificates           active      1  self-signed-certificates  1/stable     586  10.152.183.171  no       
+
+Unit                         Workload  Agent      Address     Ports  Message
+mysql-k8s/0*                 active    executing  10.1.0.160         
+mysql-k8s/1                  active    executing  10.1.0.147         
+mysql-k8s/2                  active    executing  10.1.0.31          
+mysql-router-k8s/0*          active    executing  10.1.0.83          
+mysql-test-app/0*            active    idle       10.1.0.166         Last written value=109
+self-signed-certificates/0*  active    idle       10.1.0.69          
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+unit-mysql-k8s-0: 02:54:11 ERROR juju.worker.proxyupdater error writing apt proxy config file: open /etc/apt/apt.conf.d/95-juju-proxy-settings: permission denied
+unit-mysql-k8s-2: 02:54:12 ERROR juju.worker.proxyupdater error writing apt proxy config file: open /etc/apt/apt.conf.d/95-juju-proxy-settings: permission denied
+unit-mysql-k8s-1: 02:54:13 ERROR juju.worker.proxyupdater error writing apt proxy config file: open /etc/apt/apt.conf.d/95-juju-proxy-settings: permission denied
+unit-mysql-router-k8s-0: 02:54:25 ERROR juju.worker.proxyupdater error writing apt proxy config file: open /etc/apt/apt.conf.d/95-juju-proxy-settings: permission denied
+unit-mysql-k8s-1: 02:54:58 ERROR unit.mysql-k8s/1.juju-log root:Failed to search instance roles with name_pattern='%router'
+unit-mysql-k8s-1: 02:54:58 ERROR unit.mysql-k8s/1.juju-log root:Uncaught exception while in charm code:
+Traceback (most recent call last):
+  File "/var/lib/juju/agents/unit-mysql-k8s-1/charm/venv/lib/python3.12/site-packages/mysql_shell_contrib/executors/pebble.py", line 190, in execute_sql
+    stdout, _ = process.wait_output()
+                ^^^^^^^^^^^^^^^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-k8s-1/charm/venv/lib/python3.12/site-packages/ops/pebble.py", line 1857, in wait_output
+    raise ExecError[AnyStr](self._command, exit_code, out_value, err_value)
+ops.pebble.ExecError: non-zero exit code 1 executing ['/usr/bin/mysqlsh', '--json=raw', '--save-passwords=never', '--passwords-from-stdin', '--socket=/var/run/mysqld/mysqld.sock', '--user=charmed-operator', '--sql', '--execute', "SELECT user, host FROM mysql.user WHERE user LIKE '%router' AND authentication_string=''"], stdout='{"prompt":"Please provide the password for \'charmed-operator@/var%2Frun%2Fmysqld%2Fmysqld.sock\': ","type":"password","defaultValue":""}\n', stderr="Cannot set LC_ALL to locale en_US.UTF-8: No such file or directory\nMySQL Error 2002 (HY000): Can't connect to local MySQL server through socket '/var/run/mysqld/mysqld.sock' (2)\n"
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/lib/juju/agents/unit-mysql-k8s-1/charm/lib/charms/mysql/v0/mysql.py", line 1241, in configure_mysql_router_roles
+    router_roles = self._instance_client_sock.search_instance_roles("%router")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-k8s-1/charm/venv/lib/python3.12/site-packages/mysql_shell/clients/instance.py", line 526, in search_instance_roles
+    rows = self._executor.execute_sql(query)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-k8s-1/charm/venv/lib/python3.12/site-packages/mysql_shell_contrib/executors/pebble.py", line 194, in execute_sql
+    raise ExecutionError(err) from exc
+mysql_shell.executors.errors.runtime.ExecutionError: Cannot set LC_ALL to locale en_US.UTF-8: No such file or directory
+MySQL Error 2002 (HY000): Can't connect to local MySQL server through socket '/var/run/mysqld/mysqld.sock' (2)
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/lib/juju/agents/unit-mysql-k8s-1/charm/src/charm.py", line 1174, in <module>
+    main(MySQLOperatorCharm)
+  File "/var/lib/juju/agents/unit-mysql-k8s-1/charm/venv/lib/python3.12/site-packages/ops/main.py", line 39, in main
+    return _main.main(charm_class=charm_class, use_juju_for_storage=use_juju_for_storage)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-k8s-1/charm/venv/lib/python3.12/site-packages/ops/_main.py", line 507, in main
+    manager.run()
+  File "/var/lib/juju/agents/unit-mysql-k8s-1/charm/venv/lib/python3.12/site-packages/ops/_main.py", line 491, in run
+    self._emit()
+  File "/var/lib/juju/agents/unit-mysql-k8s-1/charm/venv/lib/python3.12/site-packages/ops/_main.py", line 426, in _emit
+    self._emit_charm_event(self.dispatcher.event_name)
+  File "/var/lib/juju/agents/unit-mysql-k8s-1/charm/venv/lib/python3.12/site-packages/ops/_main.py", line 470, in _emit_charm_event
+    event_to_emit.emit(*args, **kwargs)
+  File "/var/lib/juju/agents/unit-mysql-k8s-1/charm/venv/lib/python3.12/site-packages/ops/framework.py", line 337, in emit
+    framework._emit(event)
+  File "/var/lib/juju/agents/unit-mysql-k8s-1/charm/venv/lib/python3.12/site-packages/ops/framework.py", line 910, in _emit
+    self._reemit(event_path)
+  File "/var/lib/juju/agents/unit-mysql-k8s-1/charm/venv/lib/python3.12/site-packages/ops/framework.py", line 1028, in _reemit
+    custom_handler(event)
+  File "/var/lib/juju/agents/unit-mysql-k8s-1/charm/src/charm.py", line 903, in _on_mysql_pebble_ready
+    self._configure_instance(container)
+  File "/var/lib/juju/agents/unit-mysql-k8s-1/charm/src/charm.py", line 798, in _configure_instance
+    self._mysql.configure_mysql_router_roles()
+  File "/var/lib/juju/agents/unit-mysql-k8s-1/charm/lib/charms/mysql/v0/mysql.py", line 1244, in configure_mysql_router_roles
+    raise MySQLConfigureMySQLRolesError() from e
+charms.mysql.v0.mysql.MySQLConfigureMySQLRolesError
+unit-mysql-k8s-1: 02:54:58 ERROR juju.worker.uniter.operation hook "mysql-pebble-ready" (via hook dispatching script: dispatch) failed: exit status 1
+unit-mysql-k8s-1: 02:54:58 ERROR juju.worker.uniter pebble poll failed for container "mysql": failed to send pebble-ready event: hook failed
+unit-mysql-k8s-2: 02:55:42 ERROR unit.mysql-k8s/2.juju-log database-peers:2: root:Failed to stop instance replication
+unit-mysql-k8s-2: 02:55:45 ERROR unit.mysql-k8s/2.juju-log database-peers:2: root:Failed to attach instance mysql-k8s-2.mysql-k8s-endpoints.testing.svc.cluster.local.:3306 to cluster cluster-22a8c5732eb6d01431cf72264f8c2208
+unit-mysql-k8s-1: 02:56:15 ERROR unit.mysql-k8s/1.juju-log database-peers:2: root:Failed to stop instance replication
+unit-mysql-k8s-1: 02:56:20 ERROR unit.mysql-k8s/1.juju-log database-peers:2: root:Failed to attach instance mysql-k8s-1.mysql-k8s-endpoints.testing.svc.cluster.local.:3306 to cluster cluster-22a8c5732eb6d01431cf72264f8c2208
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...

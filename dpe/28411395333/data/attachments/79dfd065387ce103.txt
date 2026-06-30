@@ -1,0 +1,60 @@
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[32mINFO    [0m pytest_operator.plugin:plugin.py:806 Connecting to existing model concierge-lxd:testing on unspecified cloud
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHSession received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHTunneler received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SecretsRevoker received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[32mINFO    [0m juju.model:__init__.py:2301 Deploying ch:amd64/jammy/mysql-504
+[32mINFO    [0m juju.model:__init__.py:2301 Deploying ch:amd64/jammy/mysql-test-app-147
+[32mINFO    [0m juju.model:__init__.py:2301 Deploying local:mysql-router-0
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql/0 [executing] active: Primary
+  mysql-router (not enough units yet - 0/1)
+  mysql-test-app/0 [idle] blocked: Relate with database provider
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql/0 [idle] active: Primary
+  mysql-router/0 [executing] waiting: 
+  mysql-test-app/0 [idle] blocked: Relate with database provider
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router/0 [executing] active: 
+  mysql-test-app/0 [executing] blocked: Relate with database provider
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql/0 [idle] active: Primary
+  mysql-router/0 [idle] active:
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller     Cloud/Region         Version  SLA          Timestamp
+testing  concierge-lxd  localhost/localhost  3.6.25   unsupported  00:45:03Z
+
+App             Version  Status  Scale  Charm           Channel      Rev  Exposed  Message
+mysql           8.0.45   active      1  mysql           8.0/edge     504  no       
+mysql-router             active    1/2  mysql-router                   0  no       
+mysql-test-app  0.0.2    active      2  mysql-test-app  latest/edge  147  no       Last written value=8870
+
+Unit               Workload  Agent       Machine  Public address  Ports           Message
+mysql-test-app/0*  active    idle        1        10.175.97.51                    Last written value=8870
+  mysql-router/0*  active    idle                 10.175.97.51                    
+mysql-test-app/1   active    executing   2        10.175.97.196                   
+  mysql-router/1   waiting   allocating           10.175.97.196                   agent initialising
+mysql/0*           active    executing   0        10.175.97.112   3306,33060/tcp  Primary
+
+Machine  State    Address        Inst id        Base          AZ             Message
+0        started  10.175.97.112  juju-77bf1c-0  ubuntu@22.04  runnervmmklqx  Running
+1        started  10.175.97.51   juju-77bf1c-1  ubuntu@22.04  runnervmmklqx  Running
+2        started  10.175.97.196  juju-77bf1c-2  ubuntu@22.04  runnervmmklqx  Running
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+machine-0: 00:40:16 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 00:40:16 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-mysql-0: 00:41:11 ERROR unit.mysql/0.juju-log Failed command: fuser 3306/tcp; user=None; group=None
+machine-1: 00:41:22 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 00:41:22 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 00:44:56 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 00:44:56 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...

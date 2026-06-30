@@ -15,6 +15,7 @@ import charm_refresh
 import ops
 import requests
 import tenacity
+from mysql_shell.executors.errors import ExecutionError
 
 from . import container, mysql_shell, server_exceptions
 
@@ -400,9 +401,20 @@ class RunningWorkload(Workload):
 
         # If the router is not in the cluster set, disable to restart it
         # This can happen when the server is scaled to zero and back
+        try:
+            router_not_in_cluster_set = (
+                self._router_id not in self.shell.get_routers_in_cluster_set()
+            )
+        except ExecutionError:
+            # Credentials may have been revoked by MySQL during teardown
+            logger.warning(
+                "Failed to query cluster set routers (credentials may have been revoked). "
+                "Disabling router"
+            )
+            router_not_in_cluster_set = True
         if any((
             is_charm_exposed == socket_file_exists,
-            self._router_id not in self.shell.get_routers_in_cluster_set()
+            router_not_in_cluster_set,
         )):
             self._disable_router()
 

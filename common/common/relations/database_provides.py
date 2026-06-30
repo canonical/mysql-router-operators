@@ -7,6 +7,7 @@ import logging
 import typing
 
 import ops
+from mysql_shell.executors.errors import ExecutionError
 
 from .. import mysql_shell, status_exception
 from .._charm_libs.charms.data_platform_libs.v0 import data_interfaces
@@ -277,7 +278,14 @@ class RelationEndpoint:
                 )
         for relation in self._shared_users:
             if relation not in requested_users:
-                relation.delete_user(shell=shell)
+                try:
+                    relation.delete_user(shell=shell)
+                except ExecutionError:
+                    logger.warning(
+                        "Failed to delete user (credentials may have been revoked by MySQL). "
+                        "Cleaning up databag only"
+                    )
+                    relation.delete_databag()
         logger.debug(
             f"Reconciled users {event=}, {router_read_write_endpoints=}, {router_read_only_endpoints=}"
         )

@@ -90,7 +90,7 @@ def test_exporter_endpoint(juju: Juju, charm: str, ubuntu_base: str) -> None:
     assert check_router_metrics_endpoint(juju, MYSQL_TEST_APP_NAME, test_app_leader)
 
     logging.info("Unrelating Grafana agent")
-    juju.integrate(
+    juju.remove_relation(
         f"{GRAFANA_AGENT_APP_NAME}:cos-agent",
         f"{MYSQL_ROUTER_APP_NAME}:cos-agent",
     )

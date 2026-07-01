@@ -20,6 +20,7 @@ DATA_INTEGRATOR_APP_NAME = "data-integrator"
 MYSQL_ROUTER_APP_NAME = "mysql-router"
 MYSQL_SERVER_APP_NAME = "mysql"
 
+MYSQL_ROUTER_SOCKET = "/var/snap/charmed-mysql/common/run/mysqlrouter/mysql.sock"
 TEST_DATABASE_NAME = "test_database"
 TEST_TABLE_NAME = "test_table"
 
@@ -133,7 +134,7 @@ def test_data_integrator_connectivity_with_tls(juju: Juju, charm: str, ubuntu_ba
     assert len(tables) == 0
 
     router_leader = get_app_leader(juju, MYSQL_ROUTER_APP_NAME)
-    router_issuer = get_unit_certificate_issuer(juju, router_leader, mysql_host, mysql_port)
+    router_issuer = get_unit_certificate_issuer(juju, router_leader, MYSQL_ROUTER_SOCKET)
     assert "CN = MySQL_Router_Auto_Generated_CA_Certificate" in router_issuer
 
     logging.info("Relating TLS application")
@@ -149,7 +150,7 @@ def test_data_integrator_connectivity_with_tls(juju: Juju, charm: str, ubuntu_ba
     ):
         with attempt:
             assert "CN = Test CA" in (
-                get_unit_certificate_issuer(juju, router_leader, "127.0.0.1", 6446)
+                get_unit_certificate_issuer(juju, router_leader, MYSQL_ROUTER_SOCKET)
             )
 
     _ = execute_queries_against_unit(
@@ -186,7 +187,7 @@ def test_data_integrator_connectivity_with_tls(juju: Juju, charm: str, ubuntu_ba
     ):
         with attempt:
             assert "CN = MySQL_Router_Auto_Generated_CA_Certificate" in (
-                get_unit_certificate_issuer(juju, router_leader, "127.0.0.1", 6446)
+                get_unit_certificate_issuer(juju, router_leader, MYSQL_ROUTER_SOCKET)
             )
 
     data = execute_queries_against_unit(

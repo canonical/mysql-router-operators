@@ -35,14 +35,14 @@ def test_shared_db(juju: Juju, charm: str, ubuntu_base: str):
         charm=charm,
         app=MYSQL_ROUTER_APP_NAME,
         base=ubuntu_base,
-        num_units=0,
+        num_units=1,
     )
     juju.deploy(
         charm=KEYSTONE_APP_NAME,
         app=KEYSTONE_APP_NAME,
         base=ubuntu_base,
         channel="latest/edge",
-        num_units=2,
+        num_units=1,
     )
 
     logging.info("Relating the applications")

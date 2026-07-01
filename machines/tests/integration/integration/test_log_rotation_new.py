@@ -102,7 +102,7 @@ def test_log_rotation(juju: Juju, charm: str, ubuntu_base: str) -> None:
     logging.info("Executing logrotate")
     juju.ssh(
         target=router_leader,
-        command="su - snap_daemon -c 'logrotate -f -s /tmp/logrotate.status /etc/logrotate.d/flush_mysqlrouter_logs'",
+        command="sudo -u snap_daemon logrotate -f -s /tmp/logrotate.status /etc/logrotate.d/flush_mysqlrouter_logs",
     )
 
     logging.info("Ensuring log file and archive directories exist")
@@ -153,7 +153,7 @@ def delete_unit_file(juju: Juju, unit_name: str, file_path: str) -> None:
         return
 
     juju.ssh(
-        command=f"find {file_path} -maxdepth 1 -delete",
+        command=f"sudo find {file_path} -maxdepth 1 -delete",
         target=unit_name,
     )
 
@@ -167,7 +167,7 @@ def list_unit_files(juju: Juju, unit_name: str, file_path: str) -> list[str]:
         file_path: The path at which to list the files
     """
     output = juju.ssh(
-        command=f"ls -la {file_path}",
+        command=f"sudo ls -la {file_path}",
         target=unit_name,
     )
 

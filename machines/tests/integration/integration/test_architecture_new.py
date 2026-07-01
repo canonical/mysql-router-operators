@@ -1,10 +1,11 @@
 # Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
 
+import jubilant_backports
 from jubilant_backports import Juju
 
 from .. import markers
-from ..helpers_new import MINUTE_SECS, wait_for_unit_status
+from ..helpers_new import MINUTE_SECS, wait_for_apps_status
 
 MYSQL_ROUTER_APP_NAME = "mysql-router"
 MYSQL_TEST_APP_NAME = "mysql-test-app"
@@ -34,11 +35,8 @@ def test_arm_charm_on_amd_host(juju: Juju, charm: str, ubuntu_base: str) -> None
         f"{MYSQL_TEST_APP_NAME}:database",
     )
 
-    # We must check the unit status, instead of the application status,
-    # because Juju 2.9 leaves the application in "waiting" status until
-    # the units are bootstrapped. This never happens as the units error.
     juju.wait(
-        ready=wait_for_unit_status(MYSQL_ROUTER_APP_NAME, f"{MYSQL_ROUTER_APP_NAME}/0", "error"),
+        ready=wait_for_apps_status(jubilant_backports.all_error, MYSQL_ROUTER_APP_NAME),
         timeout=5 * MINUTE_SECS,
     )
 
@@ -67,11 +65,8 @@ def test_amd_charm_on_arm_host(juju: Juju, charm: str, ubuntu_base: str) -> None
         f"{MYSQL_TEST_APP_NAME}:database",
     )
 
-    # We must check the unit status, instead of the application status,
-    # because Juju 2.9 leaves the application in "waiting" status until
-    # the units are bootstrapped. This never happens as the units error.
     juju.wait(
-        ready=wait_for_unit_status(MYSQL_ROUTER_APP_NAME, f"{MYSQL_ROUTER_APP_NAME}/0", "error"),
+        ready=wait_for_apps_status(jubilant_backports.all_error, MYSQL_ROUTER_APP_NAME),
         timeout=5 * MINUTE_SECS,
     )
 

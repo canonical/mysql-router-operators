@@ -75,8 +75,8 @@ def check_server_writes_increment(
 def get_app_leader(juju: Juju, app_name: str) -> str:
     """Get the leader unit for the given application."""
     model_status = juju.status()
-    app_status = model_status.apps[app_name]
-    for name, status in app_status.units.items():
+    app_units = model_status.get_units(app_name)
+    for name, status in app_units.items():
         if status.leader:
             return name
 
@@ -86,8 +86,8 @@ def get_app_leader(juju: Juju, app_name: str) -> str:
 def get_app_units(juju: Juju, app_name: str) -> list[str]:
     """Get the units for the given application."""
     model_status = juju.status()
-    app_status = model_status.apps[app_name]
-    return list(app_status.units)
+    app_units = model_status.get_units(app_name)
+    return list(app_units)
 
 
 def scale_app_units(juju: Juju, app_name: str, num_units: int) -> None:
@@ -105,7 +105,7 @@ def scale_app_units(juju: Juju, app_name: str, num_units: int) -> None:
     scale_func(app_name, num_units=abs(app_units_diff))
 
     juju.wait(
-        ready=lambda status: len(status.apps[app_name].units) == num_units,
+        ready=lambda status: len(status.get_units(app_name)) == num_units,
         timeout=10 * MINUTE_SECS,
     )
     juju.wait(
@@ -117,8 +117,8 @@ def scale_app_units(juju: Juju, app_name: str, num_units: int) -> None:
 def get_unit_address(juju: Juju, app_name: str, unit_name: str) -> str:
     """Get the application unit IP."""
     model_status = juju.status()
-    app_status = model_status.apps[app_name]
-    for name, status in app_status.units.items():
+    app_units = model_status.get_units(app_name)
+    for name, status in app_units.items():
         if name == unit_name:
             return status.address
 
@@ -291,5 +291,5 @@ def wait_for_apps_status(jubilant_status_func: JujuAppsStatusFn, *apps: str) -> 
 def wait_for_unit_status(app_name: str, unit_name: str, unit_status: str) -> JujuModelStatusFn:
     """Returns whether a Juju unit to have a specific status."""
     return lambda status: (
-        status.apps[app_name].units[unit_name].workload_status.current == unit_status
+        status.get_units(app_name)[unit_name].workload_status.current == unit_status
     )

@@ -1,0 +1,80 @@
+[32mINFO    [0m integration.integration.test_hacluster:test_hacluster.py:346 Resetting the VIP
+[32mINFO    [0m integration.integration.test_hacluster:test_hacluster.py:358 Removing the relation between hacluster and mysqlrouter
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router/0 [executing] blocked: ha integration used without vip configuration
+  mysql-router/1 [executing] active: 
+  mysql-router/2 [executing] active: 
+  mysql-router/3 [executing] active: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router/0 [executing] blocked: ha integration used without vip configuration
+  mysql-router/1 [executing] blocked: ha integration used without vip configuration
+  mysql-router/2 [executing] active: 
+  mysql-router/3 [executing] active: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router/0 [executing] active: 
+  mysql-router/1 [executing] active: 
+  mysql-router/2 [executing] active: 
+  mysql-router/3 [executing] active: 
+[32mINFO    [0m integration.integration.test_hacluster:test_hacluster.py:366 Ensuring that VIP is not the data-integrator endpoint hostname
+[32mINFO    [0m integration.helpers:helpers.py:431 Running get-credentials on data-integrator/0
+[32mINFO    [0m integration.integration.test_hacluster:test_hacluster.py:369 Data integrator endpoint hostname is 10.92.175.234
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller     Cloud/Region         Version  SLA          Timestamp
+testing  concierge-lxd  localhost/localhost  3.6.25   unsupported  01:01:42Z
+
+App                       Version  Status  Scale  Charm                     Channel        Rev  Exposed  Message
+data-integrator                    active      4  data-integrator           latest/stable  417  no       
+hacluster                 2.1.2    active      4  hacluster                 2.4/stable     166  no       Unit is ready and clustered
+mysql                     8.0.45   active      1  mysql                     8.0/edge       504  no       
+mysql-router              8.0.45   active      4  mysql-router                               0  no       
+self-signed-certificates           active      1  self-signed-certificates  1/stable       586  no       
+
+Unit                         Workload  Agent  Machine  Public address  Ports           Message
+data-integrator/0*           active    idle   0        10.92.175.234                   
+  hacluster/4                active    idle            10.92.175.234                   Unit is ready and clustered
+  mysql-router/0*            active    idle            10.92.175.234   6446-6447/tcp   
+data-integrator/1            active    idle   1        10.92.175.178                   
+  hacluster/2                active    idle            10.92.175.178                   Unit is ready and clustered
+  mysql-router/3             active    idle            10.92.175.178   6446-6447/tcp   
+data-integrator/2            active    idle   2        10.92.175.77                    
+  hacluster/3                active    idle            10.92.175.77                    Unit is ready and clustered
+  mysql-router/2             active    idle            10.92.175.77    6446-6447/tcp   
+data-integrator/3            active    idle   3        10.92.175.62                    
+  hacluster/0*               active    idle            10.92.175.62                    Unit is ready and clustered
+  mysql-router/1             active    idle            10.92.175.62    6446-6447/tcp   
+mysql/0*                     active    idle   4        10.92.175.46    3306,33060/tcp  Primary
+self-signed-certificates/0*  active    idle   5        10.92.175.224                   
+
+Machine  State    Address        Inst id        Base          AZ             Message
+0        started  10.92.175.234  juju-3aa711-0  ubuntu@22.04  runnervmkkn4f  Running
+1        started  10.92.175.178  juju-3aa711-1  ubuntu@22.04  runnervmkkn4f  Running
+2        started  10.92.175.77   juju-3aa711-2  ubuntu@22.04  runnervmkkn4f  Running
+3        started  10.92.175.62   juju-3aa711-3  ubuntu@22.04  runnervmkkn4f  Running
+4        started  10.92.175.46   juju-3aa711-4  ubuntu@22.04  runnervmkkn4f  Running
+5        started  10.92.175.224  juju-3aa711-5  ubuntu@24.04  runnervmkkn4f  Running
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+machine-0: 00:42:46 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 00:42:46 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-4: 00:44:41 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-4: 00:44:41 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 00:45:10 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 00:45:10 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 00:45:25 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 00:45:25 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 00:45:46 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 00:45:46 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-mysql-0: 00:46:35 ERROR unit.mysql/0.juju-log Failed command: fuser 3306/tcp; user=None; group=None
+unit-hacluster-0: 00:49:20 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: preparing operation "install ch:amd64/hacluster-166" for hacluster/0: failed to download charm "ch:amd64/hacluster-166" from API server: download request with archiveSha256 length 0 not valid
+unit-hacluster-2: 00:49:21 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: preparing operation "install ch:amd64/hacluster-166" for hacluster/2: failed to download charm "ch:amd64/hacluster-166" from API server: download request with archiveSha256 length 0 not valid
+unit-hacluster-4: 00:49:21 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: preparing operation "install ch:amd64/hacluster-166" for hacluster/4: failed to download charm "ch:amd64/hacluster-166" from API server: download request with archiveSha256 length 0 not valid
+unit-hacluster-3: 00:49:21 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: preparing operation "install ch:amd64/hacluster-166" for hacluster/3: failed to download charm "ch:amd64/hacluster-166" from API server: download request with archiveSha256 length 0 not valid
+machine-5: 00:58:39 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-5: 00:58:39 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-self-signed-certificates-0: 01:00:08 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: relation scope id "adacd64b-f8ed-451f-84cd-b6168a3aa711:r#13#mysql-router": settings adacd64b-f8ed-451f-84cd-b6168a3aa711:r#13#mysql-router not found (not found)
+unit-mysql-router-3: 01:00:59 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: relation scope id "adacd64b-f8ed-451f-84cd-b6168a3aa711:r#12#hacluster": settings adacd64b-f8ed-451f-84cd-b6168a3aa711:r#12#hacluster not found (not found)
+unit-mysql-router-2: 01:01:02 ERROR juju.worker.dependency "uniter" manifold worker returned unexpected error: relation scope id "adacd64b-f8ed-451f-84cd-b6168a3aa711:r#12#hacluster": settings adacd64b-f8ed-451f-84cd-b6168a3aa711:r#12#hacluster not found (not found)
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...

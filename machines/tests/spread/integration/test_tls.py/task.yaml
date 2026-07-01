@@ -1,7 +1,7 @@
-summary: test_tls.py
+summary: test_tls_new.py
 environment:
-  TEST_MODULE: test_tls.py
+  TEST_MODULE: test_tls_new.py
 execute: |
-  tox run -e integration -- "tests/integration/integration/$TEST_MODULE" --model testing --alluredir="$SPREAD_TASK/allure-results"
+  tox run -e integration -- "tests/integration/integration/$TEST_MODULE" --alluredir="$SPREAD_TASK/allure-results"
 artifacts:
   - allure-results

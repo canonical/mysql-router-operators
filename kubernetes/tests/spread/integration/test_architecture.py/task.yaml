@@ -1,8 +1,8 @@
-summary: test_architecture.py
+summary: test_architecture_new.py
 environment:
-  TEST_MODULE: test_architecture.py
+  TEST_MODULE: test_architecture_new.py
 execute: |
-  tox run -e integration -- "tests/integration/integration/$TEST_MODULE" --model testing --alluredir="$SPREAD_TASK/allure-results"
+  tox run -e integration -- "tests/integration/integration/$TEST_MODULE" --alluredir="$SPREAD_TASK/allure-results"
 artifacts:
   - allure-results
 backends:

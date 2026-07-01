@@ -1,0 +1,35 @@
+[32mINFO    [0m integration.integration.test_tls:test_tls.py:120 Relating TLS with mysqlrouter
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[32mINFO    [0m integration.integration.test_tls:test_tls.py:123 Getting certificate issuer after relating with tls operator
+[32mINFO    [0m integration.integration.test_tls:test_tls.py:138 Removing relation TLS with mysqlrouter
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller     Cloud/Region  Version  SLA          Timestamp
+testing  concierge-k8s  k8s           3.6.25   unsupported  02:18:46Z
+
+App                       Version  Status  Scale  Charm                     Channel      Rev  Address         Exposed  Message
+mysql-k8s                 8.4      active      3  mysql-k8s                 8.4/edge     417  10.152.183.67   no       
+mysql-router-k8s          8.4.8    active      1  mysql-router-k8s                         0  10.152.183.84   no       
+mysql-test-app            0.0.2    active      1  mysql-test-app            latest/edge  148  10.152.183.25   no       Last written value=216
+self-signed-certificates           active      1  self-signed-certificates  1/stable     586  10.152.183.150  no       
+
+Unit                         Workload     Agent      Address     Ports  Message
+mysql-k8s/0*                 active       idle       10.1.0.245         
+mysql-k8s/1                  active       idle       10.1.0.183         
+mysql-k8s/2                  active       idle       10.1.0.42          
+mysql-router-k8s/0*          maintenance  executing  10.1.0.153         MySQL Router starting
+mysql-test-app/0*            active       idle       10.1.0.212         Last written value=216
+self-signed-certificates/0*  active       idle       10.1.0.65          
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+unit-mysql-k8s-0: 02:15:24 ERROR juju.worker.proxyupdater error writing apt proxy config file: open /etc/apt/apt.conf.d/95-juju-proxy-settings: permission denied
+unit-mysql-k8s-1: 02:15:25 ERROR juju.worker.proxyupdater error writing apt proxy config file: open /etc/apt/apt.conf.d/95-juju-proxy-settings: permission denied
+unit-mysql-k8s-2: 02:15:26 ERROR juju.worker.proxyupdater error writing apt proxy config file: open /etc/apt/apt.conf.d/95-juju-proxy-settings: permission denied
+unit-mysql-router-k8s-0: 02:15:30 ERROR juju.worker.proxyupdater error writing apt proxy config file: open /etc/apt/apt.conf.d/95-juju-proxy-settings: permission denied
+unit-mysql-k8s-2: 02:17:03 ERROR unit.mysql-k8s/2.juju-log database-peers:0: root:Failed to stop instance replication
+unit-mysql-k8s-2: 02:17:06 ERROR unit.mysql-k8s/2.juju-log database-peers:0: root:Failed to attach instance mysql-k8s-2.mysql-k8s-endpoints.testing.svc.cluster.local.:3306 to cluster cluster-aa0db3a0963c712d98dd99edd6eb9618
+unit-mysql-k8s-1: 02:17:46 ERROR unit.mysql-k8s/1.juju-log root:Failed to stop instance replication
+unit-mysql-k8s-1: 02:17:50 ERROR unit.mysql-k8s/1.juju-log root:Failed to attach instance mysql-k8s-1.mysql-k8s-endpoints.testing.svc.cluster.local.:3306 to cluster cluster-aa0db3a0963c712d98dd99edd6eb9618
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...

@@ -69,8 +69,8 @@ def check_server_writes_increment(
 def get_app_leader(juju: Juju, app_name: str) -> str:
     """Get the leader unit for the given application."""
     model_status = juju.status()
-    app_status = model_status.apps[app_name]
-    for name, status in app_status.units.items():
+    app_units = model_status.get_units(app_name)
+    for name, status in app_units.items():
         if status.leader:
             return name
 
@@ -80,8 +80,8 @@ def get_app_leader(juju: Juju, app_name: str) -> str:
 def get_app_units(juju: Juju, app_name: str) -> list[str]:
     """Get the units for the given application."""
     model_status = juju.status()
-    app_status = model_status.apps[app_name]
-    return list(app_status.units)
+    app_units = model_status.get_units(app_name)
+    return list(app_units)
 
 
 def scale_app_units(juju: Juju, app_name: str, num_units: int) -> None:
@@ -90,40 +90,40 @@ def scale_app_units(juju: Juju, app_name: str, num_units: int) -> None:
     app_units_diff = num_units - len(app_units)
 
     if app_units_diff > 0:
-        scale_func = juju.add_unit
+        juju.add_unit(app_name, num_units=app_units_diff)
     if app_units_diff < 0:
-        scale_func = juju.remove_unit
+        juju.remove_unit(*app_units[app_units_diff:])
     if app_units_diff == 0:
         return
 
-    scale_func(app_name, num_units=abs(app_units_diff))
+    juju.wait(
+        ready=lambda status: len(status.get_units(app_name)) == num_units,
+        timeout=10 * MINUTE_SECS,
+    )
 
-    juju.wait(
-        ready=lambda status: len(status.apps[app_name].units) == num_units,
-        timeout=10 * MINUTE_SECS,
-    )
-    juju.wait(
-        ready=wait_for_apps_status(jubilant.all_active, app_name),
-        timeout=10 * MINUTE_SECS,
-    )
+    if num_units > 0:
+        juju.wait(
+            ready=wait_for_apps_status(jubilant.all_active, app_name),
+            timeout=10 * MINUTE_SECS,
+        )
 
 
 def get_unit_address(juju: Juju, app_name: str, unit_name: str) -> str:
     """Get the application unit IP."""
     model_status = juju.status()
-    app_status = model_status.apps[app_name]
-    for name, status in app_status.units.items():
+    app_units = model_status.get_units(app_name)
+    for name, status in app_units.items():
         if name == unit_name:
             return status.public_address
 
     raise Exception("No application unit found")
 
 
-def get_unit_certificate_issuer(juju: Juju, unit_name: str, host: str, port: int) -> str:
+def get_unit_certificate_issuer(juju: Juju, unit_name: str, socket: str) -> str:
     """Get the TLS certificate issuer string."""
     output = juju.ssh(
         command=(
-            f"openssl s_client -showcerts -starttls mysql -connect {host}:{port} < /dev/null "
+            f"openssl s_client -showcerts -starttls mysql -unix {socket} < /dev/null "
             f"| openssl x509 -text "
             f"| grep Issuer"
         ),
@@ -178,10 +178,11 @@ def get_mysql_max_written_value(juju: Juju, app_name: str, unit_name: str) -> in
     credentials = get_mysql_server_credentials(juju, unit_name, "charmed-operator")
 
     output = execute_queries_against_unit(
-        get_unit_address(juju, app_name, unit_name),
-        credentials["username"],
-        credentials["password"],
-        ["SELECT MAX(number) FROM `continuous_writes`.`data`;"],
+        username=credentials["username"],
+        password=credentials["password"],
+        host=get_unit_address(juju, app_name, unit_name),
+        port=3306,
+        queries=["SELECT MAX(number) FROM `continuous_writes`.`data`;"],
     )
     return output[0]
 
@@ -230,8 +231,8 @@ def verify_mysql_test_data(juju: Juju, app_name: str, table_name: str, value: st
         table_name: The database table name.
         value: The value to check against.
     """
-    mysql_app_leader = get_app_leader(juju, app_name)
-    credentials = get_mysql_server_credentials(juju, mysql_app_leader, "charmed-operator")
+    mysql_leader = get_app_leader(juju, app_name)
+    credentials = get_mysql_server_credentials(juju, mysql_leader, "charmed-operator")
 
     select_queries = [
         f"SELECT data FROM `{TEST_DATABASE_NAME}`.`{table_name}` WHERE data = '{value}'",
@@ -244,10 +245,11 @@ def verify_mysql_test_data(juju: Juju, app_name: str, table_name: str, value: st
     ):
         with attempt:
             output = execute_queries_against_unit(
-                get_unit_address(juju, app_name, mysql_app_leader),
-                credentials["username"],
-                credentials["password"],
-                select_queries,
+                username=credentials["username"],
+                password=credentials["password"],
+                host=get_unit_address(juju, app_name, mysql_leader),
+                port=3306,
+                queries=select_queries,
             )
             assert output[0] == value
 
@@ -271,12 +273,12 @@ def wait_for_apps_status(jubilant_status_func: JujuAppsStatusFn, *apps: str) -> 
 def wait_for_unit_status(app_name: str, unit_name: str, unit_status: str) -> JujuModelStatusFn:
     """Returns whether a Juju unit to have a specific status."""
     return lambda status: (
-        status.apps[app_name].units[unit_name].workload_status.current == unit_status
+        status.get_units(app_name)[unit_name].workload_status.current == unit_status
     )
 
 
 def wait_for_unit_message(app_name: str, unit_name: str, unit_message: str) -> JujuModelStatusFn:
     """Returns whether a Juju unit to have a specific message."""
     return lambda status: (
-        status.apps[app_name].units[unit_name].workload_status.message == unit_message
+        status.get_units(app_name)[unit_name].workload_status.message == unit_message
     )

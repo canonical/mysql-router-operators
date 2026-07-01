@@ -40,7 +40,7 @@ def test_database_relation(juju: Juju, charm: str, ubuntu_base: str) -> None:
         charm=MYSQL_TEST_APP_NAME,
         app=MYSQL_TEST_APP_NAME,
         base=ubuntu_base,
-        channel="latest/edde",
+        channel="latest/edge",
         num_units=1,
     )
 

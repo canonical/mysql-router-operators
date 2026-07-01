@@ -92,7 +92,7 @@ def test_landscape_client(juju: Juju, ubuntu_base: str):
 
     logging.info("Relating the applications")
     juju.integrate(
-        f"{LANDSCAPE_APP_NAME}:juju-info",
+        f"{LANDSCAPE_APP_NAME}:container",
         f"{MYSQL_TEST_APP_NAME}:juju-info",
     )
 

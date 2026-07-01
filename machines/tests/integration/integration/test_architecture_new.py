@@ -5,7 +5,7 @@ import jubilant
 from jubilant import Juju
 
 from .. import markers
-from ..helpers_new import MINUTE_SECS, wait_for_app_status
+from ..helpers_new import MINUTE_SECS, wait_for_apps_status
 
 MYSQL_ROUTER_APP_NAME = "mysql-router"
 MYSQL_TEST_APP_NAME = "mysql-test-app"
@@ -36,7 +36,7 @@ def test_arm_charm_on_amd_host(juju: Juju, charm: str, ubuntu_base: str) -> None
     )
 
     juju.wait(
-        ready=wait_for_app_status(jubilant.all_error, MYSQL_ROUTER_APP_NAME),
+        ready=wait_for_apps_status(jubilant.all_error, MYSQL_ROUTER_APP_NAME),
         timeout=5 * MINUTE_SECS,
     )
 
@@ -66,7 +66,7 @@ def test_amd_charm_on_arm_host(juju: Juju, charm: str, ubuntu_base: str) -> None
     )
 
     juju.wait(
-        ready=wait_for_app_status(jubilant.all_error, MYSQL_ROUTER_APP_NAME),
+        ready=wait_for_apps_status(jubilant.all_error, MYSQL_ROUTER_APP_NAME),
         timeout=5 * MINUTE_SECS,
     )
 

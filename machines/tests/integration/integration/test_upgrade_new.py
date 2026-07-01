@@ -76,10 +76,19 @@ def test_upgrade_from_edge(juju: Juju, charm: str, continuous_writes) -> None:
     router_app_units = get_app_units(juju, MYSQL_ROUTER_APP_NAME)
     router_app_units.sort(reverse=True)
 
+    tmp_folder = Path("tmp")
+    tmp_folder.mkdir(exist_ok=True)
+    tmp_folder_charm = Path(tmp_folder, charm).absolute()
+
+    shutil.copy(charm, tmp_folder_charm)
+
+    logging.info("Creating valid upgrade charm")
+    create_valid_upgrade_charm(tmp_folder_charm)
+
     logging.info("Refresh the charm")
     juju.refresh(
         app=MYSQL_ROUTER_APP_NAME,
-        path=charm,
+        path=tmp_folder_charm,
     )
 
     logging.info("Wait for refresh to start")
@@ -129,9 +138,6 @@ def test_upgrade_from_edge(juju: Juju, charm: str, continuous_writes) -> None:
 
 def test_fail_and_rollback(juju: Juju, charm: str, continuous_writes) -> None:
     """Test a refresh failure and its rollback."""
-    router_app_units = get_app_units(juju, MYSQL_ROUTER_APP_NAME)
-    router_app_units.sort(reverse=True)
-
     logging.info("Ensure continuous writes are incrementing")
     check_server_writes_increment(juju, MYSQL_SERVER_APP_NAME)
 
@@ -141,8 +147,8 @@ def test_fail_and_rollback(juju: Juju, charm: str, continuous_writes) -> None:
 
     shutil.copy(charm, tmp_folder_charm)
 
-    logging.info("Inject dependency fault")
-    inject_dependency_fault(tmp_folder_charm)
+    logging.info("Creating invalid upgrade charm")
+    create_invalid_upgrade_charm(tmp_folder_charm)
 
     logging.info("Refresh the charm")
     juju.refresh(
@@ -178,13 +184,26 @@ def test_fail_and_rollback(juju: Juju, charm: str, continuous_writes) -> None:
     tmp_folder_charm.unlink()
 
 
-def inject_dependency_fault(charm_file: str | Path) -> None:
-    """Inject a dependency fault into the MySQL charm."""
+def create_valid_upgrade_charm(charm_file: str | Path) -> None:
+    """Create a valid mysql router charm for upgrade."""
+    with Path("refresh_versions.toml").open("rb") as file:
+        versions = tomli.load(file)
+
+    # charm needs to refresh snap to be able to avoid no-op when upgrading.
+    versions["snap"]["revisions"]["x86_64"] = "171"
+    versions["snap"]["revisions"]["aarch64"] = "170"
+    versions["workload"] = "8.4.7"
+
+    with zipfile.ZipFile(charm_file, mode="a") as charm_zip:
+        charm_zip.writestr("refresh_versions.toml", tomli_w.dumps(versions))
+
+
+def create_invalid_upgrade_charm(charm_file: str | Path) -> None:
+    """Create an invalid mysql router charm for upgrade."""
     with Path("refresh_versions.toml").open("rb") as file:
         versions = tomli.load(file)
 
     versions["charm"] = "8.4/0.0.0"
 
-    # Overwrite refresh_versions.toml with incompatible version.
     with zipfile.ZipFile(charm_file, mode="a") as charm_zip:
         charm_zip.writestr("refresh_versions.toml", tomli_w.dumps(versions))

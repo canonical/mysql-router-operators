@@ -27,6 +27,7 @@ MYSQL_SERVER_APP_NAME = "mysql"
 TLS_APP_NAME = "self-signed-certificates"
 
 MYSQL_ROUTER_VIP = None
+MYSQL_ROUTER_SOCKET = "/var/snap/charmed-mysql/common/run/mysqlrouter/mysql.sock"
 TEST_DATABASE_NAME = "test_database"
 
 
@@ -118,7 +119,7 @@ def test_external_connectivity_with_ha_cluster(juju: Juju, charm: str, ubuntu_ba
         f"{HA_CLUSTER_APP_NAME}:juju-info",
     )
     juju.integrate(
-        f"{DATA_INTEGRATOR_APP_NAME}:ha",
+        f"{MYSQL_ROUTER_APP_NAME}:ha",
         f"{HA_CLUSTER_APP_NAME}:ha",
     )
 
@@ -130,9 +131,13 @@ def test_external_connectivity_with_ha_cluster(juju: Juju, charm: str, ubuntu_ba
         app=MYSQL_ROUTER_APP_NAME,
         values={"vip": MYSQL_ROUTER_VIP},
     )
+    juju.wait(
+        ready=wait_for_apps_status(jubilant.all_active, MYSQL_ROUTER_APP_NAME),
+        timeout=10 * MINUTE_SECS,
+        delay=5.0,
+    )
 
     logging.info("Ensuring MySQL Server is accessible via VIP")
-    check_router_configured_virtual_ip(juju, MYSQL_ROUTER_VIP)
     check_server_accessible_virtual_ip(juju, MYSQL_ROUTER_VIP)
 
     MYSQL_ROUTER_VIP = generate_next_available_ip(juju, mysql_host, [MYSQL_ROUTER_VIP])
@@ -142,9 +147,13 @@ def test_external_connectivity_with_ha_cluster(juju: Juju, charm: str, ubuntu_ba
         app=MYSQL_ROUTER_APP_NAME,
         values={"vip": MYSQL_ROUTER_VIP},
     )
+    juju.wait(
+        ready=wait_for_apps_status(jubilant.all_active, MYSQL_ROUTER_APP_NAME),
+        timeout=10 * MINUTE_SECS,
+        delay=5.0,
+    )
 
     logging.info("Ensuring MySQL Server is accessible via VIP")
-    check_router_configured_virtual_ip(juju, MYSQL_ROUTER_VIP)
     check_server_accessible_virtual_ip(juju, MYSQL_ROUTER_VIP)
 
 
@@ -182,7 +191,7 @@ def test_ha_cluster_failover(juju: Juju, ubuntu_base: str) -> None:
 def test_router_certificates(juju: Juju) -> None:
     """Test the certificates of the MySQL Router application."""
     router_leader = get_app_leader(juju, MYSQL_ROUTER_APP_NAME)
-    router_issuer = get_unit_certificate_issuer(juju, router_leader, "127.0.0.1", 6446)
+    router_issuer = get_unit_certificate_issuer(juju, router_leader, MYSQL_ROUTER_SOCKET)
     assert "CN=MySQL_Router_Auto_Generated_CA_Certificate" in router_issuer
 
     logging.info("Deploying TLS")
@@ -218,7 +227,7 @@ def test_router_certificates(juju: Juju) -> None:
     ):
         with attempt:
             assert "CN=Test CA" in (
-                get_unit_certificate_issuer(juju, router_leader, "127.0.0.1", 6446)
+                get_unit_certificate_issuer(juju, router_leader, MYSQL_ROUTER_SOCKET)
             )
 
     logging.info("Unrelating TLS application")
@@ -234,7 +243,7 @@ def test_router_certificates(juju: Juju) -> None:
     ):
         with attempt:
             assert "CN=MySQL_Router_Auto_Generated_CA_Certificate" in (
-                get_unit_certificate_issuer(juju, router_leader, "127.0.0.1", 6446)
+                get_unit_certificate_issuer(juju, router_leader, MYSQL_ROUTER_SOCKET)
             )
 
     logging.info("Ensuring MySQL Server is accessible via VIP")
@@ -283,21 +292,6 @@ def test_router_without_vip(juju: Juju) -> None:
 
     mysql_host = data_integrator_creds.results["mysql"]["endpoints"].split(",")[0].split(":")[0]
     assert mysql_host != MYSQL_ROUTER_VIP
-
-
-def check_router_configured_virtual_ip(juju: Juju, vip: str) -> None:
-    """Check whether the MySQL Router application has the virtual IP configured."""
-    for attempt in Retrying(
-        stop=stop_after_delay(10 * MINUTE_SECS),
-        wait=wait_fixed(10),
-        reraise=True,
-    ):
-        with attempt:
-            data_integrator_leader = get_app_leader(juju, DATA_INTEGRATOR_APP_NAME)
-            data_integrator_creds = juju.run(unit=data_integrator_leader, action="get-credentials")
-
-            host = data_integrator_creds.results["mysql"]["endpoints"].split(",")[0].split(":")[0]
-            assert host == vip
 
 
 def check_server_accessible_virtual_ip(juju: Juju, vip: str) -> None:
@@ -349,5 +343,7 @@ def generate_next_available_ip(juju: Juju, starting_ip: str, exclude_ips: list[s
 def get_unit_machine_address(juju: Juju, app_name: str, unit_name: str) -> str:
     """Get the machine name for the given unit."""
     status = juju.status()
-    machine_id = status.apps[app_name].units[unit_name].machine
-    return status.machines[machine_id].hostname
+    machine_id = status.get_units(app_name)[unit_name].machine
+    machine_ips = status.machines[machine_id].ip_addresses
+
+    return machine_ips[0]

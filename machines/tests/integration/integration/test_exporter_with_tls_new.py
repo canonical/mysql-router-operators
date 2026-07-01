@@ -23,6 +23,8 @@ MYSQL_TEST_APP_NAME = "mysql-test-app"
 
 TLS_APP_NAME = "self-signed-certificates"
 
+MYSQL_ROUTER_SOCKET = "/var/snap/charmed-mysql/common/run/mysqlrouter/mysql.sock"
+
 
 def test_exporter_endpoint(juju: Juju, charm: str, ubuntu_base: str) -> None:
     """Test that exporter endpoint is functional."""
@@ -86,7 +88,7 @@ def test_exporter_endpoint(juju: Juju, charm: str, ubuntu_base: str) -> None:
     )
 
     router_leader = get_app_leader(juju, MYSQL_ROUTER_APP_NAME)
-    router_issuer = get_unit_certificate_issuer(juju, router_leader, "127.0.0.1", 6446)
+    router_issuer = get_unit_certificate_issuer(juju, router_leader, MYSQL_ROUTER_SOCKET)
     assert "CN=MySQL_Router_Auto_Generated_CA_Certificate" in router_issuer
 
     logging.info("Deploying TLS application")
@@ -140,7 +142,7 @@ def test_exporter_endpoint(juju: Juju, charm: str, ubuntu_base: str) -> None:
     ):
         with attempt:
             assert "CN=Test CA" in (
-                get_unit_certificate_issuer(juju, router_leader, "127.0.0.1", 6446)
+                get_unit_certificate_issuer(juju, router_leader, MYSQL_ROUTER_SOCKET)
             )
 
     logging.info("Unrelating TLS application")
@@ -156,5 +158,5 @@ def test_exporter_endpoint(juju: Juju, charm: str, ubuntu_base: str) -> None:
     ):
         with attempt:
             assert "CN=MySQL_Router_Auto_Generated_CA_Certificate" in (
-                get_unit_certificate_issuer(juju, router_leader, "127.0.0.1", 6446)
+                get_unit_certificate_issuer(juju, router_leader, MYSQL_ROUTER_SOCKET)
             )

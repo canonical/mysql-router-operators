@@ -399,19 +399,18 @@ class RunningWorkload(Workload):
         # If the router is not in the cluster set, disable to restart it
         # This can happen when the server is scaled to zero and back
         try:
-            router_not_in_cluster_set = (
-                self._router_id not in self.shell.get_routers_in_cluster_set()
-            )
+            cluster_set_routers = self.shell.get_routers_in_cluster_set()
         except ExecutionError:
             # Credentials may have been revoked by MySQL during teardown
+            cluster_set_routers = []
             logger.warning(
                 "Failed to query cluster set routers (credentials may have been revoked). "
                 "Disabling router"
             )
-            router_not_in_cluster_set = True
+
         if any((
             is_charm_exposed == socket_file_exists,
-            router_not_in_cluster_set,
+            self._router_id not in cluster_set_routers,
         )):
             self._disable_router()
 

@@ -1,0 +1,130 @@
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller     Cloud/Region         Version  SLA          Timestamp
+testing  concierge-lxd  localhost/localhost  3.6.25   unsupported  02:21:39Z
+
+App             Version  Status   Scale  Charm           Channel      Rev  Exposed  Message
+mysql           8.4      active       1  mysql           8.4/edge     501  no       
+mysql-router    8.4.7    blocked      3  mysql-router                   0  no       Refresh incompatible. Rollback with `juju refresh --revision 1173`
+mysql-test-app  0.0.2    active       3  mysql-test-app  latest/edge  148  no       
+
+Unit               Workload     Agent      Machine  Public address  Ports           Message
+mysql-test-app/0   active       idle       0        10.34.243.129                   
+  mysql-router/1   active       idle                10.34.243.129                   Router 8.4.8 running; Snap revision 230 (outdated); Charm version 8.4/2.36.0
+mysql-test-app/1*  active       idle       1        10.34.243.242                   
+  mysql-router/0*  active       idle                10.34.243.242                   Router 8.4.8 running; Snap revision 230 (outdated); Charm version 8.4/2.36.0
+mysql-test-app/2   active       idle       2        10.34.243.19                    
+  mysql-router/2   maintenance  executing           10.34.243.19                    Refreshing snap
+mysql/0*           active       idle       3        10.34.243.163   3306,33060/tcp  
+
+Machine  State    Address        Inst id        Base          AZ             Message
+0        started  10.34.243.129  juju-ea56f2-0  ubuntu@26.04  runnervmy622m  Running
+1        started  10.34.243.242  juju-ea56f2-1  ubuntu@26.04  runnervmy622m  Running
+2        started  10.34.243.19   juju-ea56f2-2  ubuntu@26.04  runnervmy622m  Running
+3        started  10.34.243.163  juju-ea56f2-3  ubuntu@24.04  runnervmy622m  Running
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+machine-1: 02:15:58 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 02:15:58 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 02:16:03 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 02:16:03 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 02:17:15 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 02:17:15 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 02:17:36 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 02:17:36 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-mysql-0: 02:17:39 ERROR unit.mysql/0.juju-log mysql_vm_helpers:Failed command: fuser 3306/tcp; user=None; group=None; stdout: ; stderr: 
+unit-mysql-router-2: 02:21:38 ERROR unit.mysql-router/2.juju-log root:Uncaught exception while in charm code:
+Traceback (most recent call last):
+  File "/var/lib/juju/agents/unit-mysql-router-2/charm/venv/lib/python3.14/site-packages/charmlibs/snap/_snap.py", line 351, in _snap_daemons
+    return subprocess.run(args, text=True, check=True, capture_output=True)
+           ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/subprocess.py", line 578, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['snap', 'start', '--enable', 'charmed-mysql.mysqlrouter-service']' returned non-zero exit status 1.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/lib/juju/agents/unit-mysql-router-2/charm/src/charm.py", line 240, in <module>
+    ops.main.main(MachineSubordinateRouterCharm)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-router-2/charm/venv/lib/python3.14/site-packages/ops/main.py", line 436, in main
+    _emit_charm_event(charm, dispatcher.event_name)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-router-2/charm/venv/lib/python3.14/site-packages/ops/main.py", line 144, in _emit_charm_event
+    event_to_emit.emit(*args, **kwargs)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-router-2/charm/venv/lib/python3.14/site-packages/ops/framework.py", line 351, in emit
+    framework._emit(event)
+    ~~~~~~~~~~~~~~~^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-router-2/charm/venv/lib/python3.14/site-packages/ops/framework.py", line 853, in _emit
+    self._reemit(event_path)
+    ~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-router-2/charm/venv/lib/python3.14/site-packages/ops/framework.py", line 942, in _reemit
+    custom_handler(event)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-router-2/charm/lib/charms/tempo_coordinator_k8s/v0/charm_tracing.py", line 738, in wrapped_function
+    return callable(*args, **kwargs)  # type: ignore
+  File "/var/lib/juju/agents/unit-mysql-router-2/charm/venv/lib/python3.14/site-packages/common/abstract_charm.py", line 353, in reconcile
+    workload_.reconcile(
+    ~~~~~~~~~~~~~~~~~~~^
+        event=event,
+        ^^^^^^^^^^^^
+    ...<5 lines>...
+        certificate_authority=self._tls_certificate_authority,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/var/lib/juju/agents/unit-mysql-router-2/charm/lib/charms/tempo_coordinator_k8s/v0/charm_tracing.py", line 738, in wrapped_function
+    return callable(*args, **kwargs)  # type: ignore
+  File "/var/lib/juju/agents/unit-mysql-router-2/charm/venv/lib/python3.14/site-packages/common/workload.py", line 420, in reconcile
+    self._enable_router(event=event, tls=tls, unit_name=unit_name)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-router-2/charm/lib/charms/tempo_coordinator_k8s/v0/charm_tracing.py", line 738, in wrapped_function
+    return callable(*args, **kwargs)  # type: ignore
+  File "/var/lib/juju/agents/unit-mysql-router-2/charm/venv/lib/python3.14/site-packages/common/workload.py", line 357, in _enable_router
+    self._container.update_mysql_router_service(enabled=True, tls=tls)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-router-2/charm/lib/charms/tempo_coordinator_k8s/v0/charm_tracing.py", line 738, in wrapped_function
+    return callable(*args, **kwargs)  # type: ignore
+  File "/var/lib/juju/agents/unit-mysql-router-2/charm/src/snap.py", line 182, in update_mysql_router_service
+    self._snap.start([self._SERVICE_NAME], enable=True)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-router-2/charm/venv/lib/python3.14/site-packages/charmlibs/snap/_snap.py", line 415, in start
+    self._snap_daemons(args, services)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-router-2/charm/venv/lib/python3.14/site-packages/charmlibs/snap/_snap.py", line 354, in _snap_daemons
+    raise SnapError._from_called_process_error(msg=msg, error=e) from e
+charmlibs.snap._snap.SnapError: Snap: 'charmed-mysql' -- command ['snap', 'start', '--enable', 'charmed-mysql.mysqlrouter-service'] failed!
+Stderr:
+error: cannot perform the following tasks:
+- Run service command "start" for services ["mysqlrouter-service"] of snap "charmed-mysql" (systemctl command [start snap.charmed-mysql.mysqlrouter-service.service] failed with exit status 1: stderr:
+Job for snap.charmed-mysql.mysqlrouter-service.service failed because the control process exited with error code.
+See "systemctl status snap.charmed-mysql.mysqlrouter-service.service" and "journalctl -xeu snap.charmed-mysql.mysqlrouter-service.service" for details.)
+
+Latest logs:
+Jul 02 02:18:31 juju-ea56f2-2 snapd[6673]: backend.go:145: reloading profiles for snap-confine
+Jul 02 02:18:31 juju-ea56f2-2 snapd[6673]: standby.go:95: will consider standby after: 5s
+Jul 02 02:18:31 juju-ea56f2-2 systemd[1]: Started snapd.service - Snap Daemon.
+Jul 02 02:18:34 juju-ea56f2-2 snapd[6673]: snapmgr.go:1661: performing periodic snap downloads cache cleanup
+Jul 02 02:18:34 juju-ea56f2-2 snapd[6673]: cache.go:243: removed 0 entries/    0 from downloads cache
+Jul 02 02:18:34 juju-ea56f2-2 snapd[6673]: devicemgr.go:1281: skipping boot ok check since it already ran for boot-id "fe0bf65b-c614-4f0c-877f-750688edbe19"
+Jul 02 02:18:36 juju-ea56f2-2 snapd[6673]: cache.go:243: removed 0 entries/    0 from downloads cache
+Jul 02 02:18:42 juju-ea56f2-2 snapd[6673]: cache.go:243: removed 0 entries/    0 from downloads cache
+Jul 02 02:18:51 juju-ea56f2-2 snapd[6673]: backend.go:285: reloading profiles of snap-confine provided by the system snap
+Jul 02 02:21:14 juju-ea56f2-2 snapd[6673]: cache.go:243: removed 0 entries/    0 from downloads cache
+Jul 02 02:21:22 juju-ea56f2-2 snapd[6673]: cache.go:243: removed 0 entries/    0 from downloads cache
+Jul 02 02:21:25 juju-ea56f2-2 snapd[6673]: services.go:1167: RemoveSnapServices - disabling snap.charmed-mysql.mysqld-exporter.service
+Jul 02 02:21:25 juju-ea56f2-2 snapd[6673]: services.go:1167: RemoveSnapServices - disabling snap.charmed-mysql.mysqlrouter-exporter.service
+Jul 02 02:21:25 juju-ea56f2-2 snapd[6673]: services.go:1167: RemoveSnapServices - disabling snap.charmed-mysql.mysqld.service
+Jul 02 02:21:25 juju-ea56f2-2 snapd[6673]: services.go:1167: RemoveSnapServices - disabling snap.charmed-mysql.mysqlrouter-service.service
+Jul 02 02:21:25 juju-ea56f2-2 snapd[6673]: backend.go:285: reloading profiles of snap-confine provided by the system snap
+Jul 02 02:21:29 juju-ea56f2-2 snapd[6673]: storehelpers.go:914: cannot refresh snap "charmed-mysql": no snap revision available as specified
+Jul 02 02:21:38 juju-ea56f2-2 snapd[6673]: taskrunner.go:304: Change 15 task (Run service command "start" for services ["mysqlrouter-service"] of snap "charmed-mysql") failed: systemctl command [start snap.charmed-mysql.mysqlrouter-service.service] failed with exit status 1: stderr:
+Jul 02 02:21:38 juju-ea56f2-2 snapd[6673]: Job for snap.charmed-mysql.mysqlrouter-service.service failed because the control process exited with error code.
+Jul 02 02:21:38 juju-ea56f2-2 snapd[6673]: See "systemctl status snap.charmed-mysql.mysqlrouter-service.service" and "journalctl -xeu snap.charmed-mysql.mysqlrouter-service.service" for details.
+
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...

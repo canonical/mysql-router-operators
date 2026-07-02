@@ -2,14 +2,28 @@
 # See LICENSE file for licensing details.
 
 import logging
+from collections.abc import Generator
 
+import jubilant
 import pytest
-from pytest_operator.plugin import OpsTest
 
-from . import architecture, juju_
-from .helpers import APPLICATION_DEFAULT_APP_NAME, get_application_name
+from . import architecture
+from .helpers_new import get_app_leader
 
-logger = logging.getLogger(__name__)
+logging.getLogger("jubilant.wait").setLevel(logging.WARNING)
+
+MYSQL_TEST_APP_NAME = "mysql-test-app"
+
+
+def pytest_addoption(parser):
+    """Adds command line parameter ``--model`` (see help for details)."""
+    parser.addoption(
+        "--model",
+        action="store",
+        default="testing",
+        help="model name or ':auto:' for temporary model, default to 'testing'",
+        required=False,
+    )
 
 
 @pytest.fixture
@@ -19,26 +33,32 @@ def ubuntu_base():
 
 @pytest.fixture
 def charm(ubuntu_base):
-    # Return str instead of pathlib.Path since python-libjuju's model.deploy(), juju deploy, and
-    # juju bundle files expect local charms to begin with `./` or `/` to distinguish them from
-    # Charmhub charms.
     return f"./mysql-router_{ubuntu_base}-{architecture.architecture}.charm"
 
 
 @pytest.fixture
-async def continuous_writes(ops_test: OpsTest):
+def continuous_writes(juju: jubilant.Juju) -> Generator:
     """Starts continuous writes to the MySQL cluster for a test and clear the writes at the end."""
-    application_name = get_application_name(ops_test, APPLICATION_DEFAULT_APP_NAME)
+    test_app_leader = get_app_leader(juju, MYSQL_TEST_APP_NAME)
 
-    application_unit = ops_test.model.applications[application_name].units[0]
-
-    logger.info("Clearing continuous writes")
-    await juju_.run_action(application_unit, "clear-continuous-writes")
-
-    logger.info("Starting continuous writes")
-    await juju_.run_action(application_unit, "start-continuous-writes")
+    logging.info("Clearing continuous writes")
+    juju.run(test_app_leader, "clear-continuous-writes")
+    logging.info("Starting continuous writes")
+    juju.run(test_app_leader, "start-continuous-writes")
 
     yield
 
-    logger.info("Clearing continuous writes")
-    await juju_.run_action(application_unit, "clear-continuous-writes")
+    logging.info("Clearing continuous writes")
+    juju.run(test_app_leader, "clear-continuous-writes")
+
+
+@pytest.fixture(scope="module")
+def juju(request: pytest.FixtureRequest):
+    """Pytest fixture that yields a new `jubilant.Juju` object."""
+    model = request.config.getoption("--model")
+
+    if model == ":auto:":
+        with jubilant.temp_model() as juju:
+            yield juju
+    else:
+        yield jubilant.Juju(model=model)

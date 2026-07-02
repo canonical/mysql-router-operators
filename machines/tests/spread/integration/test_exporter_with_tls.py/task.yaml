@@ -1,9 +1,9 @@
-summary: test_exporter_with_tls.py
+summary: test_exporter_with_tls_new.py
 environment:
-  TEST_MODULE: test_exporter_with_tls.py
+  TEST_MODULE: test_exporter_with_tls_new.py
 execute: |
   # TODO: Uncomment when grafana-agent gets built for Ubuntu 26.04
-  # tox run -e integration -- "tests/integration/integration/$TEST_MODULE" --model testing --alluredir="$SPREAD_TASK/allure-results"
+  # tox run -e integration -- "tests/integration/integration/$TEST_MODULE" --alluredir="$SPREAD_TASK/allure-results"
   exit 0
 artifacts:
   - allure-results

@@ -1,9 +1,3 @@
-[note]
-**Note**: All commands are written for `juju >= v3.1`
-
-If you're using `juju 2.9`, check the [`juju 3.0` Release Notes](https://juju.is/docs/juju/roadmap#heading--juju-3-0-0---22-oct-2022).
-[/note]
-
 # Enable tracing
 This guide contains the steps to enable tracing with [Grafana Tempo](https://grafana.com/docs/tempo/latest/) for your MySQL Router application. 
 
@@ -13,11 +7,10 @@ To summarize:
 * [Offer interfaces for cross-model integrations](#heading--offer)
 * [View MySQLRouter traces on Grafana](#heading--view)
 
-
 [note type="caution"]
-**Warning:** This is feature is in development. It is **not recommended** for production environments. 
+**Warning:** This feature requires Juju 3. 
 
-This feature is available for Charmed MySQL Router revision 208+ only.
+The feature described in this page is **not** available on Juju 2.9.
 [/note]
 
 ## Prerequisites
@@ -86,8 +79,8 @@ juju find-offers <k8s_controller_name>:
 Below is a sample output where `k8s` is the K8s controller name and `cos` is the model where `cos-lite` and `tempo-k8s` are deployed:
 
 ```shell
-Store  URL                            Access  Interfaces
-k8s    admin/cos.tempo-k8s            admin   tracing:tracing
+Store  URL                  Access  Interfaces
+k8s    admin/cos.tempo-k8s  admin   tracing:tracing
 ```
 
 Next, consume this offer so that it is reachable from the current model:
@@ -111,10 +104,10 @@ database  lxd         localhost/localhost  3.4.3    unsupported  12:48:46Z
 SAAS       Status  Store  URL
 tempo-k8s  active  uk8s   admin/cos.tempo-k8s
 
-App             Version          Status  Scale  Charm           Channel      Rev  Exposed  Message
-mysql           8.0.37-0ubun...  active      1  mysql           8.0/edge     253  no       
-mysql-router    8.0.37-0ubun...  active      1  mysql-router    dpe/edge     216  no       
-mysql-test-app  0.0.2            active      1  mysql-test-app  latest/edge   46  no       Last written value=54713
+App             Version  Status  Scale  Charm           Channel      Rev  Exposed  Message
+mysql           8.0.37   active      1  mysql           8.0/edge     253  no       
+mysql-router    8.0.37   active      1  mysql-router    dpe/edge     216  no       
+mysql-test-app  0.0.2    active      1  mysql-test-app  latest/edge   46  no       Last written value=54713
 
 Unit               Workload  Agent  Machine  Public address  Ports           Message
 mysql-test-app/0*  active    idle   1        10.205.193.43                   Last written value=54713

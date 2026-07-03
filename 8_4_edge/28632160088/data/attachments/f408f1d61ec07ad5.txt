@@ -1,0 +1,26 @@
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller     Cloud/Region  Version  SLA          Timestamp
+testing  concierge-k8s  k8s           3.6.25   unsupported  02:10:04Z
+
+App               Version  Status   Scale  Charm             Channel      Rev  Address         Exposed  Message
+mysql-k8s         8.4      active       1  mysql-k8s         8.4/edge     417  10.152.183.153  no       
+mysql-router-k8s  8.4.8    blocked      3  mysql-router-k8s                 0  10.152.183.82   no       Refreshing. Check units >=2 are healthy & run `resume-refresh` on leader. To rollback, see docs or `juju debug-log`
+mysql-test-app    0.0.2    active       1  mysql-test-app    latest/edge  154  10.152.183.228  no       
+
+Unit                 Workload  Agent  Address     Ports  Message
+mysql-k8s/0*         active    idle   10.1.0.129         
+mysql-router-k8s/0   active    idle   10.1.0.34          Router 8.4.8 running (restart pending); Charm revision 920
+mysql-router-k8s/1*  active    idle   10.1.0.47          Router 8.4.8 running (restart pending); Charm revision 920
+mysql-router-k8s/2   error     idle   10.1.0.92          hook failed: "upgrade-charm"
+mysql-test-app/0*    active    idle   10.1.0.135         
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+unit-mysql-router-k8s-1: 02:05:45 ERROR juju.worker.proxyupdater error writing apt proxy config file: open /etc/apt/apt.conf.d/95-juju-proxy-settings: permission denied
+unit-mysql-router-k8s-0: 02:05:45 ERROR juju.worker.proxyupdater error writing apt proxy config file: open /etc/apt/apt.conf.d/95-juju-proxy-settings: permission denied
+unit-mysql-router-k8s-2: 02:05:45 ERROR juju.worker.proxyupdater error writing apt proxy config file: open /etc/apt/apt.conf.d/95-juju-proxy-settings: permission denied
+unit-mysql-k8s-0: 02:06:03 ERROR juju.worker.proxyupdater error writing apt proxy config file: open /etc/apt/apt.conf.d/95-juju-proxy-settings: permission denied
+unit-mysql-router-k8s-2: 02:09:22 ERROR juju.worker.proxyupdater error writing apt proxy config file: open /etc/apt/apt.conf.d/95-juju-proxy-settings: permission denied
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...

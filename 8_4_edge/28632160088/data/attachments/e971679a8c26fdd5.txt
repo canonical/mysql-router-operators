@@ -1,0 +1,127 @@
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller     Cloud/Region         Version  SLA          Timestamp
+testing  concierge-lxd  localhost/localhost  3.6.25   unsupported  02:11:04Z
+
+App             Version  Status   Scale  Charm           Channel       Rev  Exposed  Message
+mysql           8.4      active       1  mysql           8.4/edge      501  no       
+mysql-router    8.4.8    waiting      3  mysql-router    8.4/edge     1173  no       Waiting for mysql app on backend-database endpoint
+mysql-test-app  0.0.2    blocked      3  mysql-test-app  latest/edge   154  no       Relate with database provider
+
+Unit               Workload     Agent      Machine  Public address  Ports           Message
+mysql-test-app/0*  blocked      idle       0        10.194.200.227                  Relate with database provider
+  mysql-router/0*  waiting      executing           10.194.200.227                  
+mysql-test-app/1   blocked      idle       1        10.194.200.2                    Relate with database provider
+  mysql-router/1   maintenance  executing           10.194.200.2                    Installing snap
+mysql-test-app/2   blocked      idle       2        10.194.200.95                   Relate with database provider
+  mysql-router/2   error        idle                10.194.200.95                   hook failed: "refresh-v-three-relation-joined"
+mysql/0*           active       executing  3        10.194.200.254  3306,33060/tcp  
+
+Machine  State    Address         Inst id        Base          AZ             Message
+0        started  10.194.200.227  juju-300b81-0  ubuntu@26.04  runnervmy622m  Running
+1        started  10.194.200.2    juju-300b81-1  ubuntu@26.04  runnervmy622m  Running
+2        started  10.194.200.95   juju-300b81-2  ubuntu@26.04  runnervmy622m  Running
+3        started  10.194.200.254  juju-300b81-3  ubuntu@24.04  runnervmy622m  Running
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+machine-0: 02:08:45 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 02:08:45 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 02:08:45 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 02:08:45 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 02:10:02 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 02:10:02 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-mysql-0: 02:10:10 ERROR unit.mysql/0.juju-log mysql_vm_helpers:Failed command: fuser 3306/tcp; user=None; group=None; stdout: ; stderr: 
+machine-2: 02:10:18 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 02:10:18 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-mysql-router-2: 02:11:03 ERROR unit.mysql-router/2.juju-log refresh-v-three:5: root:Uncaught exception while in charm code:
+Traceback (most recent call last):
+  File "/var/lib/juju/agents/unit-mysql-router-2/charm/venv/lib/python3.14/site-packages/charmlibs/snap/_snap.py", line 888, in _request_raw
+    response = self.opener.open(request, timeout=self.timeout)
+  File "/usr/lib/python3.14/urllib/request.py", line 493, in open
+    response = meth(req, response)
+  File "/usr/lib/python3.14/urllib/request.py", line 602, in http_response
+    response = self.parent.error(
+        'http', request, response, code, msg, hdrs)
+  File "/usr/lib/python3.14/urllib/request.py", line 531, in error
+    return self._call_chain(*args)
+           ~~~~~~~~~~~~~~~~^^^^^^^
+  File "/usr/lib/python3.14/urllib/request.py", line 464, in _call_chain
+    result = func(*args)
+  File "/usr/lib/python3.14/urllib/request.py", line 611, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 500: Internal Server Error
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/lib/juju/agents/unit-mysql-router-2/charm/venv/lib/python3.14/site-packages/charmlibs/snap/_snap.py", line 965, in __getitem__
+    snap = self._snap_map[snap_name] = self._load_info(snap_name)
+                                       ~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-router-2/charm/venv/lib/python3.14/site-packages/charmlibs/snap/_snap.py", line 1014, in _load_info
+    info = self._snap_client.get_snap_information(name)
+  File "/var/lib/juju/agents/unit-mysql-router-2/charm/venv/lib/python3.14/site-packages/charmlibs/snap/_snap.py", line 914, in get_snap_information
+    return self._request('GET', 'find', {'name': name})[0]  # type: ignore
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-router-2/charm/venv/lib/python3.14/site-packages/charmlibs/snap/_snap.py", line 840, in _request
+    response = self._request_raw(method, path, query, headers, data)
+  File "/var/lib/juju/agents/unit-mysql-router-2/charm/venv/lib/python3.14/site-packages/charmlibs/snap/_snap.py", line 900, in _request_raw
+    raise SnapAPIError(body, code, status, message) from e
+charmlibs.snap._snap.SnapAPIError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/lib/juju/agents/unit-mysql-router-2/charm/src/charm.py", line 240, in <module>
+    ops.main.main(MachineSubordinateRouterCharm)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-router-2/charm/venv/lib/python3.14/site-packages/ops/main.py", line 436, in main
+    _emit_charm_event(charm, dispatcher.event_name)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-router-2/charm/venv/lib/python3.14/site-packages/ops/main.py", line 144, in _emit_charm_event
+    event_to_emit.emit(*args, **kwargs)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-router-2/charm/venv/lib/python3.14/site-packages/ops/framework.py", line 351, in emit
+    framework._emit(event)
+    ~~~~~~~~~~~~~~~^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-router-2/charm/venv/lib/python3.14/site-packages/ops/framework.py", line 853, in _emit
+    self._reemit(event_path)
+    ~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-router-2/charm/venv/lib/python3.14/site-packages/ops/framework.py", line 942, in _reemit
+    custom_handler(event)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-router-2/charm/lib/charms/tempo_coordinator_k8s/v0/charm_tracing.py", line 738, in wrapped_function
+    return callable(*args, **kwargs)  # type: ignore
+  File "/var/lib/juju/agents/unit-mysql-router-2/charm/venv/lib/python3.14/site-packages/common/abstract_charm.py", line 319, in reconcile
+    workload_.install(
+    ~~~~~~~~~~~~~~~~~^
+        unit=self.unit,
+        ^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        refresh=self.refresh,
+        ^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/var/lib/juju/agents/unit-mysql-router-2/charm/lib/charms/tempo_coordinator_k8s/v0/charm_tracing.py", line 738, in wrapped_function
+    return callable(*args, **kwargs)  # type: ignore
+  File "/var/lib/juju/agents/unit-mysql-router-2/charm/venv/lib/python3.14/site-packages/common/workload.py", line 83, in install
+    self._container.install(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        unit=unit, model_uuid=model_uuid, snap_revision=snap_revision, refresh=refresh
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/var/lib/juju/agents/unit-mysql-router-2/charm/lib/charms/tempo_coordinator_k8s/v0/charm_tracing.py", line 738, in wrapped_function
+    return callable(*args, **kwargs)  # type: ignore
+  File "/var/lib/juju/agents/unit-mysql-router-2/charm/src/snap.py", line 251, in install
+    if self._snap.present:
+       ^^^^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-router-2/charm/src/snap.py", line 154, in _snap
+    return snap_lib.SnapCache()[self._snap_name]
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-router-2/charm/venv/lib/python3.14/site-packages/charmlibs/snap/_snap.py", line 967, in __getitem__
+    raise SnapNotFoundError(f"Snap '{snap_name}' not found!") from e
+charmlibs.snap._snap.SnapNotFoundError: Snap 'charmed-mysql' not found!
+unit-mysql-router-2: 02:11:03 ERROR juju.worker.uniter.operation hook "refresh-v-three-relation-joined" (via hook dispatching script: dispatch) failed: exit status 1
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...

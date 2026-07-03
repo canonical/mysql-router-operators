@@ -36,11 +36,11 @@ juju offer prometheus:receive-remote-write
 
 Next, we will switch to the Charmed MySQL Router K8s model, find offers, and consume them.
 
-We are currently on the Kubernetes controller for the COS model. To switch to the MySQL Router K8smodel, run
-
+We are currently on the Kubernetes controller for the COS model. To switch to the MySQL Router K8smodel, run:
 ```shell
 juju switch <k8s_db_controller>:<mysql_router_model_name>
 ```
+
 Display a list of available interfaces with the following command:
 ```shell
 juju find-offers <k8s_cos_controller>:  # Do not miss the ':' here!
@@ -65,21 +65,23 @@ juju consume k8s:admin/cos.prometheus
 
 ## Deploy and integrate Grafana
 
-First, deploy [grafana-agent](https://charmhub.io/grafana-agent):
+First, deploy the [opentelemetry-collector-k8s](https://charmhub.io/opentelemetry-collector-k8s) charm:
 ```shell
-juju deploy grafana-agent-k8s --trust
+juju deploy opentelemetry-collector-k8s --channel=2/stable --trust
 ```
-Then, integrate (previously known as "[relate](https://juju.is/docs/juju/integration)") `grafana-agent` with Charmed MySQL Router K8s:
+
+Then, integrate (previously known as "[relate](https://juju.is/docs/juju/integration)") `opentelemetry-collector-k8s` with Charmed MySQL Router K8s:
 ```shell
-juju integrate grafana-agent-k8s grafana
-juju integrate grafana-agent-k8s loki
-juju integrate grafana-agent-k8s prometheus
+juju integrate opentelemetry-collector-k8s grafana
+juju integrate opentelemetry-collector-k8s loki
+juju integrate opentelemetry-collector-k8s prometheus
 ```
-Finally, integrate `grafana-agent-k8s` with the consumed COS offers:
+
+Finally, integrate `opentelemetry-collector-k8s` with the consumed COS offers:
 ```shell
-juju integrate grafana-agent-k8s mysql-router-k8s:grafana-dashboard
-juju integrate grafana-agent-k8s mysql-router-k8s:logging
-juju integrate grafana-agent-k8s mysql-router-k8s:metrics-endpoint
+juju integrate opentelemetry-collector-k8s mysql-router-k8s:grafana-dashboard
+juju integrate opentelemetry-collector-k8s mysql-router-k8s:logging
+juju integrate opentelemetry-collector-k8s mysql-router-k8s:metrics-endpoint
 ```
 
 After this is complete, Grafana will show the new dashboards `MySQLRouter Exporter` and allow access for Charmed MySQL Router K8s logs on Loki.
@@ -96,17 +98,17 @@ grafana 	active  k8s	   admin/cos.grafana
 loki    	active  k8s	   admin/cos.loki
 prometheus  active  k8s	   admin/cos.prometheus
 
-App            	   Version  Status  Scale  Charm           	  Channel 	  Rev  Address     	   Exposed  Message
-grafana-agent-k8s  0.35.2   active  	1  grafana-agent-k8s  stable   	   64  10.152.183.141  no  	 
-mysql-k8s      	   8.4.7    active  	1  mysql-k8s      	  8.4/stable  127  10.152.183.105  no  	 
-mysql-router-k8s   8.4.7    active  	1  mysql-router-k8s   8.4/edge	  102  10.152.183.92   no  	 
-mysql-test-app 	   0.0.2    active  	1  mysql-test-app 	  stable   	   36  10.152.183.35   no  	 
+App            	            Version  Status  Scale  Charm           	         Channel 	 Rev  Address     	  Exposed  Message
+mysql-k8s      	             8.4.7   active      1  mysql-k8s      	             8.4/stable  127  10.152.183.105  no
+mysql-router-k8s             8.4.7   active      1  mysql-router-k8s             8.4/edge	 102  10.152.183.92   no
+mysql-test-app 	             0.0.2   active      1  mysql-test-app 	             stable   	  36  10.152.183.35   no
+opentelemetry-collector-k8s          active      1  opentelemetry-collector-k8s  2/stable     64  10.152.183.141  no
 
-Unit              	  Workload  Agent  Address   	Ports  Message
-grafana-agent-k8s/0*  active	idle   10.1.241.243    	 
-mysql-k8s/0*      	  active	idle   10.1.241.239        Primary
-mysql-router-k8s/0*   active	idle   10.1.241.240    	 
-mysql-test-app/0* 	  active	idle   10.1.241.241    	 
+Unit              	            Workload  Agent  Address   	   Ports  Message
+mysql-k8s/0*      	            active	  idle   10.1.241.239         Primary
+mysql-router-k8s/0*             active	  idle   10.1.241.240
+mysql-test-app/0* 	            active	  idle   10.1.241.241
+opentelemetry-collector-k8s/0*  active	  idle   10.1.241.243
 ```
 
 An example of `juju status` on the COS K8s model:

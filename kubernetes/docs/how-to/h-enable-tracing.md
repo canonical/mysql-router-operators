@@ -8,12 +8,6 @@ To summarize:
 * [View MySQL Router K8s traces on Grafana](#heading--view)
 
 
-[note type="caution"]
-**Warning:** This is feature is in development. It is **not recommended** for production environments. 
-
-This feature is available for Charmed MySQL Router K8s revision 117+ only.
-[/note]
-
 ## Prerequisites
 Enabling tracing with Tempo requires that you:
 - Have deployed a Charmed MySQL K8s application
@@ -74,19 +68,19 @@ juju consume k8s:admin/cos.tempo
 
 <a href="#heading--consume"><h2 id="heading--consume"> Offer interfaces </h2></a>
 
-First, deploy [Grafana Agent K8s](https://charmhub.io/grafana-agent-k8s) from the `1/stable` channel:
+First, deploy the [OpenTelemetry Collector K8s](https://charmhub.io/opentelemetry-collector-k8s) charm:
 ```shell
-juju deploy grafana-agent-k8s --channel 1/stable
+juju deploy opentelemetry-collector-k8s --channel=2/stable
 ```
 
-Then, integrate Grafana Agent k8s with the consumed interface from the previous section:
+Then, integrate OpenTelemetry Collector k8s with the consumed interface from the previous section:
 ```shell
-juju integrate grafana-agent-k8s:tracing tempo:tracing
+juju integrate opentelemetry-collector-k8s:tracing tempo:tracing
 ```
 
-Finally, integrate Charmed MySQL Router K8s with Grafana Agent K8s:
+Finally, integrate Charmed MySQL Router K8s with OpenTelemetry Collector K8s:
 ```shell
-juju integrate mysql-router-k8s:tracing grafana-agent-k8s:tracing-provider
+juju integrate opentelemetry-collector-k8s:tracing-provider mysql-router-k8s:tracing
 ```
 
 Wait until the model settles. The following is an example of the `juju status --relations` on the Charmed MySQL Router K8s model:
@@ -98,31 +92,31 @@ database  k8s         microk8s/localhost  3.6.19   unsupported  18:32:28Z
 SAAS   Status  Store       URL
 tempo  active  k8s         admin/cos.tempo
 
-App                Version  Status  Scale  Charm              Channel        Rev  Address         Exposed  Message
-grafana-agent-k8s  0.40.4   active      1  grafana-agent-k8s  1/stable       115  10.152.183.141  no       grafana-dashboards-provider: off, logging-consumer: off, send-remote-write: off
-mysql-k8s          8.4.7    active      1  mysql-k8s          8.4/edge       201  10.152.183.58   no       
-mysql-router-k8s   8.4.7    active      1  mysql-router-k8s                    1  10.152.183.50   no       
-mysql-test-app     0.0.2    active      1  mysql-test-app     latest/stable   51  10.152.183.162  no       
+App                          Version  Status  Scale  Charm                        Channel        Rev  Address         Exposed  Message
+mysql-k8s                    8.4.7    active      1  mysql-k8s                    8.4/edge       201  10.152.183.58   no
+mysql-router-k8s             8.4.7    active      1  mysql-router-k8s             8.4/edge            10.152.183.50   no
+mysql-test-app               0.0.2    active      1  mysql-test-app               latest/stable   51  10.152.183.162  no
+opentelemetry-collector-k8s           active      1  opentelemetry-collector-k8s  2/stable       207  10.152.183.164  no
 
-Unit                  Workload  Agent  Address       Ports  Message
-grafana-agent-k8s/0*  active    idle   10.1.241.221         grafana-dashboards-provider: off, logging-consumer: off, send-remote-write: off
-mysql-k8s/0*          active    idle   10.1.241.213         Primary
-mysql-router-k8s/0*   active    idle   10.1.241.222         
-mysql-test-app/0*     active    idle   10.1.241.218         
+Unit                            Workload  Agent  Address       Ports  Message
+mysql-k8s/0*                    active    idle   10.1.241.213         Primary
+mysql-router-k8s/0*             active    idle   10.1.241.218
+mysql-test-app/0*               active    idle   10.1.241.222
+opentelemetry-collector-k8s/0*  active    idle   10.1.241.224
 
-Integration provider                 Requirer                             Interface              Type     Message
-grafana-agent-k8s:peers              grafana-agent-k8s:peers              grafana_agent_replica  peer     
-grafana-agent-k8s:tracing-provider   mysql-router-k8s:tracing             tracing                regular  
-mysql-k8s:database                   mysql-router-k8s:backend-database    mysql_client           regular  
-mysql-k8s:database-peers             mysql-k8s:database-peers             mysql_peers            peer     
-mysql-k8s:restart                    mysql-k8s:restart                    rolling_op             peer     
-mysql-k8s:upgrade                    mysql-k8s:upgrade                    upgrade                peer     
-mysql-router-k8s:cos                 mysql-router-k8s:cos                 cos                    peer     
-mysql-router-k8s:database            mysql-test-app:database              mysql_client           regular  
-mysql-router-k8s:mysql-router-peers  mysql-router-k8s:mysql-router-peers  mysql_router_peers     peer     
-mysql-router-k8s:upgrade-version-a   mysql-router-k8s:upgrade-version-a   upgrade                peer     
-mysql-test-app:application-peers     mysql-test-app:application-peers     application-peers      peer     
-tempo:tracing                        grafana-agent-k8s:tracing            tracing                regular  
+Integration provider                 Requirer                                    Interface           Type     Message
+opentelemetry-collector-k8s:peers    opentelemetry-collector-k8s:peers           otelcol_replica     peer
+mysql-router-k8s:tracing             opentelemetry-collector-k8s:receive-traces  tracing             regular
+mysql-k8s:database                   mysql-router-k8s:backend-database           mysql_client        regular
+mysql-k8s:database-peers             mysql-k8s:database-peers                    mysql_peers         peer
+mysql-k8s:refresh-v-three            mysql-k8s:refresh-v-three                   refresh             peer
+mysql-k8s:rolling_ops                mysql-k8s:rolling_ops                       rolling_op          peer
+mysql-router-k8s:cos                 mysql-router-k8s:cos                        cos                 peer
+mysql-router-k8s:database            mysql-test-app:database                     mysql_client        regular
+mysql-router-k8s:mysql-router-peers  mysql-router-k8s:mysql-router-peers         mysql_router_peers  peer
+mysql-router-k8s:refresh-v-three     mysql-router-k8s:refresh-v-three            refresh             peer
+mysql-test-app:application-peers     mysql-test-app:application-peers            application-peers   peer
+tempo:tracing                        opentelemetry-collector-k8s:send-traces     tracing             regular
 
 ```
 

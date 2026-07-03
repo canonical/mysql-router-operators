@@ -17,10 +17,10 @@ from ..helpers_new import (
     wait_for_apps_status,
 )
 
-GRAFANA_AGENT_APP_NAME = "grafana-agent"
 MYSQL_ROUTER_APP_NAME = "mysql-router"
 MYSQL_SERVER_APP_NAME = "mysql"
 MYSQL_TEST_APP_NAME = "mysql-test-app"
+OTEL_COLLECTOR_APP_NAME = "opentelemetry-collector"
 
 MYSQL_ROUTER_SOCKET = "/var/snap/charmed-mysql/common/run/mysqlrouter/mysql.sock"
 
@@ -61,10 +61,10 @@ def test_exporter_endpoint(juju: Juju, charm: str, ubuntu_base: str) -> None:
         num_units=1,
     )
     juju.deploy(
-        charm=GRAFANA_AGENT_APP_NAME,
-        app=GRAFANA_AGENT_APP_NAME,
+        charm=OTEL_COLLECTOR_APP_NAME,
+        app=OTEL_COLLECTOR_APP_NAME,
         base=ubuntu_base,
-        channel="1/stable",
+        channel="2/stable",
         num_units=1,
     )
 
@@ -78,8 +78,8 @@ def test_exporter_endpoint(juju: Juju, charm: str, ubuntu_base: str) -> None:
         f"{MYSQL_ROUTER_APP_NAME}:database",
     )
     juju.integrate(
-        f"{GRAFANA_AGENT_APP_NAME}:juju-info",
         f"{MYSQL_TEST_APP_NAME}:juju-info",
+        f"{OTEL_COLLECTOR_APP_NAME}:juju-info",
     )
 
     logging.info("Wait for applications to become active")
@@ -122,18 +122,18 @@ def test_exporter_endpoint(juju: Juju, charm: str, ubuntu_base: str) -> None:
     test_app_leader = get_app_leader(juju, MYSQL_TEST_APP_NAME)
     assert not check_router_metrics_endpoint(juju, MYSQL_TEST_APP_NAME, test_app_leader)
 
-    logging.info("Relating Grafana agent")
+    logging.info("Relating OTEL collector")
     juju.integrate(
-        f"{GRAFANA_AGENT_APP_NAME}:cos-agent",
         f"{MYSQL_ROUTER_APP_NAME}:cos-agent",
+        f"{OTEL_COLLECTOR_APP_NAME}:cos-agent",
     )
 
     assert check_router_metrics_endpoint(juju, MYSQL_TEST_APP_NAME, test_app_leader)
 
-    logging.info("Unrelating Grafana agent")
+    logging.info("Unrelating OTEL collector")
     juju.remove_relation(
-        f"{GRAFANA_AGENT_APP_NAME}:cos-agent",
         f"{MYSQL_ROUTER_APP_NAME}:cos-agent",
+        f"{OTEL_COLLECTOR_APP_NAME}:cos-agent",
     )
 
     # Removing the application does not immediately make the metrics endpoint unavailable.

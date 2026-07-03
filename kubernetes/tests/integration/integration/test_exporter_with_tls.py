@@ -18,10 +18,10 @@ from ..helpers_new import (
     wait_for_apps_status,
 )
 
-GRAFANA_AGENT_APP_NAME = "grafana-agent-k8s"
 MYSQL_ROUTER_APP_NAME = "mysql-router-k8s"
 MYSQL_SERVER_APP_NAME = "mysql-k8s"
 MYSQL_TEST_APP_NAME = "mysql-test-app"
+OTEL_COLLECTOR_APP_NAME = "opentelemetry-collector-k8s"
 
 if juju_.is_3_or_higher:
     TLS_APP_NAME = "self-signed-certificates"
@@ -67,11 +67,12 @@ def test_exporter_endpoint(juju: Juju, charm: str, ubuntu_base: str) -> None:
         num_units=1,
     )
     juju.deploy(
-        charm=GRAFANA_AGENT_APP_NAME,
-        app=GRAFANA_AGENT_APP_NAME,
-        base=ubuntu_base,
-        channel="1/stable",
+        charm=OTEL_COLLECTOR_APP_NAME,
+        app=OTEL_COLLECTOR_APP_NAME,
+        base="ubuntu@24.04",
+        channel="2/stable",
         num_units=1,
+        trust=True,
     )
 
     logging.info("Relating the applications")
@@ -123,26 +124,26 @@ def test_exporter_endpoint(juju: Juju, charm: str, ubuntu_base: str) -> None:
 
     assert not check_router_metrics_endpoint(juju, MYSQL_ROUTER_APP_NAME, router_app_leader)
 
-    logging.info("Relating Grafana agent")
+    logging.info("Relating OTEL collector")
     juju.integrate(
-        f"{GRAFANA_AGENT_APP_NAME}:grafana-dashboards-consumer",
         f"{MYSQL_ROUTER_APP_NAME}:grafana-dashboard",
+        f"{OTEL_COLLECTOR_APP_NAME}:grafana-dashboards-consumer",
     )
     juju.integrate(
-        f"{GRAFANA_AGENT_APP_NAME}:logging-provider",
         f"{MYSQL_ROUTER_APP_NAME}:logging",
+        f"{OTEL_COLLECTOR_APP_NAME}:receive-loki-logs",
     )
     juju.integrate(
-        f"{GRAFANA_AGENT_APP_NAME}:metrics-endpoint",
         f"{MYSQL_ROUTER_APP_NAME}:metrics-endpoint",
+        f"{OTEL_COLLECTOR_APP_NAME}:metrics-endpoint",
     )
 
     assert check_router_metrics_endpoint(juju, MYSQL_ROUTER_APP_NAME, router_app_leader)
 
-    logging.info("Unrelating Grafana agent")
+    logging.info("Unrelating OTEL collector")
     juju.remove_relation(
-        f"{GRAFANA_AGENT_APP_NAME}:metrics-endpoint",
         f"{MYSQL_ROUTER_APP_NAME}:metrics-endpoint",
+        f"{OTEL_COLLECTOR_APP_NAME}:metrics-endpoint",
     )
 
     # Removing the application does not immediately make the metrics endpoint unavailable.

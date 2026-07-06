@@ -1,6 +1,6 @@
-summary: test_upgrade_new.py
+summary: test_upgrade.py
 environment:
-  TEST_MODULE: test_upgrade_new.py
+  TEST_MODULE: test_upgrade.py
 execute: |
   tox run -e integration -- "tests/integration/integration/$TEST_MODULE" --alluredir="$SPREAD_TASK/allure-results"
 artifacts:

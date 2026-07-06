@@ -107,7 +107,7 @@ def test_external_connectivity_with_ha_cluster(juju: Juju, charm: str, ubuntu_ba
     logging.info("Ensure the database is accessible externally")
     assert TEST_DATABASE_NAME in databases
 
-    logging.info("Ensure provided host in a data-integrator ip")
+    logging.info("Ensure provided host in a data-integrator IP")
     assert mysql_host in [
         get_unit_machine_address(juju, DATA_INTEGRATOR_APP_NAME, unit)
         for unit in get_app_units(juju, DATA_INTEGRATOR_APP_NAME)
@@ -140,6 +140,11 @@ def test_external_connectivity_with_ha_cluster(juju: Juju, charm: str, ubuntu_ba
         app=MYSQL_ROUTER_APP_NAME,
         values={"vip": MYSQL_ROUTER_VIP},
     )
+    juju.wait(
+        ready=wait_for_apps_status(jubilant_backports.all_active),
+        timeout=10 * MINUTE_SECS,
+        delay=5.0,
+    )
 
     logging.info("Ensuring MySQL Server is accessible via VIP")
     check_server_accessible_virtual_ip(juju, MYSQL_ROUTER_VIP)
@@ -151,6 +156,11 @@ def test_external_connectivity_with_ha_cluster(juju: Juju, charm: str, ubuntu_ba
         app=MYSQL_ROUTER_APP_NAME,
         values={"vip": MYSQL_ROUTER_VIP},
     )
+    juju.wait(
+        ready=wait_for_apps_status(jubilant_backports.all_active),
+        timeout=10 * MINUTE_SECS,
+        delay=5.0,
+    )
 
     logging.info("Ensuring MySQL Server is accessible via VIP")
     check_server_accessible_virtual_ip(juju, MYSQL_ROUTER_VIP)
@@ -158,26 +168,31 @@ def test_external_connectivity_with_ha_cluster(juju: Juju, charm: str, ubuntu_ba
 
 def test_ha_cluster_failover(juju: Juju, ubuntu_base: str) -> None:
     """Test the failover of the ha-cluster leader."""
-    ha_cluster_leader = get_app_leader(juju, HA_CLUSTER_APP_NAME)
-    ha_cluster_address = get_unit_machine_address(juju, HA_CLUSTER_APP_NAME, ha_cluster_leader)
+    data_integrator_leader = get_app_leader(juju, DATA_INTEGRATOR_APP_NAME)
+    data_integrator_units = get_app_units(juju, DATA_INTEGRATOR_APP_NAME)
+    data_integrator_units.remove(data_integrator_leader)
 
-    logging.info("Stopping HACluster LXC container")
-    subprocess.check_call(["lxc", "stop", ha_cluster_address])
+    machine_id = get_unit_machine_id(juju, DATA_INTEGRATOR_APP_NAME, data_integrator_units[0])
+
+    logging.info("Stopping LXC container")
+    subprocess.check_call(["lxc", "stop", machine_id])
 
     logging.info("Waiting till machine is stopped")
     juju.wait(
-        ready=lambda status: status.model.model_status.current == "unknown",
+        ready=wait_for_unit_status(DATA_INTEGRATOR_APP_NAME, data_integrator_units[0], "unknown"),
         timeout=10 * MINUTE_SECS,
         successes=1,
     )
 
     global MYSQL_ROUTER_VIP
+    if not MYSQL_ROUTER_VIP:
+        raise ValueError("MySQL Router VIP is not configured")
 
     logging.info("Ensuring MySQL Server is accessible via VIP")
     check_server_accessible_virtual_ip(juju, MYSQL_ROUTER_VIP)
 
-    logging.info("Starting HACluster LXC container")
-    subprocess.check_call(["lxc", "start", ha_cluster_address])
+    logging.info("Starting LXC container")
+    subprocess.check_call(["lxc", "start", machine_id])
 
     logging.info("Waiting till machine is stopped")
     juju.wait(
@@ -217,6 +232,8 @@ def test_router_certificates(juju: Juju) -> None:
     )
 
     global MYSQL_ROUTER_VIP
+    if not MYSQL_ROUTER_VIP:
+        raise ValueError("MySQL Router VIP is not configured")
 
     logging.info("Ensuring MySQL Server is accessible via VIP")
     check_server_accessible_virtual_ip(juju, MYSQL_ROUTER_VIP)
@@ -353,9 +370,18 @@ def generate_next_available_ip(juju: Juju, starting_ip: str, exclude_ips: list[s
 
 
 def get_unit_machine_address(juju: Juju, app_name: str, unit_name: str) -> str:
-    """Get the machine name for the given unit."""
+    """Get the machine address for the given unit."""
     status = juju.status()
     machine_id = status.apps[app_name].units[unit_name].machine
     machine_ips = status.machines[machine_id].ip_addresses
 
     return machine_ips[0]
+
+
+def get_unit_machine_id(juju: Juju, app_name: str, unit_name: str) -> str:
+    """Get the machine name for the given unit."""
+    status = juju.status()
+    machine_id = status.apps[app_name].units[unit_name].machine
+    machine_id = status.machines[machine_id].instance_id
+
+    return machine_id

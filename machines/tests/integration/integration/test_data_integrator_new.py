@@ -109,20 +109,22 @@ def test_data_integrator_connectivity_with_tls(juju: Juju, charm: str, ubuntu_ba
 
     mysql_user = data_integrator_creds.results["mysql"]["username"]
     mysql_pass = data_integrator_creds.results["mysql"]["password"]
-    mysql_addr = data_integrator_creds.results["mysql"]["endpoints"].split(",")[0]
+    mysql_host = data_integrator_creds.results["mysql"]["endpoints"].split(",")[0].split(":")[0]
+    mysql_port = data_integrator_creds.results["mysql"]["endpoints"].split(",")[0].split(":")[1]
 
     logging.info("Ensuring no data exists in the test database")
     tables = execute_queries_against_unit(
         username=mysql_user,
         password=mysql_pass,
-        host=mysql_addr.split(":")[0],
-        port=mysql_addr.split(":")[1],
+        host=mysql_host,
+        port=mysql_port,
         queries=[f"SHOW TABLES IN {TEST_DATABASE_NAME};"],
     )
     assert len(tables) == 0
 
+    router_address = f"{mysql_host}:{mysql_port}"
     router_leader = get_app_leader(juju, MYSQL_ROUTER_APP_NAME)
-    router_issuer = get_unit_certificate_issuer(juju, router_leader, address=mysql_addr)
+    router_issuer = get_unit_certificate_issuer(juju, router_leader, address=router_address)
     assert "CN=MySQL_Router_Auto_Generated_CA_Certificate" in router_issuer
 
     logging.info("Relating TLS application")
@@ -138,14 +140,14 @@ def test_data_integrator_connectivity_with_tls(juju: Juju, charm: str, ubuntu_ba
     ):
         with attempt:
             assert "CN=Test CA" in (
-                get_unit_certificate_issuer(juju, router_leader, address=mysql_addr)
+                get_unit_certificate_issuer(juju, router_leader, address=router_address)
             )
 
-    _ = execute_queries_against_unit(
+    execute_queries_against_unit(
         username=mysql_user,
         password=mysql_pass,
-        host=mysql_addr.split(":")[0],
-        port=mysql_addr.split(":")[1],
+        host=mysql_host,
+        port=mysql_port,
         queries=[
             f"CREATE TABLE {TEST_DATABASE_NAME}.{TEST_TABLE_NAME} (id int, primary key(id));",
             f"INSERT INTO {TEST_DATABASE_NAME}.{TEST_TABLE_NAME} VALUES (1), (2);",
@@ -156,8 +158,8 @@ def test_data_integrator_connectivity_with_tls(juju: Juju, charm: str, ubuntu_ba
     data = execute_queries_against_unit(
         username=mysql_user,
         password=mysql_pass,
-        host=mysql_addr.split(":")[0],
-        port=mysql_addr.split(":")[1],
+        host=mysql_host,
+        port=mysql_port,
         queries=[f"SELECT * FROM {TEST_DATABASE_NAME}.{TEST_TABLE_NAME};"],
     )
     assert data == [1, 2]
@@ -175,14 +177,14 @@ def test_data_integrator_connectivity_with_tls(juju: Juju, charm: str, ubuntu_ba
     ):
         with attempt:
             assert "CN=MySQL_Router_Auto_Generated_CA_Certificate" in (
-                get_unit_certificate_issuer(juju, router_leader, address=mysql_addr)
+                get_unit_certificate_issuer(juju, router_leader, address=router_address)
             )
 
     data = execute_queries_against_unit(
         username=mysql_user,
         password=mysql_pass,
-        host=mysql_addr.split(":")[0],
-        port=mysql_addr.split(":")[1],
+        host=mysql_host,
+        port=mysql_port,
         queries=[f"SELECT * FROM {TEST_DATABASE_NAME}.{TEST_TABLE_NAME};"],
     )
     assert data == [1, 2]

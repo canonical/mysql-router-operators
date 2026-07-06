@@ -1,226 +1,198 @@
-#!/usr/bin/env python3
 # Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-import asyncio
 import logging
-import time
-from pathlib import Path
 
-import pytest
-import tenacity
-import yaml
-from pytest_operator.plugin import OpsTest
+import jubilant
+from jubilant import Juju
+from tenacity import Retrying, stop_after_delay, wait_fixed
 
-from ..helpers import (
-    APPLICATION_DEFAULT_APP_NAME,
-    MYSQL_DEFAULT_APP_NAME,
-    MYSQL_ROUTER_DEFAULT_APP_NAME,
-    get_credentials,
-    is_connection_possible,
+from ..helpers import is_connection_possible
+from ..helpers_new import (
+    METADATA,
+    MINUTE_SECS,
+    get_app_leader,
+    update_interval,
+    wait_for_apps_status,
 )
 
-logger = logging.getLogger(__name__)
+DATA_INTEGRATOR_APP_NAME = "data-integrator"
+MYSQL_ROUTER_APP_NAME = "mysql-router-k8s"
+MYSQL_SERVER_APP_NAME = "mysql-k8s"
+MYSQL_TEST_APP_NAME = "mysql-test-app"
 
-METADATA = yaml.safe_load(Path("./metadata.yaml").read_text())
-
-MYSQL_APP_NAME = MYSQL_DEFAULT_APP_NAME
-MYSQL_ROUTER_APP_NAME = MYSQL_ROUTER_DEFAULT_APP_NAME
-APPLICATION_APP_NAME = APPLICATION_DEFAULT_APP_NAME
-DATA_INTEGRATOR = "data-integrator"
 TLS_APP_NAME = "self-signed-certificates"
 
-SLOW_TIMEOUT = 15 * 60
-TLS_SETUP_SLEEP_TIME = 30
-TEST_DATABASE_NAME = "testdatabase"
-MODEL_CONFIG = {"logging-config": "<root>=INFO;unit=DEBUG"}
+TEST_DATABASE_NAME = "test_database"
 
 
-async def confirm_cluster_ip_endpoints(ops_test: OpsTest) -> None:
-    """Helper function to test the cluster ip endpoints"""
-    for attempt in tenacity.Retrying(
-        reraise=True,
-        stop=tenacity.stop_after_delay(SLOW_TIMEOUT),
-        wait=tenacity.wait_fixed(10),
-    ):
-        with attempt:
-            data_integrator_unit = ops_test.model.applications[DATA_INTEGRATOR].units[0]
-            credentials = await get_credentials(data_integrator_unit)
+def test_expose_external(juju: Juju, charm: str) -> None:
+    """Test the expose-external config option."""
+    router_resources = {
+        "mysql-router-image": METADATA["resources"]["mysql-router-image"]["upstream-source"]
+    }
 
-    assert credentials["mysql"]["database"] == TEST_DATABASE_NAME, "Database is empty"
-    assert credentials["mysql"]["username"] is not None, "Username is empty"
-    assert credentials["mysql"]["password"] is not None, "Password is empty"
-
-    endpoint_name = f"mysql-router-k8s-service.{ops_test.model.name}.svc.cluster.local."
-    assert credentials["mysql"]["endpoints"] == f"{endpoint_name}:6446", "Endpoint is unexpected"
-    assert credentials["mysql"]["read-only-endpoints"] == f"{endpoint_name}:6447", (
-        "Read-only endpoint is unexpected"
+    logging.info("Deploying all the applications")
+    juju.deploy(
+        charm=MYSQL_SERVER_APP_NAME,
+        app=MYSQL_SERVER_APP_NAME,
+        base="ubuntu@26.04",
+        channel="8.4/edge",
+        config={"profile": "testing"},
+        num_units=1,
+        trust=True,
+    )
+    juju.deploy(
+        charm=charm,
+        app=MYSQL_ROUTER_APP_NAME,
+        base="ubuntu@26.04",
+        resources=router_resources,
+        num_units=1,
+        trust=True,
+    )
+    juju.deploy(
+        charm=DATA_INTEGRATOR_APP_NAME,
+        app=DATA_INTEGRATOR_APP_NAME,
+        base="ubuntu@24.04",
+        channel="latest/stable",
+        config={"database-name": TEST_DATABASE_NAME},
+        num_units=1,
     )
 
+    logging.info("Relating the applications")
+    juju.integrate(
+        f"{MYSQL_SERVER_APP_NAME}:database",
+        f"{MYSQL_ROUTER_APP_NAME}:backend-database",
+    )
+    juju.integrate(
+        f"{DATA_INTEGRATOR_APP_NAME}:mysql",
+        f"{MYSQL_ROUTER_APP_NAME}:database",
+    )
 
-async def confirm_endpoint_connectivity(ops_test: OpsTest) -> None:
-    """Helper to confirm endpoint connectivity"""
-    for attempt in tenacity.Retrying(
+    logging.info("Wait for applications to become active")
+    juju.wait(
+        ready=wait_for_apps_status(jubilant.all_active),
+        timeout=20 * MINUTE_SECS,
+        delay=5.0,
+    )
+
+    with update_interval(juju, "60s"):
+        check_connectivity(juju)
+
+
+def test_expose_external_with_tls(juju: Juju) -> None:
+    """Test endpoints when mysql-router-k8s is related to a TLS operator."""
+    logging.info("Deploying TLS application")
+    juju.deploy(
+        charm=TLS_APP_NAME,
+        app=TLS_APP_NAME,
+        base="ubuntu@24.04",
+        channel="1/stable",
+        config={"ca-common-name": "Test CA"},
+        num_units=1,
+    )
+    juju.wait(
+        ready=wait_for_apps_status(jubilant.all_active, TLS_APP_NAME),
+        timeout=20 * MINUTE_SECS,
+    )
+
+    logging.info("Relating TLS application")
+    juju.integrate(
+        f"{MYSQL_ROUTER_APP_NAME}:certificates",
+        f"{TLS_APP_NAME}:certificates",
+    )
+
+    with update_interval(juju, "60s"):
+        check_connectivity(juju)
+
+
+def check_cluster_ip_endpoints(juju: Juju) -> None:
+    """Helper function to check the cluster ip endpoints"""
+    data_integrator_leader = get_app_leader(juju, DATA_INTEGRATOR_APP_NAME)
+
+    for attempt in Retrying(
+        stop=stop_after_delay(10 * MINUTE_SECS),
+        wait=wait_fixed(10),
         reraise=True,
-        stop=tenacity.stop_after_delay(SLOW_TIMEOUT),
-        wait=tenacity.wait_fixed(10),
     ):
         with attempt:
-            data_integrator_unit = ops_test.model.applications[DATA_INTEGRATOR].units[0]
-            credentials = await get_credentials(data_integrator_unit)
-            assert credentials["mysql"]["endpoints"] is not None, "Endpoints missing"
+            credentials_task = juju.run(
+                unit=data_integrator_leader,
+                action="get-credentials",
+            )
+
+    mysql_credentials = credentials_task.results["mysql"]
+    assert mysql_credentials["database"] == TEST_DATABASE_NAME
+    assert mysql_credentials["username"] is not None
+    assert mysql_credentials["password"] is not None
+
+    endpoint_name = f"mysql-router-k8s-service.{juju.model}.svc.cluster.local."
+    assert mysql_credentials["endpoints"] == f"{endpoint_name}:6446"
+    assert mysql_credentials["read-only-endpoints"] == f"{endpoint_name}:6447"
+
+
+def check_endpoint_connectivity(juju: Juju) -> None:
+    """Helper function to check endpoint connectivity"""
+    data_integrator_leader = get_app_leader(juju, DATA_INTEGRATOR_APP_NAME)
+
+    for attempt in Retrying(
+        stop=stop_after_delay(10 * MINUTE_SECS),
+        wait=wait_fixed(10),
+        reraise=True,
+    ):
+        with attempt:
+            credentials_task = juju.run(
+                unit=data_integrator_leader,
+                action="get-credentials",
+            )
+
+            mysql_credentials = credentials_task.results["mysql"]
 
             connection_config = {
-                "username": credentials["mysql"]["username"],
-                "password": credentials["mysql"]["password"],
-                "host": credentials["mysql"]["endpoints"].split(",")[0].split(":")[0],
-            }
-
-            extra_connection_options = {
-                "port": credentials["mysql"]["endpoints"].split(":")[1],
+                "username": mysql_credentials["username"],
+                "password": mysql_credentials["password"],
+                "host": mysql_credentials["endpoints"].split(",")[0].split(":")[0],
+                "port": mysql_credentials["endpoints"].split(",")[0].split(":")[1],
                 "ssl_disabled": False,
             }
 
-            assert is_connection_possible(connection_config, **extra_connection_options), (
-                "Connection not possible through endpoints"
-            )
+            assert is_connection_possible(connection_config, **{"ssl_disabled": False})
 
 
-@pytest.mark.abort_on_fail
-async def test_expose_external(ops_test, charm) -> None:
-    """Test the expose-external config option."""
-    await ops_test.model.set_config(MODEL_CONFIG)
-
-    resource_args = [
-        f"--resource=mysql-router-image={METADATA['resources']['mysql-router-image']['upstream-source']}",
-    ]
-
-    logger.info("Deploying mysql-k8s, mysql-router-k8s and data-integrator")
-    await asyncio.gather(
-        ops_test.juju(
-            "deploy",
-            MYSQL_APP_NAME,
-            MYSQL_APP_NAME,
-            "--channel=8.4/edge",
-            "--config=profile=testing",
-            "--base=ubuntu@24.04",
-            "--num-units=1",
-            "--trust",
-        ),
-        ops_test.juju(
-            "deploy",
-            charm,
-            MYSQL_ROUTER_APP_NAME,
-            *resource_args,
-            "--base=ubuntu@26.04",
-            "--num-units=1",
-            "--trust",
-        ),
-        ops_test.juju(
-            "deploy",
-            DATA_INTEGRATOR,
-            DATA_INTEGRATOR,
-            "--channel=latest/edge",
-            "--base=ubuntu@24.04",
-            f"--config=database-name={TEST_DATABASE_NAME}",
-            "--num-units=1",
-        ),
+def check_connectivity(juju: Juju) -> None:
+    """Helper function to check connectivity"""
+    juju.config(
+        app=MYSQL_ROUTER_APP_NAME,
+        values={"expose-external": "false"},
+    )
+    juju.wait(
+        ready=wait_for_apps_status(jubilant.all_active, MYSQL_ROUTER_APP_NAME),
+        timeout=10 * MINUTE_SECS,
     )
 
-    logger.info("Relating mysql-k8s, mysql-router-k8s and data-integrator")
-    async with ops_test.fast_forward("60s"):
-        await ops_test.model.relate(
-            f"{MYSQL_APP_NAME}:database", f"{MYSQL_ROUTER_APP_NAME}:backend-database"
-        )
-        await ops_test.model.relate(
-            f"{MYSQL_ROUTER_APP_NAME}:database", f"{DATA_INTEGRATOR}:mysql"
-        )
+    logging.info("Testing endpoint when expose-external=false (default)")
+    check_cluster_ip_endpoints(juju)
 
-        await ops_test.model.wait_for_idle(
-            apps=[MYSQL_APP_NAME, MYSQL_ROUTER_APP_NAME, DATA_INTEGRATOR],
-            status="active",
-            timeout=SLOW_TIMEOUT,
-        )
-
-        logger.info("Testing endpoint when expose-external=false (default)")
-        await confirm_cluster_ip_endpoints(ops_test)
-
-        logger.info("Testing endpoint when expose-external=nodeport")
-        mysql_router_application = ops_test.model.applications[MYSQL_ROUTER_APP_NAME]
-
-        await mysql_router_application.set_config({"expose-external": "nodeport"})
-        await ops_test.model.wait_for_idle(
-            apps=[MYSQL_ROUTER_APP_NAME],
-            status="active",
-            timeout=SLOW_TIMEOUT,
-        )
-
-        await confirm_endpoint_connectivity(ops_test)
-
-        logger.info("Testing endpoint when expose-external=loadbalancer")
-        await mysql_router_application.set_config({"expose-external": "loadbalancer"})
-        await ops_test.model.wait_for_idle(
-            apps=[MYSQL_ROUTER_APP_NAME],
-            status="active",
-            timeout=SLOW_TIMEOUT,
-        )
-
-        await confirm_endpoint_connectivity(ops_test)
-
-
-@pytest.mark.abort_on_fail
-async def test_expose_external_with_tls(ops_test: OpsTest) -> None:
-    """Test endpoints when mysql-router-k8s is related to a TLS operator."""
-    mysql_router_application = ops_test.model.applications[MYSQL_ROUTER_APP_NAME]
-
-    logger.info("Resetting expose-external=false")
-    await mysql_router_application.set_config({"expose-external": "false"})
-    await ops_test.model.wait_for_idle(
-        apps=[MYSQL_ROUTER_APP_NAME],
-        status="active",
-        timeout=SLOW_TIMEOUT,
+    juju.config(
+        app=MYSQL_ROUTER_APP_NAME,
+        values={"expose-external": "nodeport"},
+    )
+    juju.wait(
+        ready=wait_for_apps_status(jubilant.all_active, MYSQL_ROUTER_APP_NAME),
+        timeout=10 * MINUTE_SECS,
     )
 
-    logger.info("Deploying TLS operator")
-    await ops_test.juju(
-        "deploy",
-        TLS_APP_NAME,
-        TLS_APP_NAME,
-        "--channel=1/stable",
-        "--config=ca-common-name=Test CA",
-        "--base=ubuntu@24.04",
+    logging.info("Testing endpoint when expose-external=nodeport")
+    check_endpoint_connectivity(juju)
+
+    juju.config(
+        app=MYSQL_ROUTER_APP_NAME,
+        values={"expose-external": "loadbalancer"},
     )
-    async with ops_test.fast_forward("60s"):
-        await ops_test.model.wait_for_idle(
-            apps=[TLS_APP_NAME],
-            status="active",
-            timeout=SLOW_TIMEOUT,
-        )
+    juju.wait(
+        ready=wait_for_apps_status(jubilant.all_active, MYSQL_ROUTER_APP_NAME),
+        timeout=10 * MINUTE_SECS,
+    )
 
-        logger.info("Relate mysql-router-k8s with TLS operator")
-        await ops_test.model.relate(MYSQL_ROUTER_APP_NAME, TLS_APP_NAME)
-
-        time.sleep(TLS_SETUP_SLEEP_TIME)
-
-        logger.info("Testing endpoint when expose-external=false(default)")
-        await confirm_cluster_ip_endpoints(ops_test)
-
-        logger.info("Testing endpoint when expose-external=nodeport")
-        await mysql_router_application.set_config({"expose-external": "nodeport"})
-        await ops_test.model.wait_for_idle(
-            apps=[MYSQL_ROUTER_APP_NAME],
-            status="active",
-            timeout=SLOW_TIMEOUT,
-        )
-
-        await confirm_endpoint_connectivity(ops_test)
-
-        logger.info("Testing endpoint when expose-external=loadbalancer")
-        await mysql_router_application.set_config({"expose-external": "loadbalancer"})
-        await ops_test.model.wait_for_idle(
-            apps=[MYSQL_ROUTER_APP_NAME],
-            status="active",
-            timeout=SLOW_TIMEOUT,
-        )
-
-        await confirm_endpoint_connectivity(ops_test)
+    logging.info("Testing endpoint when expose-external=loadbalancer")
+    check_endpoint_connectivity(juju)

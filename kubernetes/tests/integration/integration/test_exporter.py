@@ -1,162 +1,114 @@
-#!/usr/bin/env python3
 # Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-import asyncio
 import logging
-from pathlib import Path
+import time
 
-import pytest
-import requests
-import tenacity
-import yaml
-from pytest_operator.plugin import OpsTest
+import jubilant
+from jubilant import Juju
 
-from ..helpers import (
-    APPLICATION_DEFAULT_APP_NAME,
-    MYSQL_DEFAULT_APP_NAME,
-    MYSQL_ROUTER_DEFAULT_APP_NAME,
-    get_unit_address,
+from ..helpers_new import (
+    METADATA,
+    MINUTE_SECS,
+    check_router_metrics_endpoint,
+    get_app_leader,
+    wait_for_apps_status,
 )
 
-logger = logging.getLogger(__name__)
-
-METADATA = yaml.safe_load(Path("./metadata.yaml").read_text())
-
-MYSQL_APP_NAME = MYSQL_DEFAULT_APP_NAME
-MYSQL_ROUTER_APP_NAME = MYSQL_ROUTER_DEFAULT_APP_NAME
-APPLICATION_APP_NAME = APPLICATION_DEFAULT_APP_NAME
 GRAFANA_AGENT_APP_NAME = "grafana-agent-k8s"
-SLOW_TIMEOUT = 25 * 60
-RETRY_TIMEOUT = 3 * 60
+MYSQL_ROUTER_APP_NAME = "mysql-router-k8s"
+MYSQL_SERVER_APP_NAME = "mysql-k8s"
+MYSQL_TEST_APP_NAME = "mysql-test-app"
 
 
-@pytest.mark.abort_on_fail
-async def test_exporter_endpoint(ops_test: OpsTest, charm) -> None:
+def test_exporter_endpoint(juju: Juju, charm: str) -> None:
     """Test that exporter endpoint is functional."""
-    resource_args = [
-        f"--resource=mysql-router-image={METADATA['resources']['mysql-router-image']['upstream-source']}",
-    ]
+    router_resources = {
+        "mysql-router-image": METADATA["resources"]["mysql-router-image"]["upstream-source"]
+    }
 
-    logger.info("Deploying all the applications")
-    await asyncio.gather(
-        ops_test.juju(
-            "deploy",
-            MYSQL_APP_NAME,
-            MYSQL_APP_NAME,
-            "--channel=8.4/edge",
-            "--config=profile=testing",
-            "--base=ubuntu@24.04",
-            "--num-units=1",
-            "--trust",
-        ),
-        ops_test.juju(
-            "deploy",
-            charm,
-            MYSQL_ROUTER_APP_NAME,
-            *resource_args,
-            "--base=ubuntu@26.04",
-            "--num-units=1",
-            "--trust",
-        ),
-        ops_test.juju(
-            "deploy",
-            APPLICATION_APP_NAME,
-            APPLICATION_APP_NAME,
-            "--channel=latest/edge",
-            "--base=ubuntu@26.04",
-            "--num-units=1",
-        ),
-        ops_test.juju(
-            "deploy",
-            GRAFANA_AGENT_APP_NAME,
-            GRAFANA_AGENT_APP_NAME,
-            "--channel=1/stable",
-            "--base=ubuntu@22.04",
-            "--num-units=1",
-        ),
+    logging.info("Deploying all the applications")
+    juju.deploy(
+        charm=MYSQL_SERVER_APP_NAME,
+        app=MYSQL_SERVER_APP_NAME,
+        base="ubuntu@26.04",
+        channel="8.4/edge",
+        config={"profile": "testing"},
+        num_units=1,
+        trust=True,
+    )
+    juju.deploy(
+        charm=charm,
+        app=MYSQL_ROUTER_APP_NAME,
+        base="ubuntu@26.04",
+        resources=router_resources,
+        num_units=1,
+        trust=True,
+    )
+    juju.deploy(
+        charm=MYSQL_TEST_APP_NAME,
+        app=MYSQL_TEST_APP_NAME,
+        base="ubuntu@26.04",
+        channel="latest/edge",
+        num_units=1,
+    )
+    juju.deploy(
+        charm=GRAFANA_AGENT_APP_NAME,
+        app=GRAFANA_AGENT_APP_NAME,
+        base="ubuntu@22.04",
+        channel="1/stable",
+        num_units=1,
     )
 
-    mysqlrouter_app = ops_test.model.applications[MYSQL_ROUTER_APP_NAME]
+    logging.info("Relating the applications")
+    juju.integrate(
+        f"{MYSQL_SERVER_APP_NAME}:database",
+        f"{MYSQL_ROUTER_APP_NAME}:backend-database",
+    )
+    juju.integrate(
+        f"{MYSQL_TEST_APP_NAME}:database",
+        f"{MYSQL_ROUTER_APP_NAME}:database",
+    )
 
-    async with ops_test.fast_forward("60s"):
-        logger.info("Waiting for mysqlrouter to be in BlockedStatus")
-        await ops_test.model.block_until(
-            lambda: mysqlrouter_app.status == "blocked",
-            timeout=SLOW_TIMEOUT,
-        )
+    logging.info("Wait for applications to become active")
+    juju.wait(
+        ready=wait_for_apps_status(
+            jubilant.all_active,
+            MYSQL_ROUTER_APP_NAME,
+            MYSQL_SERVER_APP_NAME,
+            MYSQL_TEST_APP_NAME,
+        ),
+        timeout=20 * MINUTE_SECS,
+        delay=5.0,
+    )
 
-        logger.info("Relating mysql, mysqlrouter and application")
-        await ops_test.model.relate(
-            f"{MYSQL_ROUTER_APP_NAME}:backend-database", f"{MYSQL_APP_NAME}:database"
-        )
-        await ops_test.model.relate(
-            f"{APPLICATION_APP_NAME}:database", f"{MYSQL_ROUTER_APP_NAME}:database"
-        )
+    router_app_leader = get_app_leader(juju, MYSQL_ROUTER_APP_NAME)
+    assert not check_router_metrics_endpoint(juju, MYSQL_ROUTER_APP_NAME, router_app_leader)
 
-        await ops_test.model.wait_for_idle(
-            apps=[MYSQL_ROUTER_APP_NAME], status="active", timeout=SLOW_TIMEOUT
-        )
-
-        await ops_test.model.wait_for_idle(
-            apps=[MYSQL_APP_NAME, MYSQL_ROUTER_APP_NAME, APPLICATION_APP_NAME],
-            status="active",
-            raise_on_blocked=True,
-            timeout=SLOW_TIMEOUT,
-        )
-
-    unit = mysqlrouter_app.units[0]
-    unit_address = await get_unit_address(ops_test, unit.name)
-
-    try:
-        requests.get(f"http://{unit_address}:9152/metrics", stream=False)
-    except requests.exceptions.ConnectionError as e:
-        assert "[Errno 111] Connection refused" in str(e), "❌ expected connection refused error"
-    else:
-        assert False, "❌ can connect to metrics endpoint without relation with cos"
-
-    logger.info("Relating mysqlrouter with grafana agent")
-    await ops_test.model.relate(
+    logging.info("Relating Grafana agent")
+    juju.integrate(
         f"{GRAFANA_AGENT_APP_NAME}:grafana-dashboards-consumer",
         f"{MYSQL_ROUTER_APP_NAME}:grafana-dashboard",
     )
-    await ops_test.model.relate(
-        f"{GRAFANA_AGENT_APP_NAME}:logging-provider", f"{MYSQL_ROUTER_APP_NAME}:logging"
+    juju.integrate(
+        f"{GRAFANA_AGENT_APP_NAME}:logging-provider",
+        f"{MYSQL_ROUTER_APP_NAME}:logging",
+    )
+    juju.integrate(
+        f"{GRAFANA_AGENT_APP_NAME}:metrics-endpoint",
+        f"{MYSQL_ROUTER_APP_NAME}:metrics-endpoint",
     )
 
-    await ops_test.model.relate(
-        f"{GRAFANA_AGENT_APP_NAME}:metrics-endpoint", f"{MYSQL_ROUTER_APP_NAME}:metrics-endpoint"
+    assert check_router_metrics_endpoint(juju, MYSQL_ROUTER_APP_NAME, router_app_leader)
+
+    logging.info("Unrelating Grafana agent")
+    juju.remove_relation(
+        f"{GRAFANA_AGENT_APP_NAME}:metrics-endpoint",
+        f"{MYSQL_ROUTER_APP_NAME}:metrics-endpoint",
     )
 
-    for attempt in tenacity.Retrying(
-        reraise=True,
-        stop=tenacity.stop_after_delay(RETRY_TIMEOUT),
-        wait=tenacity.wait_fixed(10),
-    ):
-        with attempt:
-            response = requests.get(f"http://{unit_address}:9152/metrics", stream=False)
-            response.raise_for_status()
-            assert "mysqlrouter_route_health" in response.text, (
-                "❌ did not find expected metric in response"
-            )
-            response.close()
+    # Removing the application does not immediately make the metrics endpoint unavailable.
+    # We should wait a few seconds for that to happen.
+    time.sleep(30)
 
-    logger.info("Removing relation between mysqlrouter and grafana agent")
-    await mysqlrouter_app.remove_relation(
-        f"{GRAFANA_AGENT_APP_NAME}:metrics-endpoint", f"{MYSQL_ROUTER_APP_NAME}:metrics-endpoint"
-    )
-
-    for attempt in tenacity.Retrying(
-        reraise=True,
-        stop=tenacity.stop_after_delay(RETRY_TIMEOUT),
-        wait=tenacity.wait_fixed(10),
-    ):
-        with attempt:
-            try:
-                requests.get(f"http://{unit_address}:9152/metrics", stream=False)
-            except requests.exceptions.ConnectionError as e:
-                assert "[Errno 111] Connection refused" in str(e), (
-                    "❌ expected connection refused error"
-                )
-            else:
-                assert False, "❌ can connect to metrics endpoint without relation with cos"
+    assert not check_router_metrics_endpoint(juju, MYSQL_ROUTER_APP_NAME, router_app_leader)

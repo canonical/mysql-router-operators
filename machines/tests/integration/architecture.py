@@ -3,7 +3,9 @@
 
 import subprocess
 
-architecture = subprocess.check_output(
+architecture = subprocess.run(
     ["dpkg", "--print-architecture"],
+    capture_output=True,
+    check=True,
     text=True,
-).strip()
+).stdout.strip()

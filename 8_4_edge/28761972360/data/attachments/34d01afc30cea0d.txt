@@ -1,0 +1,102 @@
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[32mINFO    [0m pytest_operator.plugin:plugin.py:806 Connecting to existing model concierge-k8s:testing on unspecified cloud
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHSession received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHTunneler received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SecretsRevoker received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:858 unexpected facade SSHServer received from the controller
+[32mINFO    [0m integration.integration.test_log_rotation:test_log_rotation.py:46 Deploying mysql, mysqlrouter and application
+[32mINFO    [0m integration.integration.test_log_rotation:test_log_rotation.py:82 Waiting for mysqlrouter to be in BlockedStatus
+[32mINFO    [0m integration.integration.test_log_rotation:test_log_rotation.py:88 Relating mysql, mysqlrouter and application
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[33mWARNING [0m juju.model:__init__.py:1683 relate is deprecated and will be removed. Use integrate instead.
+[32mINFO    [0m integration.integration.test_log_rotation:test_log_rotation.py:109 Stopping the logrotate executor pebble service
+[32mINFO    [0m integration.integration.test_log_rotation:test_log_rotation.py:112 Stopping any running logrotate jobs
+[32mINFO    [0m integration.integration.test_log_rotation:test_log_rotation.py:115 Removing existing archive directory
+[32mINFO    [0m integration.integration.test_log_rotation:test_log_rotation.py:122 Writing some data mysqlrouter log file
+[32mINFO    [0m integration.integration.test_log_rotation:test_log_rotation.py:126 Ensuring only log files exist
+[32mINFO    [0m integration.integration.test_log_rotation:test_log_rotation.py:135 Executing logrotate
+[32mINFO    [0m integration.integration.test_log_rotation:test_log_rotation.py:138 Ensuring log files and archive directories exist
+[32mINFO    [0m integration.integration.test_log_rotation:test_log_rotation.py:150 Ensuring log files was rotated
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller     Cloud/Region  Version  SLA          Timestamp
+testing  concierge-k8s  k8s           3.6.25   unsupported  02:19:59Z
+
+App               Version  Status  Scale  Charm             Channel      Rev  Address         Exposed  Message
+mysql-k8s         8.4      active      3  mysql-k8s         8.4/edge     417  10.152.183.25   no       Healthy
+mysql-router-k8s  8.4.8    active      1  mysql-router-k8s                 0  10.152.183.39   no       
+mysql-test-app    0.0.2    active      1  mysql-test-app    latest/edge  154  10.152.183.153  no       Last written value=447
+
+Unit                 Workload  Agent  Address    Ports  Message
+mysql-k8s/0          active    idle   10.1.0.90         
+mysql-k8s/1*         active    idle   10.1.0.87         Primary
+mysql-k8s/2          active    idle   10.1.0.20         
+mysql-router-k8s/0*  active    idle   10.1.0.29         
+mysql-test-app/0*    active    idle   10.1.0.49         Last written value=447
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+unit-mysql-k8s-1: 02:16:03 ERROR juju.worker.proxyupdater error writing apt proxy config file: open /etc/apt/apt.conf.d/95-juju-proxy-settings: permission denied
+unit-mysql-k8s-0: 02:16:03 ERROR juju.worker.proxyupdater error writing apt proxy config file: open /etc/apt/apt.conf.d/95-juju-proxy-settings: permission denied
+unit-mysql-k8s-2: 02:16:03 ERROR juju.worker.proxyupdater error writing apt proxy config file: open /etc/apt/apt.conf.d/95-juju-proxy-settings: permission denied
+unit-mysql-router-k8s-0: 02:16:07 ERROR juju.worker.proxyupdater error writing apt proxy config file: open /etc/apt/apt.conf.d/95-juju-proxy-settings: permission denied
+unit-mysql-k8s-2: 02:17:36 ERROR unit.mysql-k8s/2.juju-log root:Failed to search instance roles with name_pattern='%router'
+unit-mysql-k8s-2: 02:17:36 ERROR unit.mysql-k8s/2.juju-log root:Uncaught exception while in charm code:
+Traceback (most recent call last):
+  File "/var/lib/juju/agents/unit-mysql-k8s-2/charm/venv/lib/python3.12/site-packages/mysql_shell_contrib/executors/pebble.py", line 190, in execute_sql
+    stdout, _ = process.wait_output()
+                ^^^^^^^^^^^^^^^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-k8s-2/charm/venv/lib/python3.12/site-packages/ops/pebble.py", line 1857, in wait_output
+    raise ExecError[AnyStr](self._command, exit_code, out_value, err_value)
+ops.pebble.ExecError: non-zero exit code 1 executing ['/usr/bin/mysqlsh', '--json=raw', '--save-passwords=never', '--passwords-from-stdin', '--socket=/var/run/mysqld/mysqld.sock', '--user=charmed-operator', '--sql', '--execute', "SELECT user, host FROM mysql.user WHERE user LIKE '%router' AND authentication_string=''"], stdout='{"prompt":"Please provide the password for \'charmed-operator@/var%2Frun%2Fmysqld%2Fmysqld.sock\': ","type":"password","defaultValue":""}\n', stderr="Cannot set LC_ALL to locale en_US.UTF-8: No such file or directory\nArgumentError: X protocol error: MySQL server has gone away\nClassic protocol error: MySQL Error 2002 (HY000): Can't connect to local MySQL server through socket '/var/run/mysqld/mysqld.sock' (2)\n"
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/lib/juju/agents/unit-mysql-k8s-2/charm/lib/charms/mysql/v0/mysql.py", line 1241, in configure_mysql_router_roles
+    router_roles = self._instance_client_sock.search_instance_roles("%router")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-k8s-2/charm/venv/lib/python3.12/site-packages/mysql_shell/clients/instance.py", line 526, in search_instance_roles
+    rows = self._executor.execute_sql(query)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-k8s-2/charm/venv/lib/python3.12/site-packages/mysql_shell_contrib/executors/pebble.py", line 194, in execute_sql
+    raise ExecutionError(err) from exc
+mysql_shell.executors.errors.runtime.ExecutionError: Cannot set LC_ALL to locale en_US.UTF-8: No such file or directory
+ArgumentError: X protocol error: MySQL server has gone away
+Classic protocol error: MySQL Error 2002 (HY000): Can't connect to local MySQL server through socket '/var/run/mysqld/mysqld.sock' (2)
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/lib/juju/agents/unit-mysql-k8s-2/charm/src/charm.py", line 1174, in <module>
+    main(MySQLOperatorCharm)
+  File "/var/lib/juju/agents/unit-mysql-k8s-2/charm/venv/lib/python3.12/site-packages/ops/main.py", line 39, in main
+    return _main.main(charm_class=charm_class, use_juju_for_storage=use_juju_for_storage)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-k8s-2/charm/venv/lib/python3.12/site-packages/ops/_main.py", line 507, in main
+    manager.run()
+  File "/var/lib/juju/agents/unit-mysql-k8s-2/charm/venv/lib/python3.12/site-packages/ops/_main.py", line 491, in run
+    self._emit()
+  File "/var/lib/juju/agents/unit-mysql-k8s-2/charm/venv/lib/python3.12/site-packages/ops/_main.py", line 423, in _emit
+    self.framework.reemit()
+  File "/var/lib/juju/agents/unit-mysql-k8s-2/charm/venv/lib/python3.12/site-packages/ops/framework.py", line 920, in reemit
+    self._reemit()
+  File "/var/lib/juju/agents/unit-mysql-k8s-2/charm/venv/lib/python3.12/site-packages/ops/framework.py", line 1028, in _reemit
+    custom_handler(event)
+  File "/var/lib/juju/agents/unit-mysql-k8s-2/charm/src/charm.py", line 903, in _on_mysql_pebble_ready
+    self._configure_instance(container)
+  File "/var/lib/juju/agents/unit-mysql-k8s-2/charm/src/charm.py", line 798, in _configure_instance
+    self._mysql.configure_mysql_router_roles()
+  File "/var/lib/juju/agents/unit-mysql-k8s-2/charm/lib/charms/mysql/v0/mysql.py", line 1244, in configure_mysql_router_roles
+    raise MySQLConfigureMySQLRolesError() from e
+charms.mysql.v0.mysql.MySQLConfigureMySQLRolesError
+unit-mysql-k8s-2: 02:17:36 ERROR juju.worker.uniter.operation hook "archive-storage-attached" (via hook dispatching script: dispatch) failed: exit status 1
+unit-mysql-k8s-0: 02:18:22 ERROR unit.mysql-k8s/0.juju-log database-peers:2: root:Failed to stop instance replication
+unit-mysql-k8s-0: 02:18:24 ERROR unit.mysql-k8s/0.juju-log database-peers:2: root:Failed to attach instance mysql-k8s-0.mysql-k8s-endpoints.testing.svc.cluster.local.:3306 to cluster cluster-ac9d25ae04472bbb64e7ddb794aa38b8
+unit-mysql-k8s-2: 02:19:15 ERROR unit.mysql-k8s/2.juju-log database-peers:2: root:Failed to stop instance replication
+unit-mysql-k8s-2: 02:19:18 ERROR unit.mysql-k8s/2.juju-log database-peers:2: root:Failed to attach instance mysql-k8s-2.mysql-k8s-endpoints.testing.svc.cluster.local.:3306 to cluster cluster-ac9d25ae04472bbb64e7ddb794aa38b8
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...

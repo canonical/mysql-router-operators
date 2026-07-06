@@ -1,0 +1,176 @@
+[32mINFO    [0m integration.helpers:helpers.py:356 Ensure continuous writes are incrementing
+[32mINFO    [0m integration.helpers:helpers.py:308 Retrieving primary unit
+[32mINFO    [0m integration.integration.test_upgrade:test_upgrade.py:179 Creating invalid upgrade charm
+[32mINFO    [0m integration.integration.test_upgrade:test_upgrade.py:182 Refreshing mysql router with an invalid charm
+[32mINFO    [0m integration.integration.test_upgrade:test_upgrade.py:185 Wait for upgrade to fail
+[32mINFO    [0m integration.integration.test_upgrade:test_upgrade.py:193 Ensure continuous writes while in failure state
+[32mINFO    [0m integration.helpers:helpers.py:356 Ensure continuous writes are incrementing
+[32mINFO    [0m integration.helpers:helpers.py:308 Retrieving primary unit
+[32mINFO    [0m integration.integration.test_upgrade:test_upgrade.py:196 Re-refresh the charm
+[32mINFO    [0m integration.integration.test_upgrade:test_upgrade.py:199 Wait for the charm to be rolled back
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router/0 [executing] active: Router 8.4.7 running; Snap revision 171 (outdated); Charm version 8.4/0.0.0
+  mysql-router/1 [executing] active: Router 8.4.7 running; Snap revision 171 (outdated); Charm version 8.4/0.0.0
+  mysql-router/2 [executing] active: Router 8.4.7 running; Snap revision 171 (outdated); Charm version 8.4/0.0.0
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router/0 [executing] active: Router 8.4.7 running; Snap revision 171; Charm version 8.4/2.36.0
+  mysql-router/1 [executing] active: Router 8.4.7 running; Snap revision 171; Charm version 8.4/2.36.0
+  mysql-router/2 [executing] active: Router 8.4.7 running; Snap revision 171; Charm version 8.4/2.36.0
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router/0 [executing] active: Router 8.4.7 running; Snap revision 171; Charm version 8.4/2.36.0
+  mysql-router/1 [idle] active: 
+  mysql-router/2 [idle] active: 
+[32mINFO    [0m juju.model:__init__.py:3254 Waiting for model:
+  mysql-router/0 [idle] active: 
+  mysql-router/1 [idle] active: 
+  mysql-router/2 [idle] active: 
+[32mINFO    [0m integration.integration.test_upgrade:test_upgrade.py:204 Ensure continuous writes after rollback procedure
+[32mINFO    [0m integration.helpers:helpers.py:356 Ensure continuous writes are incrementing
+[32mINFO    [0m integration.helpers:helpers.py:308 Retrieving primary unit
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller     Cloud/Region         Version  SLA          Timestamp
+testing  concierge-lxd  localhost/localhost  3.6.25   unsupported  02:28:05Z
+
+App             Version  Status  Scale  Charm           Channel      Rev  Exposed  Message
+mysql           8.4      active      1  mysql           8.4/edge     501  no       
+mysql-router    8.4.7    active      3  mysql-router                   2  no       
+mysql-test-app  0.0.2    active      3  mysql-test-app  latest/edge  154  no       
+
+Unit               Workload  Agent      Machine  Public address  Ports           Message
+mysql-test-app/0   active    idle       0        10.79.191.70                    
+  mysql-router/1   active    idle                10.79.191.70                    
+mysql-test-app/1   active    idle       1        10.79.191.43                    
+  mysql-router/2   active    idle                10.79.191.43                    
+mysql-test-app/2*  active    idle       2        10.79.191.141                   
+  mysql-router/0*  active    idle                10.79.191.141                   
+mysql/0*           active    executing  3        10.79.191.254   3306,33060/tcp  
+
+Machine  State    Address        Inst id        Base          AZ             Message
+0        started  10.79.191.70   juju-12f37b-0  ubuntu@26.04  runnervmy622m  Running
+1        started  10.79.191.43   juju-12f37b-1  ubuntu@26.04  runnervmy622m  Running
+2        started  10.79.191.141  juju-12f37b-2  ubuntu@26.04  runnervmy622m  Running
+3        started  10.79.191.254  juju-12f37b-3  ubuntu@24.04  runnervmy622m  Running
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+machine-2: 02:15:14 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-2: 02:15:14 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 02:15:19 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-3: 02:15:19 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 02:16:30 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-0: 02:16:30 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 02:16:49 ERROR juju.worker.dependency "kvm-container-provisioner" manifold worker returned unexpected error: container types not yet available
+machine-1: 02:16:49 ERROR juju.worker.dependency "lxd-container-provisioner" manifold worker returned unexpected error: container types not yet available
+unit-mysql-0: 02:17:14 ERROR unit.mysql/0.juju-log mysql_vm_helpers:Failed command: fuser 3306/tcp; user=None; group=None; stdout: ; stderr: 
+unit-mysql-router-0: 02:26:04 ERROR unit.mysql-router/0.juju-log root:Uncaught exception while in charm code:
+Traceback (most recent call last):
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/venv/lib/python3.14/site-packages/httpx/_transports/default.py", line 101, in map_httpcore_exceptions
+    yield
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/venv/lib/python3.14/site-packages/httpx/_transports/default.py", line 250, in handle_request
+    resp = self._pool.handle_request(req)
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/venv/lib/python3.14/site-packages/httpcore/_sync/connection_pool.py", line 256, in handle_request
+    raise exc from None
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/venv/lib/python3.14/site-packages/httpcore/_sync/connection_pool.py", line 236, in handle_request
+    response = connection.handle_request(
+        pool_request.request
+    )
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/venv/lib/python3.14/site-packages/httpcore/_sync/connection.py", line 103, in handle_request
+    return self._connection.handle_request(request)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/venv/lib/python3.14/site-packages/httpcore/_sync/http11.py", line 136, in handle_request
+    raise exc
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/venv/lib/python3.14/site-packages/httpcore/_sync/http11.py", line 106, in handle_request
+    ) = self._receive_response_headers(**kwargs)
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/venv/lib/python3.14/site-packages/httpcore/_sync/http11.py", line 177, in _receive_response_headers
+    event = self._receive_event(timeout=timeout)
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/venv/lib/python3.14/site-packages/httpcore/_sync/http11.py", line 217, in _receive_event
+    data = self._network_stream.read(
+        self.READ_NUM_BYTES, timeout=timeout
+    )
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/venv/lib/python3.14/site-packages/httpcore/_backends/sync.py", line 126, in read
+    with map_exceptions(exc_map):
+         ~~~~~~~~~~~~~~^^^^^^^^^
+  File "/usr/lib/python3.14/contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/venv/lib/python3.14/site-packages/httpcore/_exceptions.py", line 14, in map_exceptions
+    raise to_exc(exc) from exc
+httpcore.ReadTimeout: timed out
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/src/charm.py", line 240, in <module>
+    ops.main.main(MachineSubordinateRouterCharm)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/venv/lib/python3.14/site-packages/ops/main.py", line 424, in main
+    charm = charm_class(framework)
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/lib/charms/tempo_coordinator_k8s/v0/charm_tracing.py", line 439, in wrap_init
+    original_init(self, framework, *args, **kwargs)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/src/charm.py", line 96, in __init__
+    self.refresh = charm_refresh.Machines(
+                   ~~~~~~~~~~~~~~~~~~~~~~^
+        _MachinesRouterRefresh(
+        ^^^^^^^^^^^^^^^^^^^^^^^
+            workload_name="Router", charm_name="mysql-router", _charm=self
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        )
+        ^
+    )
+    ^
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/venv/lib/python3.14/site-packages/charm_refresh/_main.py", line 3201, in __init__
+    self._update_snap_revision(raise_if_not_installed=False)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/venv/lib/python3.14/site-packages/charm_refresh/_main.py", line 2121, in _update_snap_revision
+    snap_revision = self._get_installed_snap_revision()
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/venv/lib/python3.14/site-packages/charm_refresh/_main.py", line 2096, in _get_installed_snap_revision
+    response = client.get(
+               ~~~~~~~~~~^
+        "http://localhost/v2/snaps", params={"snaps": self._workload_snap_name}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ).raise_for_status()
+    ^
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/venv/lib/python3.14/site-packages/httpx/_client.py", line 1053, in get
+    return self.request(
+           ~~~~~~~~~~~~^
+        "GET",
+        ^^^^^^
+    ...<7 lines>...
+        extensions=extensions,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/venv/lib/python3.14/site-packages/httpx/_client.py", line 825, in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/venv/lib/python3.14/site-packages/httpx/_client.py", line 914, in send
+    response = self._send_handling_auth(
+        request,
+    ...<2 lines>...
+        history=[],
+    )
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/venv/lib/python3.14/site-packages/httpx/_client.py", line 942, in _send_handling_auth
+    response = self._send_handling_redirects(
+        request,
+        follow_redirects=follow_redirects,
+        history=history,
+    )
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/venv/lib/python3.14/site-packages/httpx/_client.py", line 979, in _send_handling_redirects
+    response = self._send_single_request(request)
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/venv/lib/python3.14/site-packages/httpx/_client.py", line 1014, in _send_single_request
+    response = transport.handle_request(request)
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/venv/lib/python3.14/site-packages/httpx/_transports/default.py", line 249, in handle_request
+    with map_httpcore_exceptions():
+         ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/lib/python3.14/contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "/var/lib/juju/agents/unit-mysql-router-0/charm/venv/lib/python3.14/site-packages/httpx/_transports/default.py", line 118, in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+httpx.ReadTimeout: timed out
+unit-mysql-router-0: 02:26:04 ERROR juju.worker.uniter.operation hook "config-changed" (via hook dispatching script: dispatch) failed: exit status 1
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...

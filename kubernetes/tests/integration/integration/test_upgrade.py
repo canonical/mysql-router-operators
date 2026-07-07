@@ -1,257 +1,227 @@
 # Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-import asyncio
 import logging
-import os
-import pathlib
 import shutil
-import time
 import zipfile
+from contextlib import suppress
 from pathlib import Path
 
-import pytest
+import jubilant
 import tomli
 import tomli_w
-import yaml
-from pytest_operator.plugin import OpsTest
+from jubilant import Juju
 
-from ..helpers import (
-    APPLICATION_DEFAULT_APP_NAME,
-    MYSQL_DEFAULT_APP_NAME,
-    MYSQL_ROUTER_DEFAULT_APP_NAME,
-    ensure_all_units_continuous_writes_incrementing,
-    get_leader_unit,
+from ..helpers_new import (
+    METADATA,
+    MINUTE_SECS,
+    check_server_writes_increment,
+    get_app_leader,
+    get_app_units,
+    wait_for_apps_status,
+    wait_for_unit_status,
 )
-from ..juju_ import run_action
 
-logger = logging.getLogger(__name__)
-
-TIMEOUT = 20 * 60
-UPGRADE_TIMEOUT = 15 * 60
-SMALL_TIMEOUT = 5 * 60
-
-MYSQL_APP_NAME = MYSQL_DEFAULT_APP_NAME
-MYSQL_ROUTER_APP_NAME = MYSQL_ROUTER_DEFAULT_APP_NAME
-APPLICATION_APP_NAME = APPLICATION_DEFAULT_APP_NAME
-
-METADATA = yaml.safe_load(Path("./metadata.yaml").read_text())
-RESOURCE_ARGS = [
-    f"--resource=mysql-router-image={METADATA['resources']['mysql-router-image']['upstream-source']}",
-]
+MYSQL_ROUTER_APP_NAME = "mysql-router-k8s"
+MYSQL_SERVER_APP_NAME = "mysql-k8s"
+MYSQL_TEST_APP_NAME = "mysql-test-app"
 
 
-@pytest.mark.abort_on_fail
-async def test_deploy_edge(ops_test: OpsTest) -> None:
+def test_deploy_edge(juju: Juju) -> None:
     """Simple test to ensure that mysql, mysqlrouter and application charms deploy."""
-    logger.info("Deploying all applications")
+    router_resources = {
+        "mysql-router-image": METADATA["resources"]["mysql-router-image"]["upstream-source"]
+    }
 
-    await asyncio.gather(
-        ops_test.juju(
-            "deploy",
-            MYSQL_APP_NAME,
-            MYSQL_APP_NAME,
-            "--channel=8.4/edge",
-            "--config=profile=testing",
-            "--base=ubuntu@24.04",
-            "--num-units=1",
-            "--trust",
-        ),
-        ops_test.juju(
-            "deploy",
-            MYSQL_ROUTER_APP_NAME,
-            MYSQL_ROUTER_APP_NAME,
-            "--channel=8.4/edge",
-            "--base=ubuntu@26.04",
-            "--num-units=3",
-            "--trust",
-        ),
-        ops_test.juju(
-            "deploy",
-            APPLICATION_APP_NAME,
-            APPLICATION_APP_NAME,
-            "--channel=latest/edge",
-            "--base=ubuntu@26.04",
-            "--num-units=1",
-        ),
+    logging.info("Deploying all the applications")
+    juju.deploy(
+        charm=MYSQL_SERVER_APP_NAME,
+        app=MYSQL_SERVER_APP_NAME,
+        base="ubuntu@26.04",
+        channel="8.4/edge",
+        config={"profile": "testing"},
+        num_units=1,
+        trust=True,
+    )
+    juju.deploy(
+        charm=MYSQL_ROUTER_APP_NAME,
+        app=MYSQL_ROUTER_APP_NAME,
+        base="ubuntu@26.04",
+        channel="8.4/edge",
+        resources=router_resources,
+        num_units=3,
+        trust=True,
+    )
+    juju.deploy(
+        charm=MYSQL_TEST_APP_NAME,
+        app=MYSQL_TEST_APP_NAME,
+        base="ubuntu@26.04",
+        channel="latest/edge",
+        num_units=1,
     )
 
-    logger.info(f"Relating {MYSQL_ROUTER_APP_NAME} to {MYSQL_APP_NAME} and {APPLICATION_APP_NAME}")
-
-    await ops_test.model.relate(
-        f"{MYSQL_ROUTER_APP_NAME}:backend-database", f"{MYSQL_APP_NAME}:database"
+    logging.info("Relating the applications")
+    juju.integrate(
+        f"{MYSQL_SERVER_APP_NAME}:database",
+        f"{MYSQL_ROUTER_APP_NAME}:backend-database",
     )
-    await ops_test.model.relate(
-        f"{APPLICATION_APP_NAME}:database", f"{MYSQL_ROUTER_APP_NAME}:database"
-    )
-
-    logger.info("Waiting for applications to become active")
-    await ops_test.model.wait_for_idle(
-        [MYSQL_APP_NAME, MYSQL_ROUTER_APP_NAME, APPLICATION_APP_NAME],
-        status="active",
-        timeout=TIMEOUT,
+    juju.integrate(
+        f"{MYSQL_TEST_APP_NAME}:database",
+        f"{MYSQL_ROUTER_APP_NAME}:database",
     )
 
+    logging.info("Wait for applications to become active")
+    juju.wait(
+        ready=wait_for_apps_status(jubilant.all_active),
+        timeout=20 * MINUTE_SECS,
+        delay=5.0,
+    )
 
-@pytest.mark.abort_on_fail
-async def test_upgrade_from_edge(ops_test: OpsTest, charm) -> None:
+
+def test_upgrade_from_edge(juju: Juju, charm: str) -> None:
     """Upgrade mysqlrouter while ensuring continuous writes incrementing."""
-    await ensure_all_units_continuous_writes_incrementing(ops_test)
+    logging.info("Ensure continuous writes are incrementing")
+    check_server_writes_increment(juju, MYSQL_SERVER_APP_NAME)
 
-    mysql_router_application = ops_test.model.applications[MYSQL_ROUTER_APP_NAME]
+    router_app_leader = get_app_leader(juju, MYSQL_ROUTER_APP_NAME)
+    router_app_units = get_app_units(juju, MYSQL_ROUTER_APP_NAME)
+    router_app_units.sort(reverse=True)
 
-    logger.info("Refresh the charm")
-    await ops_test.juju("refresh", MYSQL_ROUTER_APP_NAME, f"--path={charm}", *RESOURCE_ARGS)
-
-    # sleep to ensure that active status from before re-refresh does not affect below check
-    time.sleep(15)
-
-    # Highest to lowest unit number
-    refresh_order = sorted(
-        mysql_router_application.units,
-        key=lambda unit: int(unit.name.split("/")[1]),
-        reverse=True,
+    logging.info("Refresh the charm")
+    juju.refresh(
+        app=MYSQL_ROUTER_APP_NAME,
+        path=charm,
+        resources={
+            "mysql-router-image": METADATA["resources"]["mysql-router-image"]["upstream-source"],
+        },
     )
 
-    logger.info("Wait for refresh to start")
-    await ops_test.model.block_until(
-        lambda: mysql_router_application.status == "blocked", timeout=3 * 60
-    )
-    assert "resume-refresh" in mysql_router_application.status_message, (
-        "mysql router application status not indicating that user should resume refresh"
+    logging.info("Wait for refresh to start")
+    juju.wait(
+        ready=wait_for_apps_status(jubilant.any_blocked, MYSQL_ROUTER_APP_NAME),
+        timeout=5 * MINUTE_SECS,
     )
 
-    logger.info("Wait for first unit to restart")
-    await ops_test.model.wait_for_idle([MYSQL_ROUTER_APP_NAME], idle_period=30, timeout=5 * 60)
+    router_status = juju.status().apps[MYSQL_ROUTER_APP_NAME]
+    router_unit_status = router_status.units[router_app_units[0]].workload_status
 
-    # Refresh will be incompatible on PR CI (not edge CI) since unreleased charm versions are
-    # always marked as incompatible
-    if (
-        refresh_order[0].workload_status == "blocked"
-        and "incompatible" in refresh_order[0].workload_status_message
-    ):
-        logger.info("Running force-refresh-start action with check-compatibility=false")
-        await run_action(refresh_order[0], "force-refresh-start", **{"check-compatibility": False})
+    # Refresh will be incompatible on PR CI (not edge CI)
+    # since unreleased charm versions are always marked as incompatible
+    if router_unit_status.current == "blocked" and "incompatible" in router_unit_status.message:
+        logging.info("Application upgrade is blocked due to incompatibility")
+        juju.run(
+            unit=router_app_units[0],
+            action="force-refresh-start",
+            params={"check-compatibility": False},
+            wait=5 * MINUTE_SECS,
+        )
 
-    logger.info("Wait for first unit to upgrade")
-    await ops_test.model.wait_for_idle([MYSQL_ROUTER_APP_NAME], idle_period=30, timeout=TIMEOUT)
-
-    mysql_router_leader_unit = await get_leader_unit(ops_test, MYSQL_ROUTER_APP_NAME)
-    logger.info("Running resume-refresh on the mysql router leader unit")
-    await run_action(
-        mysql_router_leader_unit,
-        "resume-refresh",
-        # If leader is next to refresh, charm will be killed before action can succeed
-        check_return_code=False,
+    logging.info("Wait for first unit to upgrade")
+    juju.wait(
+        ready=jubilant.all_agents_idle,
+        timeout=5 * MINUTE_SECS,
     )
 
-    logger.info("Waiting for upgrade to complete on all units")
-    await ops_test.model.wait_for_idle(
-        [MYSQL_ROUTER_APP_NAME],
-        status="active",
-        idle_period=30,
-        timeout=UPGRADE_TIMEOUT,
+    # If leader is next to refresh, charm will be killed before action can succeed
+    with suppress(jubilant.TaskError):
+        logging.info("Resume upgrade")
+        juju.run(
+            unit=router_app_leader,
+            action="resume-refresh",
+            wait=5 * MINUTE_SECS,
+        )
+
+    logging.info("Wait for upgrade to complete")
+    juju.wait(
+        ready=wait_for_apps_status(jubilant.all_active, MYSQL_ROUTER_APP_NAME),
+        timeout=20 * MINUTE_SECS,
     )
 
-    await ensure_all_units_continuous_writes_incrementing(ops_test)
+    logging.info("Ensure continuous writes are incrementing")
+    check_server_writes_increment(juju, MYSQL_SERVER_APP_NAME)
 
-    await ops_test.model.wait_for_idle(
-        [MYSQL_ROUTER_APP_NAME], idle_period=30, status="active", timeout=TIMEOUT
+
+def test_fail_and_rollback(juju: Juju, charm: str, continuous_writes) -> None:
+    """Test a refresh failure and its rollback."""
+    router_app_leader = get_app_leader(juju, MYSQL_ROUTER_APP_NAME)
+    router_app_units = get_app_units(juju, MYSQL_ROUTER_APP_NAME)
+    router_app_units.sort(reverse=True)
+
+    logging.info("Ensure continuous writes are incrementing")
+    check_server_writes_increment(juju, MYSQL_SERVER_APP_NAME)
+
+    tmp_folder = Path("tmp")
+    tmp_folder.mkdir(exist_ok=True)
+    tmp_folder_charm = Path(tmp_folder, charm).absolute()
+
+    shutil.copy(charm, tmp_folder_charm)
+
+    logging.info("Creating invalid upgrade charm")
+    create_invalid_upgrade_charm(tmp_folder_charm)
+
+    logging.info("Refresh the charm")
+    juju.refresh(
+        app=MYSQL_ROUTER_APP_NAME,
+        path=tmp_folder_charm,
+        resources={
+            "mysql-router-image": METADATA["resources"]["mysql-router-image"]["upstream-source"],
+        },
     )
 
-
-@pytest.mark.abort_on_fail
-async def test_fail_and_rollback(ops_test: OpsTest, charm, continuous_writes) -> None:
-    """Upgrade to an invalid version and test rollback.
-
-    Relies on the charm built in the previous test (test_upgrade_from_edge).
-    """
-    await ensure_all_units_continuous_writes_incrementing(ops_test)
-
-    mysql_router_application = ops_test.model.applications[MYSQL_ROUTER_APP_NAME]
-
-    fault_charm = "./faulty.charm"
-    shutil.copy(charm, fault_charm)
-
-    logger.info("Creating invalid upgrade charm")
-    create_invalid_upgrade_charm(fault_charm)
-
-    logger.info("Refreshing mysql router with an invalid charm")
-    await ops_test.juju("refresh", MYSQL_ROUTER_APP_NAME, f"--path={fault_charm}", *RESOURCE_ARGS)
-
-    # Highest to lowest unit number
-    refresh_order = sorted(
-        mysql_router_application.units,
-        key=lambda unit: int(unit.name.split("/")[1]),
-        reverse=True,
+    logging.info("Wait for upgrade to fail on first upgrading unit")
+    juju.wait(
+        ready=wait_for_unit_status(MYSQL_ROUTER_APP_NAME, router_app_units[0], "blocked"),
+        timeout=10 * MINUTE_SECS,
     )
 
-    logger.info("Wait for refresh to block as incompatible")
-    await ops_test.model.block_until(
-        lambda: refresh_order[0].workload_status == "blocked", timeout=TIMEOUT
-    )
-    assert "incompatible" in refresh_order[0].workload_status_message, (
-        "mysql router application status not indicating that refresh incompatible"
-    )
+    logging.info("Ensure continuous writes are incrementing")
+    check_server_writes_increment(juju, MYSQL_SERVER_APP_NAME)
 
-    logger.info("Ensure continuous writes while in failure state")
-    await ensure_all_units_continuous_writes_incrementing(ops_test)
-
-    logger.info("Re-refresh the charm")
-    await ops_test.juju("refresh", MYSQL_ROUTER_APP_NAME, f"--path={charm}", *RESOURCE_ARGS)
-
-    # sleep to ensure that active status from before re-refresh does not affect below check
-    time.sleep(15)
-
-    await ops_test.model.block_until(
-        lambda: all(unit.workload_status == "active" for unit in mysql_router_application.units)
-        and all(unit.agent_status == "idle" for unit in mysql_router_application.units)
+    logging.info("Re-refresh the charm")
+    juju.refresh(
+        app=MYSQL_ROUTER_APP_NAME,
+        path=charm,
+        resources={
+            "mysql-router-image": METADATA["resources"]["mysql-router-image"]["upstream-source"],
+        },
     )
 
-    logger.info("Wait for blocked app status")
-    await ops_test.model.block_until(
-        lambda: mysql_router_application.status == "blocked", timeout=3 * 60
-    )
-    assert "resume-refresh" in mysql_router_application.status_message, (
-        "mysql router application status not indicating that user should resume refresh"
+    logging.info("Wait for first unit to rollback")
+    juju.wait(
+        ready=wait_for_apps_status(jubilant.any_blocked, MYSQL_ROUTER_APP_NAME),
+        timeout=10 * MINUTE_SECS,
     )
 
-    logger.info("Wait for first unit to rollback")
-    await ops_test.model.wait_for_idle([MYSQL_ROUTER_APP_NAME], idle_period=30, timeout=TIMEOUT)
+    # If leader is next to refresh, charm will be killed before action can succeed
+    with suppress(jubilant.TaskError):
+        logging.info("Resume upgrade")
+        juju.run(
+            unit=router_app_leader,
+            action="resume-refresh",
+            wait=5 * MINUTE_SECS,
+        )
 
-    mysql_router_leader_unit = await get_leader_unit(ops_test, MYSQL_ROUTER_APP_NAME)
-    logger.info("Running resume-refresh on the mysql router leader unit")
-    await run_action(
-        mysql_router_leader_unit,
-        "resume-refresh",
-        # If leader is next to refresh, charm will be killed before action can succeed
-        check_return_code=False,
+    logging.info("Wait for upgrade to complete")
+    juju.wait(
+        ready=wait_for_apps_status(jubilant.all_active, MYSQL_ROUTER_APP_NAME),
+        timeout=20 * MINUTE_SECS,
     )
 
-    logger.info("Waiting for rollback to complete on all units")
-    await ops_test.model.wait_for_idle(
-        [MYSQL_ROUTER_APP_NAME],
-        status="active",
-        idle_period=30,
-        timeout=UPGRADE_TIMEOUT,
-    )
+    logging.info("Ensure continuous writes after rollback procedure")
+    check_server_writes_increment(juju, MYSQL_SERVER_APP_NAME)
 
-    logger.info("Ensure continuous writes after rollback procedure")
-    await ensure_all_units_continuous_writes_incrementing(ops_test)
-
-    os.remove(fault_charm)
+    # Remove fault charm file
+    tmp_folder_charm.unlink()
 
 
-def create_invalid_upgrade_charm(charm_file: str | pathlib.Path) -> None:
+def create_invalid_upgrade_charm(charm_file: str | Path) -> None:
     """Create an invalid mysql router charm for upgrade."""
     with zipfile.ZipFile(charm_file, mode="r") as charm_zip:
         with zipfile.Path(charm_zip, "refresh_versions.toml").open("rb") as file:
             versions = tomli.load(file)
 
-    # "charm" is added during pack time using the charm refresh compatibility version stored as a git tag
-    # so charm can be set after the release (when the version is determined) but before pack time
     versions["charm"] = "8.4/0.0.0"
 
+    # Overwrite refresh_versions.toml with incompatible version.
     with zipfile.ZipFile(charm_file, mode="a") as charm_zip:
-        # an invalid charm version because the major workload_version is one less than the current workload_version
         charm_zip.writestr("refresh_versions.toml", tomli_w.dumps(versions))

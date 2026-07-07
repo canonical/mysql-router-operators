@@ -1,171 +1,263 @@
-#!/usr/bin/env python3
 # Copyright 2022 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-import asyncio
 import logging
+import subprocess
+import tempfile
+from contextlib import suppress
 from pathlib import Path
 
-import pytest
-import yaml
-from pytest_operator.plugin import OpsTest
+import jubilant
+from jubilant import Juju
 
-from ..helpers import (
-    APPLICATION_DEFAULT_APP_NAME,
-    MYSQL_DEFAULT_APP_NAME,
-    MYSQL_ROUTER_DEFAULT_APP_NAME,
-    delete_file_or_directory_in_unit,
-    ls_la_in_unit,
-    read_contents_from_file_in_unit,
-    rotate_mysqlrouter_logs,
-    stop_running_flush_mysqlrouter_job,
-    stop_running_log_rotate_executor,
-    write_content_to_file_in_unit,
+from ..helpers_new import (
+    CONTAINER_NAME,
+    METADATA,
+    MINUTE_SECS,
+    get_app_leader,
+    get_mysql_instance_label,
+    wait_for_apps_status,
 )
 
-logger = logging.getLogger(__name__)
+MYSQL_ROUTER_APP_NAME = "mysql-router-k8s"
+MYSQL_SERVER_APP_NAME = "mysql-k8s"
+MYSQL_TEST_APP_NAME = "mysql-test-app"
 
-METADATA = yaml.safe_load(Path("./metadata.yaml").read_text())
-
-MYSQL_APP_NAME = MYSQL_DEFAULT_APP_NAME
-MYSQL_ROUTER_APP_NAME = MYSQL_ROUTER_DEFAULT_APP_NAME
-APPLICATION_APP_NAME = APPLICATION_DEFAULT_APP_NAME
-SLOW_TIMEOUT = 15 * 60
-MODEL_CONFIG = {"logging-config": "<root>=INFO;unit=DEBUG"}
+TEST_DATABASE_NAME = "test_database"
 
 
-@pytest.mark.abort_on_fail
-async def test_log_rotation(ops_test: OpsTest, charm):
+def test_log_rotation(juju: Juju, charm: str) -> None:
     """Test log rotation."""
-    await ops_test.model.set_config(MODEL_CONFIG)
+    router_resources = {
+        "mysql-router-image": METADATA["resources"]["mysql-router-image"]["upstream-source"]
+    }
 
-    resource_args = [
-        f"--resource=mysql-router-image={METADATA['resources']['mysql-router-image']['upstream-source']}",
+    logging.info("Deploying all the applications")
+    juju.deploy(
+        charm=MYSQL_SERVER_APP_NAME,
+        app=MYSQL_SERVER_APP_NAME,
+        base="ubuntu@26.04",
+        channel="8.4/edge",
+        config={"profile": "testing"},
+        num_units=1,
+        trust=True,
+    )
+    juju.deploy(
+        charm=charm,
+        app=MYSQL_ROUTER_APP_NAME,
+        base="ubuntu@26.04",
+        resources=router_resources,
+        num_units=1,
+        trust=True,
+    )
+    juju.deploy(
+        charm=MYSQL_TEST_APP_NAME,
+        app=MYSQL_TEST_APP_NAME,
+        base="ubuntu@26.04",
+        channel="latest/edge",
+        num_units=1,
+    )
+
+    logging.info("Relating the applications")
+    juju.integrate(
+        f"{MYSQL_SERVER_APP_NAME}:database",
+        f"{MYSQL_ROUTER_APP_NAME}:backend-database",
+    )
+    juju.integrate(
+        f"{MYSQL_TEST_APP_NAME}:database",
+        f"{MYSQL_ROUTER_APP_NAME}:database",
+    )
+
+    logging.info("Wait for applications to become active")
+    juju.wait(
+        ready=wait_for_apps_status(jubilant.all_active),
+        timeout=20 * MINUTE_SECS,
+        delay=5.0,
+    )
+
+    router_app_leader = get_app_leader(juju, MYSQL_ROUTER_APP_NAME)
+
+    logging.info("Stopping the logrotate executor pebble service")
+    juju.ssh(
+        target=router_app_leader,
+        container=CONTAINER_NAME,
+        command="pebble stop logrotate_executor",
+    )
+
+    logging.info("Removing existing archive directory")
+    delete_unit_file(
+        juju=juju,
+        unit_name=router_app_leader,
+        container=CONTAINER_NAME,
+        file_path="/var/log/mysqlrouter/archive_mysqlrouter",
+    )
+
+    logging.info("Writing some data mysqlrouter log file")
+    write_unit_file(
+        juju=juju,
+        unit_name=router_app_leader,
+        container=CONTAINER_NAME,
+        file_path="/var/log/mysqlrouter/mysqlrouter.log",
+        file_data="test mysqlrouter content",
+    )
+
+    logging.info("Ensuring only log file exist")
+    file_list = list_unit_files(
+        juju=juju,
+        unit_name=router_app_leader,
+        container=CONTAINER_NAME,
+        file_path="/var/log/mysqlrouter",
+    )
+
+    file_names = [line.split()[-1] for line in file_list]
+    assert len(file_names) == 1
+    assert sorted(file_names) == sorted(["mysqlrouter.log"])
+
+    logging.info("Executing logrotate")
+    juju.ssh(
+        target=router_app_leader,
+        container=CONTAINER_NAME,
+        command="logrotate -f -s /tmp/logrotate.status /etc/logrotate.d/flush_mysqlrouter_logs",
+    )
+
+    logging.info("Ensuring log file and archive directories exist")
+    file_list = list_unit_files(
+        juju=juju,
+        unit_name=router_app_leader,
+        container=CONTAINER_NAME,
+        file_path="/var/log/mysqlrouter",
+    )
+
+    file_names = [line.split()[-1] for line in file_list]
+    assert len(file_list) == 2
+    assert sorted(file_names) == sorted(["mysqlrouter.log", "archive_mysqlrouter"])
+
+    logging.info("Ensuring log file was rotated")
+    file_contents = read_unit_file(
+        juju=juju,
+        unit_name=router_app_leader,
+        container=CONTAINER_NAME,
+        file_path="/var/log/mysqlrouter/mysqlrouter.log",
+    )
+
+    assert "test mysqlrouter content" not in file_contents
+
+    file_list = list_unit_files(
+        juju=juju,
+        unit_name=router_app_leader,
+        container=CONTAINER_NAME,
+        file_path="/var/log/mysqlrouter/archive_mysqlrouter",
+    )
+
+    file_names = [line.split()[-1] for line in file_list]
+    file_contents = read_unit_file(
+        juju=juju,
+        unit_name=router_app_leader,
+        container=CONTAINER_NAME,
+        file_path=f"/var/log/mysqlrouter/archive_mysqlrouter/{file_names[0]}",
+    )
+
+    assert "test mysqlrouter content" in file_contents
+
+
+def delete_unit_file(juju: Juju, unit_name: str, container: str, file_path: str) -> None:
+    """Delete a path in the provided unit.
+
+    Args:
+        juju: The Juju instance
+        unit_name: The unit on which to delete the file
+        container: The container on which to delete the file
+        file_path: The path or file to delete
+    """
+    if file_path.strip() in ["/", "."]:
+        return
+
+    with suppress(jubilant.CLIError):
+        juju.ssh(
+            command=f"find {file_path} -maxdepth 1 -delete",
+            container=container,
+            target=unit_name,
+        )
+
+
+def list_unit_files(juju: Juju, unit_name: str, container: str, file_path: str) -> list[str]:
+    """Returns the list of files in the given path.
+
+    Args:
+        juju: The Juju instance
+        unit_name: The unit in which to list the files
+        container: The container in which to list the files
+        file_path: The path at which to list the files
+    """
+    output = juju.ssh(
+        command=f"ls -la {file_path}",
+        container=container,
+        target=unit_name,
+    )
+
+    output = output.split("\n")[1:]
+
+    return [
+        line.strip("\r")
+        for line in output
+        if len(line.strip()) > 0 and line.split()[-1] not in [".", ".."]
     ]
 
-    logger.info("Deploying mysql, mysqlrouter and application")
-    await asyncio.gather(
-        ops_test.juju(
-            "deploy",
-            MYSQL_APP_NAME,
-            MYSQL_APP_NAME,
-            "--channel=8.4/edge",
-            "--config=profile=testing",
-            "--base=ubuntu@24.04",
-            "--num-units=3",
-            "--trust",
-        ),
-        ops_test.juju(
-            "deploy",
-            charm,
-            MYSQL_ROUTER_APP_NAME,
-            *resource_args,
-            "--base=ubuntu@26.04",
-            "--num-units=1",
-            "--trust",
-        ),
-        ops_test.juju(
-            "deploy",
-            APPLICATION_APP_NAME,
-            APPLICATION_APP_NAME,
-            "--channel=latest/edge",
-            "--base=ubuntu@26.04",
-            "--num-units=1",
-        ),
-    )
 
-    mysql_app = ops_test.model.applications[MYSQL_APP_NAME]
-    mysql_router_app = ops_test.model.applications[MYSQL_ROUTER_APP_NAME]
-    application_app = ops_test.model.applications[APPLICATION_APP_NAME]
+def read_unit_file(juju: Juju, unit_name: str, container: str, file_path: str) -> str:
+    """Read contents from file in the provided unit.
 
-    async with ops_test.fast_forward():
-        logger.info("Waiting for mysqlrouter to be in BlockedStatus")
-        await ops_test.model.block_until(
-            lambda: ops_test.model.applications[MYSQL_ROUTER_APP_NAME].status == "blocked",
-            timeout=SLOW_TIMEOUT,
+    Args:
+        juju: The Juju instance
+        unit_name: The name of the unit to read the file from
+        container: The name of the container to read the file from
+        file_path: The path of the unit to read the file
+    """
+    pod_name = get_mysql_instance_label(unit_name)
+
+    with tempfile.NamedTemporaryFile(mode="r+", dir=Path.home()) as temp_file:
+        subprocess.check_call(
+            [
+                "sudo",
+                "k8s",
+                "kubectl",
+                "cp",
+                f"--namespace={juju.model}",
+                f"--container={container}",
+                f"{pod_name}:{file_path}",
+                f"{temp_file.name}",
+            ],
         )
+        contents = temp_file.read()
 
-        logger.info("Relating mysql, mysqlrouter and application")
-        # Relate the database with mysqlrouter
-        await ops_test.model.relate(
-            f"{MYSQL_ROUTER_APP_NAME}:backend-database", f"{MYSQL_APP_NAME}:database"
+    return contents
+
+
+def write_unit_file(juju: Juju, unit_name: str, container: str, file_path: str, file_data: str):
+    """Write content to the file in the provided unit.
+
+    Args:
+        juju: The Juju instance
+        unit_name: The name of the unit to write the file into
+        container: The name of the container to write the file into
+        file_path: The path of the container to write the file
+        file_data: The data to write to the file.
+    """
+    pod_name = get_mysql_instance_label(unit_name)
+
+    with tempfile.NamedTemporaryFile(mode="w", dir=Path.home()) as temp_file:
+        temp_file.write(file_data)
+        temp_file.flush()
+
+        subprocess.check_call(
+            [
+                "sudo",
+                "k8s",
+                "kubectl",
+                "cp",
+                f"--namespace={juju.model}",
+                f"--container={container}",
+                f"{temp_file.name}",
+                f"{pod_name}:{file_path}",
+            ],
         )
-        # Relate mysqlrouter with application next
-        await ops_test.model.relate(
-            f"{APPLICATION_APP_NAME}:database", f"{MYSQL_ROUTER_APP_NAME}:database"
-        )
-
-        await asyncio.gather(
-            ops_test.model.block_until(lambda: mysql_app.status == "active", timeout=SLOW_TIMEOUT),
-            ops_test.model.block_until(
-                lambda: mysql_router_app.status == "active", timeout=SLOW_TIMEOUT
-            ),
-            ops_test.model.block_until(
-                lambda: application_app.status == "active", timeout=SLOW_TIMEOUT
-            ),
-        )
-
-    unit = mysql_router_app.units[0]
-    logger.info("Stopping the logrotate executor pebble service")
-    await stop_running_log_rotate_executor(ops_test, unit.name)
-
-    logger.info("Stopping any running logrotate jobs")
-    await stop_running_flush_mysqlrouter_job(ops_test, unit.name)
-
-    logger.info("Removing existing archive directory")
-    await delete_file_or_directory_in_unit(
-        ops_test,
-        unit.name,
-        "/var/log/mysqlrouter/archive_mysqlrouter/",
-    )
-
-    logger.info("Writing some data mysqlrouter log file")
-    log_path = "/var/log/mysqlrouter/mysqlrouter.log"
-    await write_content_to_file_in_unit(ops_test, unit, log_path, "test mysqlrouter content\n")
-
-    logger.info("Ensuring only log files exist")
-    ls_la_output = await ls_la_in_unit(ops_test, unit.name, "/var/log/mysqlrouter/")
-
-    assert len(ls_la_output) == 1, f"❌ files other than log files exist {ls_la_output}"
-    directories = [line.split()[-1] for line in ls_la_output]
-    assert directories == ["mysqlrouter.log"], (
-        f"❌ file other than logs files exist: {ls_la_output}"
-    )
-
-    logger.info("Executing logrotate")
-    await rotate_mysqlrouter_logs(ops_test, unit.name)
-
-    logger.info("Ensuring log files and archive directories exist")
-    ls_la_output = await ls_la_in_unit(ops_test, unit.name, "/var/log/mysqlrouter/")
-
-    assert len(ls_la_output) == 2, (
-        f"❌ unexpected files/directories in log directory: {ls_la_output}"
-    )
-    directories = [line.split()[-1] for line in ls_la_output]
-    assert sorted(directories) == sorted([
-        "mysqlrouter.log",
-        "archive_mysqlrouter",
-    ]), f"❌ unexpected files/directories in log directory: {ls_la_output}"
-
-    logger.info("Ensuring log files was rotated")
-    file_contents = await read_contents_from_file_in_unit(
-        ops_test, unit, "/var/log/mysqlrouter/mysqlrouter.log"
-    )
-    assert "test mysqlrouter content" not in file_contents, (
-        "❌ log file mysqlrouter.log not rotated"
-    )
-
-    ls_la_output = await ls_la_in_unit(
-        ops_test,
-        unit.name,
-        "/var/log/mysqlrouter/archive_mysqlrouter/",
-    )
-    assert len(ls_la_output) == 1, f"❌ more than 1 file in archive directory: {ls_la_output}"
-
-    filename = ls_la_output[0].split()[-1]
-    file_contents = await read_contents_from_file_in_unit(
-        ops_test,
-        unit,
-        f"/var/log/mysqlrouter/archive_mysqlrouter/{filename}",
-    )
-    assert "test mysqlrouter content" in file_contents, "❌ log file mysqlrouter.log not rotated"

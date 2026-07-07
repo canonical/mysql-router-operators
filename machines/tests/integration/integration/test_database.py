@@ -1,144 +1,74 @@
-#!/usr/bin/env python3
 # Copyright 2022 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-import asyncio
 import logging
 
-import pytest
-from pytest_operator.plugin import OpsTest
+import jubilant
+from jubilant import Juju
 
-from ..helpers import (
-    APPLICATION_DEFAULT_APP_NAME,
-    MYSQL_DEFAULT_APP_NAME,
-    MYSQL_ROUTER_DEFAULT_APP_NAME,
-    execute_queries_against_unit,
-    get_inserted_data_by_application,
-    get_operator_credentials,
+from ..helpers_new import (
+    MINUTE_SECS,
+    get_app_leader,
+    scale_app_units,
+    verify_mysql_test_data,
+    wait_for_apps_status,
 )
 
-logger = logging.getLogger(__name__)
-
-MYSQL_APP_NAME = MYSQL_DEFAULT_APP_NAME
-MYSQL_ROUTER_APP_NAME = MYSQL_ROUTER_DEFAULT_APP_NAME
-APPLICATION_APP_NAME = APPLICATION_DEFAULT_APP_NAME
-TEST_DATABASE = "continuous_writes"
-TEST_TABLE = "random_data"
-SLOW_TIMEOUT = 15 * 60
+MYSQL_ROUTER_APP_NAME = "mysql-router"
+MYSQL_SERVER_APP_NAME = "mysql"
+MYSQL_TEST_APP_NAME = "mysql-test-app"
 
 
-@pytest.mark.abort_on_fail
-async def test_database_relation(ops_test: OpsTest, charm, ubuntu_base) -> None:
+def test_database_relation(juju: Juju, charm: str, ubuntu_base: str) -> None:
     """Test the database relation."""
-    # deploy mysqlrouter with num_units=None since it's a subordinate charm
-    # and will be installed with the related consumer application
-    await asyncio.gather(
-        ops_test.juju(
-            "deploy",
-            MYSQL_APP_NAME,
-            MYSQL_APP_NAME,
-            "--channel=8.4/edge",
-            "--config=profile=testing",
-            "--num-units=1",
-        ),
-        ops_test.juju(
-            "deploy",
-            charm,
-            MYSQL_ROUTER_APP_NAME,
-        ),
-        ops_test.juju(
-            "deploy",
-            APPLICATION_APP_NAME,
-            APPLICATION_APP_NAME,
-            "--channel=latest/edge",
-            f"--base={ubuntu_base}",
-            "--num-units=1",
-        ),
+    logging.info("Deploying all the applications")
+    juju.deploy(
+        charm=MYSQL_SERVER_APP_NAME,
+        app=MYSQL_SERVER_APP_NAME,
+        base=ubuntu_base,
+        channel="8.4/edge",
+        config={"profile": "testing"},
+        num_units=1,
+    )
+    juju.deploy(
+        charm=charm,
+        app=MYSQL_ROUTER_APP_NAME,
+        base=ubuntu_base,
+        num_units=1,
+    )
+    juju.deploy(
+        charm=MYSQL_TEST_APP_NAME,
+        app=MYSQL_TEST_APP_NAME,
+        base=ubuntu_base,
+        channel="latest/edge",
+        num_units=1,
     )
 
-    mysql_app = ops_test.model.applications[MYSQL_APP_NAME]
-    mysql_router_app = ops_test.model.applications[MYSQL_ROUTER_APP_NAME]
-    application_app = ops_test.model.applications[APPLICATION_APP_NAME]
-
-    await ops_test.model.relate(
-        f"{MYSQL_ROUTER_APP_NAME}:backend-database", f"{MYSQL_APP_NAME}:database"
+    logging.info("Relating the applications")
+    juju.integrate(
+        f"{MYSQL_SERVER_APP_NAME}:database",
+        f"{MYSQL_ROUTER_APP_NAME}:backend-database",
+    )
+    juju.integrate(
+        f"{MYSQL_TEST_APP_NAME}:database",
+        f"{MYSQL_ROUTER_APP_NAME}:database",
     )
 
-    # the mysqlrouter application will be in unknown state since it is a subordinate charm
-    async with ops_test.fast_forward("60s"):
-        await asyncio.gather(
-            ops_test.model.block_until(
-                lambda: mysql_app.status == "active",
-                timeout=SLOW_TIMEOUT,
-            ),
-            ops_test.model.block_until(
-                lambda: application_app.status == "blocked",
-                timeout=SLOW_TIMEOUT,
-            ),
-        )
-
-        await ops_test.model.relate(
-            f"{MYSQL_ROUTER_APP_NAME}:database", f"{APPLICATION_APP_NAME}:database"
-        )
-
-        await ops_test.model.wait_for_idle(
-            apps=[MYSQL_APP_NAME, MYSQL_ROUTER_APP_NAME, APPLICATION_APP_NAME],
-            status="active",
-            timeout=SLOW_TIMEOUT,
-        )
-
-        await asyncio.gather(
-            ops_test.model.block_until(
-                lambda: mysql_app.status == "active",
-                timeout=SLOW_TIMEOUT,
-            ),
-            ops_test.model.block_until(
-                lambda: mysql_router_app.status == "active",
-                timeout=SLOW_TIMEOUT,
-            ),
-            ops_test.model.block_until(
-                lambda: application_app.status == "active",
-                timeout=SLOW_TIMEOUT,
-            ),
-        )
-
-    # Ensure that the data inserted by sample application is present in the database
-    application_unit = application_app.units[0]
-    inserted_data = await get_inserted_data_by_application(application_unit)
-
-    mysql_unit = mysql_app.units[0]
-    mysql_unit_address = await mysql_unit.get_public_address()
-    operator_credentials = await get_operator_credentials(mysql_unit)
-
-    select_inserted_data_sql = (
-        f"SELECT data FROM `{TEST_DATABASE}`.{TEST_TABLE} WHERE data = '{inserted_data}'",
-    )
-    selected_data = await execute_queries_against_unit(
-        mysql_unit_address,
-        operator_credentials["username"],
-        operator_credentials["password"],
-        select_inserted_data_sql,
+    logging.info("Wait for applications to become active")
+    juju.wait(
+        ready=wait_for_apps_status(jubilant.all_active),
+        timeout=20 * MINUTE_SECS,
+        delay=5.0,
     )
 
-    assert inserted_data == selected_data[0]
+    test_app_leader = get_app_leader(juju, MYSQL_TEST_APP_NAME)
+    test_app_task = juju.run(test_app_leader, "get-inserted-data")
+    test_app_data = test_app_task.results["data"]
 
-    # Scale and ensure that all services go to active
-    # (sample application tests that it can connect to its mysqlrouter service)
-    async with ops_test.fast_forward():
-        await application_app.add_unit()
-        await ops_test.model.block_until(lambda: len(application_app.units) == 2)
+    verify_mysql_test_data(juju, MYSQL_SERVER_APP_NAME, "random_data", test_app_data)
 
-        await asyncio.gather(
-            ops_test.model.block_until(
-                lambda: mysql_app.status == "active",
-                timeout=SLOW_TIMEOUT,
-            ),
-            ops_test.model.block_until(
-                lambda: mysql_router_app.status == "active",
-                timeout=SLOW_TIMEOUT,
-            ),
-            ops_test.model.block_until(
-                lambda: application_app.status == "active",
-                timeout=SLOW_TIMEOUT,
-            ),
-        )
+    # Ensure that the application can be scaled up
+    scale_app_units(juju, MYSQL_TEST_APP_NAME, 2)
+
+    # Ensure that the application can be scaled down
+    scale_app_units(juju, MYSQL_TEST_APP_NAME, 1)

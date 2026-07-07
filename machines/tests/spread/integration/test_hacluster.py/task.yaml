@@ -1,6 +1,6 @@
-summary: test_hacluster_new.py
+summary: test_hacluster.py
 environment:
-  TEST_MODULE: test_hacluster_new.py
+  TEST_MODULE: test_hacluster.py
 execute: |
   # TODO: Uncomment when data-integrator gets built for Ubuntu 26.04
   # tox run -e integration -- "tests/integration/integration/$TEST_MODULE" --alluredir="$SPREAD_TASK/allure-results"

@@ -4,7 +4,6 @@
 import logging
 import shutil
 import zipfile
-from contextlib import suppress
 from pathlib import Path
 
 import jubilant
@@ -117,14 +116,12 @@ def test_upgrade_from_edge(juju: Juju, charm: str, continuous_writes) -> None:
         timeout=5 * MINUTE_SECS,
     )
 
-    # If leader is next to refresh, charm will be killed before action can succeed
-    with suppress(jubilant.TaskError):
-        logging.info("Resume upgrade")
-        juju.run(
-            unit=router_app_units[1],
-            action="resume-refresh",
-            wait=5 * MINUTE_SECS,
-        )
+    logging.info("Resume upgrade")
+    juju.run(
+        unit=router_app_units[1],
+        action="resume-refresh",
+        wait=5 * MINUTE_SECS,
+    )
 
     logging.info("Wait for upgrade to complete")
     juju.wait(
@@ -165,10 +162,19 @@ def test_fail_and_rollback(juju: Juju, charm: str, continuous_writes) -> None:
     logging.info("Ensure continuous writes are incrementing")
     check_server_writes_increment(juju, MYSQL_SERVER_APP_NAME)
 
+    tmp_folder = Path("tmp")
+    tmp_folder.mkdir(exist_ok=True)
+    tmp_folder_charm = Path(tmp_folder, charm).absolute()
+
+    shutil.copy(charm, tmp_folder_charm)
+
+    logging.info("Creating valid upgrade charm")
+    create_valid_upgrade_charm(tmp_folder_charm)
+
     logging.info("Re-refresh the charm")
     juju.refresh(
         app=MYSQL_ROUTER_APP_NAME,
-        path=charm,
+        path=tmp_folder_charm,
     )
 
     logging.info("Wait for rollback to complete")

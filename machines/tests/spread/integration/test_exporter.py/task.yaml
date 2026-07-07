@@ -1,6 +1,6 @@
-summary: test_exporter_new.py
+summary: test_exporter.py
 environment:
-  TEST_MODULE: test_exporter_new.py
+  TEST_MODULE: test_exporter.py
 execute: |
   tox run -e integration -- "tests/integration/integration/$TEST_MODULE" --alluredir="$SPREAD_TASK/allure-results"
 artifacts:

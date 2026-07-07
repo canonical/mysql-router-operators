@@ -1,6 +1,6 @@
-summary: test_shared_db_new.py
+summary: test_shared_db.py
 environment:
-  TEST_MODULE: test_shared_db_new.py
+  TEST_MODULE: test_shared_db.py
 execute: |
   # Re-enable when bug resolved: https://bugs.launchpad.net/charm-keystone/+bug/1990243
   # tox run -e integration -- "tests/integration/integration/$TEST_MODULE" --alluredir="$SPREAD_TASK/allure-results"

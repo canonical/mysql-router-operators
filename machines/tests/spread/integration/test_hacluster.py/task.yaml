@@ -1,6 +1,6 @@
-summary: test_hacluster_new.py
+summary: test_hacluster.py
 environment:
-  TEST_MODULE: test_hacluster_new.py
+  TEST_MODULE: test_hacluster.py
 execute: |
   tox run -e integration -- "tests/integration/integration/$TEST_MODULE" --alluredir="$SPREAD_TASK/allure-results"
 artifacts:

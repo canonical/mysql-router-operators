@@ -1,6 +1,6 @@
-summary: test_database_new.py
+summary: test_database.py
 environment:
-  TEST_MODULE: test_database_new.py
+  TEST_MODULE: test_database.py
 execute: |
   tox run -e integration -- "tests/integration/integration/$TEST_MODULE" --alluredir="$SPREAD_TASK/allure-results"
 artifacts:

@@ -1,213 +1,200 @@
 # Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-import asyncio
 import logging
 
-import pytest
-import tenacity
-from pytest_operator.plugin import OpsTest
+import jubilant_backports
+from jubilant_backports import Juju
+from tenacity import Retrying, stop_after_delay, wait_fixed
 
 from .. import architecture, juju_
-from ..helpers import (
-    MYSQL_DEFAULT_APP_NAME,
-    MYSQL_ROUTER_DEFAULT_APP_NAME,
-    execute_queries_against_unit,
-    get_data_integrator_credentials,
-    get_tls_certificate_issuer,
+from ..helpers import execute_queries_against_unit
+from ..helpers_new import (
+    MINUTE_SECS,
+    get_app_leader,
+    get_unit_certificate_issuer,
+    wait_for_apps_status,
 )
 
-logger = logging.getLogger(__name__)
-
-MYSQL_APP_NAME = MYSQL_DEFAULT_APP_NAME
-MYSQL_ROUTER_APP_NAME = MYSQL_ROUTER_DEFAULT_APP_NAME
 DATA_INTEGRATOR_APP_NAME = "data-integrator"
-SLOW_TIMEOUT = 15 * 60
-RETRY_TIMEOUT = 60
-TEST_DATABASE = "testdatabase"
-TEST_TABLE = "testtable"
+MYSQL_ROUTER_APP_NAME = "mysql-router"
+MYSQL_SERVER_APP_NAME = "mysql"
+
+TEST_DATABASE_NAME = "test_database"
+TEST_TABLE_NAME = "test_table"
 
 if juju_.is_3_or_higher:
-    tls_app_name = "self-signed-certificates"
-    tls_channel = "1/stable"
-    tls_config = {"ca-common-name": "Test CA"}
-    tls_series = "noble"
+    TLS_APP_NAME = "self-signed-certificates"
+    TLS_APP_BASE = "ubuntu@24.04"
+    TLS_APP_CHANNEL = "1/stable"
+    TLS_APP_CONFIG = {"ca-common-name": "Test CA"}
 else:
-    tls_app_name = "tls-certificates-operator"
-    tls_channel = "legacy/edge" if architecture.architecture == "arm64" else "legacy/stable"
-    tls_config = {"generate-self-signed-certificates": "true", "ca-common-name": "Test CA"}
-    tls_series = "jammy"
+    TLS_APP_NAME = "tls-certificates-operator"
+    TLS_APP_BASE = "ubuntu@22.04"
+    TLS_APP_CHANNEL = "legacy/edge" if architecture.architecture == "arm64" else "legacy/stable"
+    TLS_APP_CONFIG = {"ca-common-name": "Test CA", "generate-self-signed-certificates": "true"}
 
 
-@pytest.mark.abort_on_fail
-async def test_external_connectivity_with_data_integrator(
-    ops_test: OpsTest, charm, series
-) -> None:
-    """Test encryption when backend database is using TLS."""
-    logger.info("Deploy and relate all applications")
-    async with ops_test.fast_forward():
-        # deploy mysql first
-        await ops_test.model.deploy(
-            MYSQL_APP_NAME, channel="8.0/edge", config={"profile": "testing"}, num_units=1
-        )
-        data_integrator_config = {"database-name": TEST_DATABASE}
-
-        # tls, data-integrator and router
-        await asyncio.gather(
-            ops_test.model.deploy(
-                charm,
-                application_name=MYSQL_ROUTER_APP_NAME,
-                num_units=None,
-                series=series,
-            ),
-            ops_test.model.deploy(
-                tls_app_name,
-                application_name=tls_app_name,
-                channel=tls_channel,
-                config=tls_config,
-                series=tls_series,
-            ),
-            ops_test.model.deploy(
-                DATA_INTEGRATOR_APP_NAME,
-                application_name=DATA_INTEGRATOR_APP_NAME,
-                channel="latest/stable",
-                series=series,
-                config=data_integrator_config,
-            ),
-        )
-
-        await ops_test.model.relate(
-            f"{MYSQL_ROUTER_APP_NAME}:backend-database", f"{MYSQL_APP_NAME}:database"
-        )
-        await ops_test.model.relate(
-            f"{DATA_INTEGRATOR_APP_NAME}:mysql", f"{MYSQL_ROUTER_APP_NAME}:database"
-        )
-
-        logger.info("Waiting for applications to become active")
-        # We can safely wait only for data-integrator to be ready,
-        # given that it will only become active once all the other
-        # applications are ready.
-        await ops_test.model.wait_for_idle(
-            [DATA_INTEGRATOR_APP_NAME], status="active", timeout=SLOW_TIMEOUT
-        )
-
-        credentials = await get_data_integrator_credentials(ops_test, DATA_INTEGRATOR_APP_NAME)
-        databases = await execute_queries_against_unit(
-            credentials["endpoints"].split(",")[0].split(":")[0],
-            credentials["username"],
-            credentials["password"],
-            ["SHOW DATABASES;"],
-            port=credentials["endpoints"].split(",")[0].split(":")[1],
-        )
-        assert TEST_DATABASE in databases
-
-
-@pytest.mark.abort_on_fail
-async def test_external_connectivity_with_data_integrator_and_tls(ops_test: OpsTest) -> None:
-    """Test data integrator along with TLS operator"""
-    logger.info("Ensuring no data exists in the test database")
-
-    credentials = await get_data_integrator_credentials(ops_test, DATA_INTEGRATOR_APP_NAME)
-    [database_host, database_port] = credentials["endpoints"].split(",")[0].split(":")
-    mysqlrouter_unit = ops_test.model.applications[MYSQL_ROUTER_APP_NAME].units[0]
-
-    show_tables_sql = [
-        f"SHOW TABLES IN {TEST_DATABASE};",
-    ]
-    tables = await execute_queries_against_unit(
-        database_host,
-        credentials["username"],
-        credentials["password"],
-        show_tables_sql,
-        port=database_port,
+def test_data_integrator_connectivity(juju: Juju, charm: str, ubuntu_base: str) -> None:
+    """Test connectivity when backend database is using Data integrator."""
+    logging.info("Deploying all the applications")
+    juju.deploy(
+        charm=MYSQL_SERVER_APP_NAME,
+        app=MYSQL_SERVER_APP_NAME,
+        base=ubuntu_base,
+        channel="8.0/edge",
+        config={"profile": "testing"},
+        num_units=1,
     )
-    assert len(tables) == 0, f"Unexpected tables in the {TEST_DATABASE} database"
-
-    issuer = await get_tls_certificate_issuer(
-        ops_test,
-        mysqlrouter_unit.name,
-        host=database_host,
-        port=database_port,
+    juju.deploy(
+        charm=charm,
+        app=MYSQL_ROUTER_APP_NAME,
+        base=ubuntu_base,
+        num_units=1,
     )
-    assert "Issuer: CN = MySQL_Router_Auto_Generated_CA_Certificate" in issuer, (
-        "Expected mysqlrouter autogenerated certificate"
+    juju.deploy(
+        charm=DATA_INTEGRATOR_APP_NAME,
+        app=DATA_INTEGRATOR_APP_NAME,
+        base=ubuntu_base,
+        channel="latest/stable",
+        config={"database-name": TEST_DATABASE_NAME},
+        num_units=1,
+    )
+    juju.deploy(
+        charm=TLS_APP_NAME,
+        app=TLS_APP_NAME,
+        base=TLS_APP_BASE,
+        channel=TLS_APP_CHANNEL,
+        config=TLS_APP_CONFIG,
+        num_units=1,
     )
 
-    logger.info(f"Relating mysqlrouter with {tls_app_name}")
-    await ops_test.model.relate(
-        f"{MYSQL_ROUTER_APP_NAME}:certificates", f"{tls_app_name}:certificates"
+    logging.info("Relating the applications")
+    juju.integrate(
+        f"{MYSQL_SERVER_APP_NAME}:database",
+        f"{MYSQL_ROUTER_APP_NAME}:backend-database",
+    )
+    juju.integrate(
+        f"{DATA_INTEGRATOR_APP_NAME}:mysql",
+        f"{MYSQL_ROUTER_APP_NAME}:database",
     )
 
-    for attempt in tenacity.Retrying(
+    logging.info("Wait for applications to become active")
+    juju.wait(
+        ready=wait_for_apps_status(
+            jubilant_backports.all_active,
+            DATA_INTEGRATOR_APP_NAME,
+            MYSQL_ROUTER_APP_NAME,
+            MYSQL_SERVER_APP_NAME,
+        ),
+        timeout=20 * MINUTE_SECS,
+        delay=5.0,
+    )
+
+    data_integrator_leader = get_app_leader(juju, DATA_INTEGRATOR_APP_NAME)
+    data_integrator_creds = juju.run(
+        unit=data_integrator_leader,
+        action="get-credentials",
+    )
+
+    databases = execute_queries_against_unit(
+        username=data_integrator_creds.results["mysql"]["username"],
+        password=data_integrator_creds.results["mysql"]["password"],
+        host=data_integrator_creds.results["mysql"]["endpoints"].split(",")[0].split(":")[0],
+        port=data_integrator_creds.results["mysql"]["endpoints"].split(",")[0].split(":")[1],
+        queries=["SHOW DATABASES;"],
+    )
+
+    logging.info("Ensure the database is accessible externally")
+    assert TEST_DATABASE_NAME in databases
+
+
+def test_data_integrator_connectivity_with_tls(juju: Juju, charm: str, ubuntu_base: str) -> None:
+    """Test connectivity when backend database is using TLS."""
+    data_integrator_leader = get_app_leader(juju, DATA_INTEGRATOR_APP_NAME)
+    data_integrator_creds = juju.run(
+        unit=data_integrator_leader,
+        action="get-credentials",
+    )
+
+    mysql_user = data_integrator_creds.results["mysql"]["username"]
+    mysql_pass = data_integrator_creds.results["mysql"]["password"]
+    mysql_host = data_integrator_creds.results["mysql"]["endpoints"].split(",")[0].split(":")[0]
+    mysql_port = data_integrator_creds.results["mysql"]["endpoints"].split(",")[0].split(":")[1]
+
+    logging.info("Ensuring no data exists in the test database")
+    tables = execute_queries_against_unit(
+        username=mysql_user,
+        password=mysql_pass,
+        host=mysql_host,
+        port=mysql_port,
+        queries=[f"SHOW TABLES IN {TEST_DATABASE_NAME};"],
+    )
+    assert len(tables) == 0
+
+    router_address = f"{mysql_host}:{mysql_port}"
+    router_leader = get_app_leader(juju, MYSQL_ROUTER_APP_NAME)
+    router_issuer = get_unit_certificate_issuer(juju, router_leader, address=router_address)
+    assert "CN = MySQL_Router_Auto_Generated_CA_Certificate" in router_issuer
+
+    logging.info("Relating TLS application")
+    juju.integrate(
+        f"{MYSQL_ROUTER_APP_NAME}:certificates",
+        f"{TLS_APP_NAME}:certificates",
+    )
+
+    for attempt in Retrying(
+        stop=stop_after_delay(5 * MINUTE_SECS),
+        wait=wait_fixed(10),
         reraise=True,
-        stop=tenacity.stop_after_delay(RETRY_TIMEOUT),
-        wait=tenacity.wait_fixed(10),
     ):
         with attempt:
-            issuer = await get_tls_certificate_issuer(
-                ops_test,
-                mysqlrouter_unit.name,
-                host=database_host,
-                port=database_port,
-            )
-            assert "CN = Test CA" in issuer, (
-                f"Expected mysqlrouter certificate from {tls_app_name}"
+            assert "CN = Test CA" in (
+                get_unit_certificate_issuer(juju, router_leader, address=router_address)
             )
 
-    create_table_and_insert_data_sql = [
-        f"CREATE TABLE {TEST_DATABASE}.{TEST_TABLE} (id int, primary key(id));",
-        f"INSERT INTO {TEST_DATABASE}.{TEST_TABLE} VALUES (1), (2);",
-    ]
-    await execute_queries_against_unit(
-        database_host,
-        credentials["username"],
-        credentials["password"],
-        create_table_and_insert_data_sql,
-        port=database_port,
+    execute_queries_against_unit(
+        username=mysql_user,
+        password=mysql_pass,
+        host=mysql_host,
+        port=mysql_port,
+        queries=[
+            f"CREATE TABLE {TEST_DATABASE_NAME}.{TEST_TABLE_NAME} (id int, primary key(id));",
+            f"INSERT INTO {TEST_DATABASE_NAME}.{TEST_TABLE_NAME} VALUES (1), (2);",
+        ],
         commit=True,
     )
 
-    select_data_sql = [
-        f"SELECT * FROM {TEST_DATABASE}.{TEST_TABLE};",
-    ]
-    data = await execute_queries_against_unit(
-        database_host,
-        credentials["username"],
-        credentials["password"],
-        select_data_sql,
-        port=database_port,
+    data = execute_queries_against_unit(
+        username=mysql_user,
+        password=mysql_pass,
+        host=mysql_host,
+        port=mysql_port,
+        queries=[f"SELECT * FROM {TEST_DATABASE_NAME}.{TEST_TABLE_NAME};"],
     )
-    assert data == [1, 2], f"Unexpected data in table {TEST_DATABASE}.{TEST_TABLE}"
+    assert data == [1, 2]
 
-    logger.info(f"Removing relation between mysqlrouter and {tls_app_name}")
-    await ops_test.model.applications[MYSQL_ROUTER_APP_NAME].remove_relation(
-        f"{MYSQL_ROUTER_APP_NAME}:certificates", f"{tls_app_name}:certificates"
+    logging.info("Unrelating TLS application")
+    juju.remove_relation(
+        f"{MYSQL_ROUTER_APP_NAME}:certificates",
+        f"{TLS_APP_NAME}:certificates",
     )
 
-    for attempt in tenacity.Retrying(
+    for attempt in Retrying(
+        stop=stop_after_delay(5 * MINUTE_SECS),
+        wait=wait_fixed(10),
         reraise=True,
-        stop=tenacity.stop_after_delay(RETRY_TIMEOUT),
-        wait=tenacity.wait_fixed(10),
     ):
         with attempt:
-            issuer = await get_tls_certificate_issuer(
-                ops_test,
-                mysqlrouter_unit.name,
-                host=database_host,
-                port=database_port,
-            )
-            assert "Issuer: CN = MySQL_Router_Auto_Generated_CA_Certificate" in issuer, (
-                "Expected mysqlrouter autogenerated certificate"
+            assert "CN = MySQL_Router_Auto_Generated_CA_Certificate" in (
+                get_unit_certificate_issuer(juju, router_leader, address=router_address)
             )
 
-    select_data_sql = [
-        f"SELECT * FROM {TEST_DATABASE}.{TEST_TABLE};",
-    ]
-    data = await execute_queries_against_unit(
-        database_host,
-        credentials["username"],
-        credentials["password"],
-        select_data_sql,
-        port=database_port,
+    data = execute_queries_against_unit(
+        username=mysql_user,
+        password=mysql_pass,
+        host=mysql_host,
+        port=mysql_port,
+        queries=[f"SELECT * FROM {TEST_DATABASE_NAME}.{TEST_TABLE_NAME};"],
     )
-    assert data == [1, 2], f"Unexpected data in table {TEST_DATABASE}.{TEST_TABLE}"
+    assert data == [1, 2]

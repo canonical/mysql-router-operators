@@ -1,370 +1,386 @@
-#!/usr/bin/env python3
 # Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-import asyncio
 import logging
 import subprocess
 
-import pytest
-import tenacity
-from pytest_operator.plugin import OpsTest
+import jubilant_backports
+from jubilant_backports import Juju
+from tenacity import Retrying, stop_after_delay, wait_fixed
 
 from .. import architecture, juju_
-from ..helpers import (
-    MYSQL_DEFAULT_APP_NAME,
-    MYSQL_ROUTER_DEFAULT_APP_NAME,
-    execute_queries_against_unit,
-    get_data_integrator_credentials,
-    get_juju_status,
-    get_machine_address,
-    get_tls_certificate_issuer,
+from ..helpers import execute_queries_against_unit
+from ..helpers_new import (
+    MINUTE_SECS,
+    get_app_leader,
+    get_app_units,
+    get_unit_certificate_issuer,
+    wait_for_apps_status,
+    wait_for_unit_message,
+    wait_for_unit_status,
 )
 
-logger = logging.getLogger(__name__)
-
-
-MYSQL_APP_NAME = MYSQL_DEFAULT_APP_NAME
-MYSQL_ROUTER_APP_NAME = MYSQL_ROUTER_DEFAULT_APP_NAME
 DATA_INTEGRATOR_APP_NAME = "data-integrator"
 HA_CLUSTER_APP_NAME = "hacluster"
-TIMEOUT = 20 * 60
-SMALL_TIMEOUT = 5 * 60
-TEST_DATABASE = "testdatabase"
+MYSQL_ROUTER_APP_NAME = "mysql-router"
+MYSQL_SERVER_APP_NAME = "mysql"
+
+MYSQL_ROUTER_VIP = None
+TEST_DATABASE_NAME = "test_database"
 
 if juju_.is_3_or_higher:
-    tls_app_name = "self-signed-certificates"
-    tls_channel = "1/stable"
-    tls_config = {"ca-common-name": "Test CA"}
-    tls_series = "noble"
+    TLS_APP_NAME = "self-signed-certificates"
+    TLS_APP_BASE = "ubuntu@24.04"
+    TLS_APP_CHANNEL = "1/stable"
+    TLS_APP_CONFIG = {"ca-common-name": "Test CA"}
 else:
-    tls_app_name = "tls-certificates-operator"
-    tls_channel = "legacy/edge" if architecture.architecture == "arm64" else "legacy/stable"
-    tls_config = {"generate-self-signed-certificates": "true", "ca-common-name": "Test CA"}
-    tls_series = "jammy"
-
-vip = None
+    TLS_APP_NAME = "tls-certificates-operator"
+    TLS_APP_BASE = "ubuntu@22.04"
+    TLS_APP_CHANNEL = "legacy/edge" if architecture.architecture == "arm64" else "legacy/stable"
+    TLS_APP_CONFIG = {"ca-common-name": "Test CA", "generate-self-signed-certificates": "true"}
 
 
-async def ensure_database_accessible_from_vip(
-    ops_test: OpsTest, avoid_unit: str | None = None
-) -> None:
-    """Ensure that the database is access from the VIP."""
-    logger.info("Ensure database accessible via VIP")
-    credentials = await get_data_integrator_credentials(
-        ops_test, DATA_INTEGRATOR_APP_NAME, avoid_unit=avoid_unit
+def test_external_connectivity_with_ha_cluster(juju: Juju, charm: str, ubuntu_base: str) -> None:
+    """Test external connectivity with data-integrator ha-cluster."""
+    logging.info("Deploying all the applications")
+    juju.deploy(
+        charm=MYSQL_SERVER_APP_NAME,
+        app=MYSQL_SERVER_APP_NAME,
+        base=ubuntu_base,
+        channel="8.0/edge",
+        config={"profile": "testing"},
+        num_units=1,
     )
-    hostname = credentials["endpoints"].split(",")[0].split(":")[0]
-    global vip
-    assert hostname == vip, "An endpoint hostname other than VIP returned"
-
-    databases = await execute_queries_against_unit(
-        hostname,
-        credentials["username"],
-        credentials["password"],
-        ["SHOW DATABASES;"],
-        port=credentials["endpoints"].split(",")[0].split(":")[1],
+    juju.deploy(
+        charm=charm,
+        app=MYSQL_ROUTER_APP_NAME,
+        base=ubuntu_base,
+        num_units=1,
     )
-    assert TEST_DATABASE in databases, "Test database not externally accessible through VIP"
+    juju.deploy(
+        charm=DATA_INTEGRATOR_APP_NAME,
+        app=DATA_INTEGRATOR_APP_NAME,
+        base=ubuntu_base,
+        channel="latest/stable",
+        config={"database-name": TEST_DATABASE_NAME},
+        num_units=4,
+    )
 
+    logging.info("Relating the applications")
+    juju.integrate(
+        f"{MYSQL_SERVER_APP_NAME}:database",
+        f"{MYSQL_ROUTER_APP_NAME}:backend-database",
+    )
+    juju.integrate(
+        f"{DATA_INTEGRATOR_APP_NAME}:mysql",
+        f"{MYSQL_ROUTER_APP_NAME}:database",
+    )
 
-async def generate_next_available_ip(
-    ops_test: OpsTest, starting_ip: str, exclude_ips: list[str] = []
-) -> str:
-    """Compute and return the next available IP in the model's subnet."""
-    all_ip_addresses = [
-        await get_machine_address(ops_test, unit) for unit in ops_test.model.units.values()
+    logging.info("Wait for applications to become active")
+    juju.wait(
+        ready=wait_for_apps_status(
+            jubilant_backports.all_active,
+            DATA_INTEGRATOR_APP_NAME,
+            MYSQL_ROUTER_APP_NAME,
+            MYSQL_SERVER_APP_NAME,
+        ),
+        timeout=20 * MINUTE_SECS,
+        delay=5.0,
+    )
+
+    data_integrator_leader = get_app_leader(juju, DATA_INTEGRATOR_APP_NAME)
+    data_integrator_creds = juju.run(unit=data_integrator_leader, action="get-credentials")
+
+    mysql_user = data_integrator_creds.results["mysql"]["username"]
+    mysql_pass = data_integrator_creds.results["mysql"]["password"]
+    mysql_host = data_integrator_creds.results["mysql"]["endpoints"].split(",")[0].split(":")[0]
+    mysql_port = data_integrator_creds.results["mysql"]["endpoints"].split(",")[0].split(":")[1]
+
+    databases = execute_queries_against_unit(
+        username=mysql_user,
+        password=mysql_pass,
+        host=mysql_host,
+        port=mysql_port,
+        queries=["SHOW DATABASES;"],
+    )
+
+    logging.info("Ensure the database is accessible externally")
+    assert TEST_DATABASE_NAME in databases
+
+    logging.info("Ensure provided host in a data-integrator IP")
+    assert mysql_host in [
+        get_unit_machine_address(juju, DATA_INTEGRATOR_APP_NAME, unit)
+        for unit in get_app_units(juju, DATA_INTEGRATOR_APP_NAME)
     ]
 
-    base, last_octet = starting_ip.rsplit(".", 1)
-    last_octet = int(last_octet)
-    for _ in range(len(all_ip_addresses)):
-        last_octet += 1
-        if last_octet > 254:
-            last_octet = 2
-        addr = ".".join([base, str(last_octet)])
-        if addr not in all_ip_addresses and addr not in exclude_ips:
-            return addr
-
-    assert False, "Unable to compute next available IP"
-
-
-@pytest.mark.abort_on_fail
-async def test_external_connectivity_vip_with_hacluster(ops_test: OpsTest, charm, series) -> None:
-    """Test external connectivity and VIP with data-integrator hacluster."""
-    logger.info("Deploy and relate all applications without hacluster")
-    # speed up test by firing update-status more frequently (for hacluster)
-    async with ops_test.fast_forward("60s"):
-        # deploy data-integrator with mysqlrouter
-        _, _, data_integrator_application = await asyncio.gather(
-            ops_test.model.deploy(
-                MYSQL_APP_NAME,
-                channel="8.0/edge",
-                config={"profile": "testing"},
-                num_units=1,
-            ),
-            ops_test.model.deploy(
-                charm,
-                application_name=MYSQL_ROUTER_APP_NAME,
-                num_units=None,
-                series=series,
-            ),
-            ops_test.model.deploy(
-                DATA_INTEGRATOR_APP_NAME,
-                application_name=DATA_INTEGRATOR_APP_NAME,
-                channel="latest/stable",
-                series=series,
-                config={"database-name": TEST_DATABASE},
-                num_units=4,
-            ),
-        )
-
-        await ops_test.model.relate(
-            f"{MYSQL_ROUTER_APP_NAME}:backend-database", f"{MYSQL_APP_NAME}:database"
-        )
-        await ops_test.model.relate(
-            f"{DATA_INTEGRATOR_APP_NAME}:mysql", f"{MYSQL_ROUTER_APP_NAME}:database"
-        )
-
-        logger.info("Waiting for applications to become active")
-        # We can safely wait only for data-integrator to be ready,
-        # given that it will only become active once all the other
-        # applications are ready.
-        await ops_test.model.wait_for_idle(
-            [DATA_INTEGRATOR_APP_NAME], status="active", timeout=TIMEOUT
-        )
-
-        logger.info("Ensure the database is accessible externally")
-        credentials = await get_data_integrator_credentials(ops_test, DATA_INTEGRATOR_APP_NAME)
-        hostname = credentials["endpoints"].split(",")[0].split(":")[0]
-        databases = await execute_queries_against_unit(
-            hostname,
-            credentials["username"],
-            credentials["password"],
-            ["SHOW DATABASES;"],
-            port=credentials["endpoints"].split(",")[0].split(":")[1],
-        )
-        assert TEST_DATABASE in databases, "Test database not externally accessible"
-
-        logger.info("Ensure provided host in a data-integrator ip")
-        data_integrator_ips = [
-            await get_machine_address(ops_test, unit) for unit in data_integrator_application.units
-        ]
-        assert hostname in data_integrator_ips, "Hostname is not a data-integrator"
-
-        logger.info("Deploy and relate hacluster")
-        await ops_test.model.deploy(
-            HA_CLUSTER_APP_NAME,
-            channel="2.4/stable",
-        )
-
-        await ops_test.model.relate(
-            f"{DATA_INTEGRATOR_APP_NAME}:juju-info", f"{HA_CLUSTER_APP_NAME}:juju-info"
-        )
-        await ops_test.model.relate(f"{MYSQL_ROUTER_APP_NAME}:ha", f"{HA_CLUSTER_APP_NAME}:ha")
-
-        logger.info("Configure the VIP on mysqlrouter")
-        global vip
-        vip = await generate_next_available_ip(ops_test, hostname)
-
-        await ops_test.model.applications[MYSQL_ROUTER_APP_NAME].set_config({"vip": vip})
-
-        for attempt in tenacity.Retrying(
-            reraise=True,
-            stop=tenacity.stop_after_delay(TIMEOUT),
-            wait=tenacity.wait_fixed(10),
-        ):
-            with attempt:
-                credentials = await get_data_integrator_credentials(
-                    ops_test, DATA_INTEGRATOR_APP_NAME
-                )
-                hostname = credentials["endpoints"].split(",")[0].split(":")[0]
-                assert hostname == vip, "Configured VIP not in effect"
-
-        await ops_test.model.wait_for_idle(status="active", timeout=TIMEOUT)
-
-        await ensure_database_accessible_from_vip(ops_test)
-
-        logger.info("Reconfiguring the VIP")
-        vip = await generate_next_available_ip(ops_test, vip, exclude_ips=[vip])
-
-        await ops_test.model.applications[MYSQL_ROUTER_APP_NAME].set_config({"vip": vip})
-
-        for attempt in tenacity.Retrying(
-            reraise=True,
-            stop=tenacity.stop_after_delay(TIMEOUT),
-            wait=tenacity.wait_fixed(10),
-        ):
-            with attempt:
-                credentials = await get_data_integrator_credentials(
-                    ops_test, DATA_INTEGRATOR_APP_NAME
-                )
-                hostname = credentials["endpoints"].split(",")[0].split(":")[0]
-                assert hostname == vip, "Reconfigured VIP not in effect"
-
-        await ops_test.model.wait_for_idle(status="active", timeout=TIMEOUT)
-
-        logger.info("Ensure database accessible via reconfigured VIP")
-        await ensure_database_accessible_from_vip(ops_test)
-
-
-@pytest.mark.abort_on_fail
-async def test_hacluster_failover(ops_test: OpsTest) -> None:
-    """Test the failover of the hacluster leader."""
-    logger.info("Stopping the lxd container for the hacluster primary")
-    hacluster_leader_unit = None
-    for unit in ops_test.model.applications[HA_CLUSTER_APP_NAME].units:
-        if await unit.is_leader_from_status():
-            hacluster_leader_unit = unit
-            break
-
-    subprocess.check_output(
-        ["lxc", "stop", hacluster_leader_unit.machine.hostname], encoding="utf-8"
+    logging.info("Deploying HACluster")
+    juju.deploy(
+        charm=HA_CLUSTER_APP_NAME,
+        app=HA_CLUSTER_APP_NAME,
+        base=ubuntu_base,
+        channel="2.4/stable",
+        num_units=1,
     )
 
-    logger.info("Waiting till machine is stopped")
-    for attempt in tenacity.Retrying(
+    logging.info("Relating HACluster")
+    juju.integrate(
+        f"{DATA_INTEGRATOR_APP_NAME}:juju-info",
+        f"{HA_CLUSTER_APP_NAME}:juju-info",
+    )
+    juju.integrate(
+        f"{MYSQL_ROUTER_APP_NAME}:ha",
+        f"{HA_CLUSTER_APP_NAME}:ha",
+    )
+
+    global MYSQL_ROUTER_VIP
+    MYSQL_ROUTER_VIP = generate_next_available_ip(juju, mysql_host, [])
+
+    logging.info("Configuring MySQL Router VIP")
+    juju.config(
+        app=MYSQL_ROUTER_APP_NAME,
+        values={"vip": MYSQL_ROUTER_VIP},
+    )
+    juju.wait(
+        ready=wait_for_apps_status(jubilant_backports.all_active),
+        timeout=10 * MINUTE_SECS,
+        delay=5.0,
+    )
+
+    logging.info("Ensuring MySQL Server is accessible via VIP")
+    check_server_accessible_virtual_ip(juju, MYSQL_ROUTER_VIP)
+
+    MYSQL_ROUTER_VIP = generate_next_available_ip(juju, mysql_host, [MYSQL_ROUTER_VIP])
+
+    logging.info("Configuring MySQL Router VIP")
+    juju.config(
+        app=MYSQL_ROUTER_APP_NAME,
+        values={"vip": MYSQL_ROUTER_VIP},
+    )
+    juju.wait(
+        ready=wait_for_apps_status(jubilant_backports.all_active),
+        timeout=10 * MINUTE_SECS,
+        delay=5.0,
+    )
+
+    logging.info("Ensuring MySQL Server is accessible via VIP")
+    check_server_accessible_virtual_ip(juju, MYSQL_ROUTER_VIP)
+
+
+def test_ha_cluster_failover(juju: Juju, ubuntu_base: str) -> None:
+    """Test the failover of the ha-cluster leader."""
+    data_integrator_leader = get_app_leader(juju, DATA_INTEGRATOR_APP_NAME)
+    data_integrator_units = get_app_units(juju, DATA_INTEGRATOR_APP_NAME)
+    data_integrator_units.remove(data_integrator_leader)
+
+    machine_id = get_unit_machine_id(juju, DATA_INTEGRATOR_APP_NAME, data_integrator_units[0])
+
+    logging.info("Stopping LXC container")
+    subprocess.run(
+        ["lxc", "stop", "--force", machine_id],
+        check=True,
+    )
+
+    global MYSQL_ROUTER_VIP
+    if not MYSQL_ROUTER_VIP:
+        raise ValueError("MySQL Router VIP is not configured")
+
+    logging.info("Ensuring MySQL Server is accessible via VIP")
+    check_server_accessible_virtual_ip(juju, MYSQL_ROUTER_VIP)
+
+    logging.info("Starting LXC container")
+    subprocess.run(
+        ["lxc", "start", machine_id],
+        check=True,
+    )
+
+    logging.info("Waiting till machine is stopped")
+    juju.wait(
+        ready=lambda status: status.model.model_status.current != "unknown",
+        timeout=10 * MINUTE_SECS,
+        successes=1,
+    )
+
+
+def test_router_certificates(juju: Juju) -> None:
+    """Test the certificates of the MySQL Router application."""
+    data_integrator_leader = get_app_leader(juju, DATA_INTEGRATOR_APP_NAME)
+    data_integrator_creds = juju.run(
+        unit=data_integrator_leader,
+        action="get-credentials",
+    )
+
+    mysql_addr = data_integrator_creds.results["mysql"]["endpoints"].split(",")[0]
+
+    router_leader = get_app_leader(juju, MYSQL_ROUTER_APP_NAME)
+    router_issuer = get_unit_certificate_issuer(juju, router_leader, address=mysql_addr)
+    assert "CN = MySQL_Router_Auto_Generated_CA_Certificate" in router_issuer
+
+    logging.info("Deploying TLS")
+    juju.deploy(
+        charm=TLS_APP_NAME,
+        app=TLS_APP_NAME,
+        base=TLS_APP_BASE,
+        channel=TLS_APP_CHANNEL,
+        config=TLS_APP_CONFIG,
+        num_units=1,
+    )
+
+    juju.wait(
+        ready=wait_for_apps_status(jubilant_backports.all_active, TLS_APP_NAME),
+        timeout=20 * MINUTE_SECS,
+    )
+
+    global MYSQL_ROUTER_VIP
+    if not MYSQL_ROUTER_VIP:
+        raise ValueError("MySQL Router VIP is not configured")
+
+    logging.info("Ensuring MySQL Server is accessible via VIP")
+    check_server_accessible_virtual_ip(juju, MYSQL_ROUTER_VIP)
+
+    logging.info("Relating TLS application")
+    juju.integrate(
+        f"{MYSQL_ROUTER_APP_NAME}:certificates",
+        f"{TLS_APP_NAME}:certificates",
+    )
+
+    for attempt in Retrying(
+        stop=stop_after_delay(5 * MINUTE_SECS),
+        wait=wait_fixed(10),
         reraise=True,
-        stop=tenacity.stop_after_delay(TIMEOUT),
-        wait=tenacity.wait_fixed(10),
     ):
         with attempt:
-            assert "unknown" in get_juju_status(ops_test.model.name), (
-                "Stopped machine's workload status not unknown"
+            assert "CN = Test CA" in (
+                get_unit_certificate_issuer(juju, router_leader, address=mysql_addr)
             )
 
-    await ops_test.model.wait_for_idle(status="active", timeout=TIMEOUT)
-
-    logger.info("Ensuring database still accessible via VIP")
-    avoid_unit = hacluster_leader_unit.principal_unit
-    await ensure_database_accessible_from_vip(ops_test, avoid_unit=avoid_unit)
-
-    logger.info("Starting stopped machine")
-    subprocess.check_output(
-        ["lxc", "start", hacluster_leader_unit.machine.hostname], encoding="utf-8"
+    logging.info("Unrelating TLS application")
+    juju.remove_relation(
+        f"{MYSQL_ROUTER_APP_NAME}:certificates",
+        f"{TLS_APP_NAME}:certificates",
     )
 
-    logger.info("Waiting till machine is started")
-    for attempt in tenacity.Retrying(
+    for attempt in Retrying(
+        stop=stop_after_delay(5 * MINUTE_SECS),
+        wait=wait_fixed(10),
         reraise=True,
-        stop=tenacity.stop_after_delay(TIMEOUT),
-        wait=tenacity.wait_fixed(10),
     ):
         with attempt:
-            assert "unknown" not in get_juju_status(ops_test.model.name), (
-                "Started machine's workload status is unknown"
+            assert "CN = MySQL_Router_Auto_Generated_CA_Certificate" in (
+                get_unit_certificate_issuer(juju, router_leader, address=mysql_addr)
             )
 
-    await ops_test.model.wait_for_idle(status="active", timeout=TIMEOUT)
+    logging.info("Ensuring MySQL Server is accessible via VIP")
+    check_server_accessible_virtual_ip(juju, MYSQL_ROUTER_VIP)
 
 
-@pytest.mark.abort_on_fail
-async def test_tls_along_with_ha_cluster(ops_test: OpsTest, series) -> None:
-    """Ensure that mysqlrouter is externally accessible with TLS integration."""
-    logger.info("Deploying TLS")
-    async with ops_test.fast_forward("60s"):
-        await ops_test.model.deploy(
-            tls_app_name,
-            application_name=tls_app_name,
-            channel=tls_channel,
-            config=tls_config,
-            series=tls_series,
-        )
+def test_router_without_vip(juju: Juju) -> None:
+    """Test the lack of VIP in the MySQL Router application."""
+    router_leader = get_app_leader(juju, MYSQL_ROUTER_APP_NAME)
 
-    logger.info("Ensure auto-generated TLS cert before relation with TLS")
-    mysqlrouter_unit = ops_test.model.applications[MYSQL_ROUTER_APP_NAME].units[0]
-    credentials = await get_data_integrator_credentials(ops_test, DATA_INTEGRATOR_APP_NAME)
-    [database_host, database_port] = credentials["endpoints"].split(",")[0].split(":")
-    issuer = await get_tls_certificate_issuer(
-        ops_test,
-        mysqlrouter_unit.name,
-        host=database_host,
-        port=database_port,
-    )
-    assert "Issuer: CN = MySQL_Router_Auto_Generated_CA_Certificate" in issuer, (
-        "Expected mysqlrouter autogenerated certificate"
+    logging.info("Resetting MySQL Router VIP")
+    juju.config(
+        app=MYSQL_ROUTER_APP_NAME,
+        values={"vip": ""},
     )
 
-    logger.info("Ensure router externally accessible before TLS integration")
-    await ensure_database_accessible_from_vip(ops_test)
+    expected_status = "blocked"
+    expected_message = "ha integration used without vip configuration"
 
-    logger.info("Relate TLS with MySQLRouter")
-    await ops_test.model.relate(
-        f"{MYSQL_ROUTER_APP_NAME}:certificates", f"{tls_app_name}:certificates"
+    juju.wait(
+        ready=lambda status: all((
+            wait_for_unit_status(MYSQL_ROUTER_APP_NAME, router_leader, expected_status)(status),
+            wait_for_unit_message(MYSQL_ROUTER_APP_NAME, router_leader, expected_message)(status),
+        )),
+        timeout=5 * MINUTE_SECS,
     )
 
-    await ops_test.model.wait_for_idle([tls_app_name], status="active", timeout=TIMEOUT)
+    logging.info("Unrelating HACluster")
+    juju.remove_relation(
+        f"{HA_CLUSTER_APP_NAME}:ha",
+        f"{MYSQL_ROUTER_APP_NAME}:ha",
+    )
 
-    for attempt in tenacity.Retrying(
+    logging.info("Wait for applications to become active")
+    juju.wait(
+        ready=wait_for_apps_status(jubilant_backports.all_active, MYSQL_ROUTER_APP_NAME),
+        timeout=20 * MINUTE_SECS,
+        delay=5.0,
+    )
+
+    global MYSQL_ROUTER_VIP
+
+    logging.info("Ensuring that VIP is not the data-integrator endpoint hostname")
+    data_integrator_leader = get_app_leader(juju, DATA_INTEGRATOR_APP_NAME)
+    data_integrator_creds = juju.run(unit=data_integrator_leader, action="get-credentials")
+
+    mysql_host = data_integrator_creds.results["mysql"]["endpoints"].split(",")[0].split(":")[0]
+    assert mysql_host != MYSQL_ROUTER_VIP
+
+
+def check_server_accessible_virtual_ip(juju: Juju, vip: str) -> None:
+    """Check whether the MySQL Server application can be accessed from the virtual IP."""
+    for attempt in Retrying(
+        stop=stop_after_delay(10 * MINUTE_SECS),
+        wait=wait_fixed(10),
         reraise=True,
-        stop=tenacity.stop_after_delay(TIMEOUT),
-        wait=tenacity.wait_fixed(10),
     ):
         with attempt:
-            issuer = await get_tls_certificate_issuer(
-                ops_test,
-                mysqlrouter_unit.name,
-                host=database_host,
-                port=database_port,
-            )
-            assert "CN = Test CA" in issuer, (
-                f"Expected mysqlrouter certificate from {tls_app_name}"
-            )
+            integrator_leader = get_app_leader(juju, DATA_INTEGRATOR_APP_NAME)
+            integrator_creds = juju.run(unit=integrator_leader, action="get-credentials")
 
-    logger.info("Ensure router externally accessible after TLS integration")
-    await ensure_database_accessible_from_vip(ops_test)
+            mysql_user = integrator_creds.results["mysql"]["username"]
+            mysql_pass = integrator_creds.results["mysql"]["password"]
+            mysql_host = integrator_creds.results["mysql"]["endpoints"].split(",")[0].split(":")[0]
+            mysql_port = integrator_creds.results["mysql"]["endpoints"].split(",")[0].split(":")[1]
+            assert mysql_host == vip
 
-    logger.info(f"Removing relation between mysqlrouter and {tls_app_name}")
-    await ops_test.model.applications[MYSQL_ROUTER_APP_NAME].remove_relation(
-        f"{MYSQL_ROUTER_APP_NAME}:certificates", f"{tls_app_name}:certificates"
+    databases = execute_queries_against_unit(
+        username=mysql_user,
+        password=mysql_pass,
+        host=mysql_host,
+        port=mysql_port,
+        queries=["SHOW DATABASES;"],
     )
-
-    for attempt in tenacity.Retrying(
-        reraise=True,
-        stop=tenacity.stop_after_delay(TIMEOUT),
-        wait=tenacity.wait_fixed(10),
-    ):
-        with attempt:
-            issuer = await get_tls_certificate_issuer(
-                ops_test,
-                mysqlrouter_unit.name,
-                host=database_host,
-                port=database_port,
-            )
-            assert "Issuer: CN = MySQL_Router_Auto_Generated_CA_Certificate" in issuer, (
-                "Expected mysqlrouter autogenerated certificate"
-            )
-
-    logger.info("Ensure router externally accessible after TLS integration removed")
-    await ensure_database_accessible_from_vip(ops_test)
+    assert TEST_DATABASE_NAME in databases
 
 
-@pytest.mark.abort_on_fail
-async def test_remove_vip(ops_test: OpsTest) -> None:
-    """Ensure removal of VIP results in connection through data-integrator."""
-    async with ops_test.fast_forward("60s"):
-        logger.info("Resetting the VIP")
-        await ops_test.model.applications[MYSQL_ROUTER_APP_NAME].reset_config(["vip"])
-        await ops_test.model.block_until(
-            lambda: ops_test.model.applications[MYSQL_ROUTER_APP_NAME].units[0].workload_status
-            == "blocked",
-            timeout=300,
-        )
-        assert (
-            ops_test.model.applications[MYSQL_ROUTER_APP_NAME].units[0].workload_status_message
-            == "ha integration used without vip configuration"
-        ), "Incorrect mysql router unit status message"
+def generate_next_available_ip(juju: Juju, starting_ip: str, exclude_ips: list[str]) -> str:
+    """Compute and return the next available IP in the model's subnet."""
+    status = juju.status()
 
-        logger.info("Removing the relation between hacluster and mysqlrouter")
-        await ops_test.model.applications[MYSQL_ROUTER_APP_NAME].remove_relation(
-            f"{MYSQL_ROUTER_APP_NAME}:ha", f"{HA_CLUSTER_APP_NAME}:ha"
-        )
-        await ops_test.model.wait_for_idle(
-            [MYSQL_ROUTER_APP_NAME], status="active", timeout=TIMEOUT
-        )
+    all_ips = []
+    for app, app_status in status.apps.items():
+        for unit, unit_status in app_status.units.items():
+            all_ips.extend(status.machines[unit_status.machine].ip_addresses)
 
-    logger.info("Ensuring that VIP is not the data-integrator endpoint hostname")
-    credentials = await get_data_integrator_credentials(ops_test, DATA_INTEGRATOR_APP_NAME)
-    hostname = credentials["endpoints"].split(",")[0].split(":")[0]
-    logger.info(f"Data integrator endpoint hostname is {hostname}")
-    assert hostname != vip, "Hostname is VIP"
+    base = str(starting_ip.rsplit(".", 1)[0])
+    octet = int(starting_ip.rsplit(".", 1)[1])
+
+    for _ in enumerate(all_ips):
+        octet += 1
+        if octet > 254:
+            octet = 2
+
+        next_ip = ".".join([str(base), str(octet)])
+        if next_ip not in all_ips and next_ip not in exclude_ips:
+            return next_ip
+
+    raise ValueError("Unable to compute next available IP")
+
+
+def get_unit_machine_address(juju: Juju, app_name: str, unit_name: str) -> str:
+    """Get the machine address for the given unit."""
+    status = juju.status()
+    machine_id = status.apps[app_name].units[unit_name].machine
+    machine_ips = status.machines[machine_id].ip_addresses
+
+    return machine_ips[0]
+
+
+def get_unit_machine_id(juju: Juju, app_name: str, unit_name: str) -> str:
+    """Get the machine name for the given unit."""
+    status = juju.status()
+    machine_id = status.apps[app_name].units[unit_name].machine
+    machine_id = status.machines[machine_id].instance_id
+
+    return machine_id

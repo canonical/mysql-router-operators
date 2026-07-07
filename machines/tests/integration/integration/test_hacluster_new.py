@@ -175,13 +175,9 @@ def test_ha_cluster_failover(juju: Juju, ubuntu_base: str) -> None:
     machine_id = get_unit_machine_id(juju, DATA_INTEGRATOR_APP_NAME, data_integrator_units[0])
 
     logging.info("Stopping LXC container")
-    subprocess.check_call(["lxc", "stop", machine_id])
-
-    logging.info("Waiting till machine is stopped")
-    juju.wait(
-        ready=wait_for_unit_status(DATA_INTEGRATOR_APP_NAME, data_integrator_units[0], "unknown"),
-        timeout=10 * MINUTE_SECS,
-        successes=1,
+    subprocess.run(
+        ["lxc", "stop", "--force", machine_id],
+        check=True,
     )
 
     global MYSQL_ROUTER_VIP
@@ -192,7 +188,10 @@ def test_ha_cluster_failover(juju: Juju, ubuntu_base: str) -> None:
     check_server_accessible_virtual_ip(juju, MYSQL_ROUTER_VIP)
 
     logging.info("Starting LXC container")
-    subprocess.check_call(["lxc", "start", machine_id])
+    subprocess.run(
+        ["lxc", "start", machine_id],
+        check=True,
+    )
 
     logging.info("Waiting till machine is stopped")
     juju.wait(

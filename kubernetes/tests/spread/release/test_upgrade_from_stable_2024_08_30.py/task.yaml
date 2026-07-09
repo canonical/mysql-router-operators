@@ -1,0 +1,12 @@
+summary: test_upgrade_from_stable.py
+environment:
+  TEST_MODULE: test_upgrade_from_stable.py
+  MYSQL_ROUTER_IMAGE: ghcr.io/canonical/charmed-mysql@sha256:89b8305613f6ce94f78a7c9b4baedef78f2816fd6bc74c00f6607bc5e57bd8e6
+  CHARM_REVISION_AMD64: 154
+  CHARM_REVISION_ARM64: 155
+execute: |
+  tox run -e integration -- "tests/integration/release/$TEST_MODULE" --alluredir="$SPREAD_TASK/allure-results"
+artifacts:
+  - allure-results
+backends:
+  - -lxd-vm  # This task requires charm built on different architecture from host

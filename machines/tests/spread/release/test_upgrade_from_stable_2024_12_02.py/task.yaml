@@ -1,0 +1,11 @@
+summary: test_upgrade_from_stable.py
+environment:
+  TEST_MODULE: test_upgrade_from_stable.py
+  CHARM_REVISION_AMD64: 223
+  CHARM_REVISION_ARM64: 225
+execute: |
+  tox run -e integration -- "tests/integration/release/$TEST_MODULE" --alluredir="$SPREAD_TASK/allure-results"
+artifacts:
+  - allure-results
+backends:
+  - -lxd-vm  # This task requires charm built on different architecture from host

@@ -1,0 +1,36 @@
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju status --model testing --format json
+[32mINFO    [0m root:conftest.py:44 Clearing continuous writes
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju run --model testing --format json mysql-test-app/0 clear-continuous-writes
+[32mINFO    [0m root:conftest.py:46 Starting continuous writes
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju run --model testing --format json mysql-test-app/0 start-continuous-writes
+[32mINFO    [0m root:test_upgrade.py:138 Ensure continuous writes are incrementing
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju run --model testing --format json mysql/0 get-cluster-status --wait 300s --params /root/snap/juju/common/tmpmlbxtop1
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju run --model testing --format json mysql/0 get-password --params /root/snap/juju/common/tmpchf_s1q7
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju run --model testing --format json mysql/0 get-password --params /root/snap/juju/common/tmphq5o77sb
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju status --model testing --format json
+[32mINFO    [0m root:test_upgrade.py:147 Creating invalid upgrade charm
+[32mINFO    [0m root:test_upgrade.py:150 Refresh the charm
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju refresh --model testing mysql-router --path /root/spread_project/tmp/mysql-router_ubuntu@26.04-amd64.charm
+[32mINFO    [0m root:test_upgrade.py:156 Wait for upgrade to fail on first upgrading unit
+[32mINFO    [0m root:test_upgrade.py:162 Ensure continuous writes are incrementing
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju run --model testing --format json mysql/0 get-cluster-status --wait 300s --params /root/snap/juju/common/tmpp0brzec8
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju run --model testing --format json mysql/0 get-password --params /root/snap/juju/common/tmphf5o9ka0
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju run --model testing --format json mysql/0 get-password --params /root/snap/juju/common/tmpfgh4ka7_
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju status --model testing --format json
+[32mINFO    [0m root:test_upgrade.py:171 Creating valid upgrade charm
+[32mINFO    [0m root:test_upgrade.py:174 Re-refresh the charm
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju refresh --model testing mysql-router --path /root/spread_project/tmp/mysql-router_ubuntu@26.04-amd64.charm
+[32mINFO    [0m root:test_upgrade.py:180 Wait for rollback to complete
+[32mINFO    [0m root:test_upgrade.py:186 Ensure continuous writes after rollback procedure
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju run --model testing --format json mysql/0 get-cluster-status --wait 300s --params /root/snap/juju/common/tmpb1_663k_
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju run --model testing --format json mysql/0 get-password --params /root/snap/juju/common/tmpfktcvyok
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju run --model testing --format json mysql/0 get-password --params /root/snap/juju/common/tmpthshdjdr
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju status --model testing --format json
+[32mINFO    [0m root:conftest.py:51 Clearing continuous writes
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju run --model testing --format json mysql-test-app/0 clear-continuous-writes

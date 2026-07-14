@@ -1,0 +1,9 @@
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m root:test_hacluster.py:280 Resetting MySQL Router VIP
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju config --model testing mysql-router vip=
+[32mINFO    [0m root:test_hacluster.py:297 Unrelating HACluster
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju remove-relation --model testing hacluster:ha mysql-router:ha
+[32mINFO    [0m root:test_hacluster.py:303 Wait for applications to become active
+[32mINFO    [0m root:test_hacluster.py:312 Ensuring that VIP is not the data-integrator endpoint hostname
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json data-integrator/0 get-credentials

@@ -280,6 +280,10 @@ class RunningWorkload(Workload):
                 "routing:bootstrap_rw.connection_sharing=1",
                 "--conf-set-option",
                 "routing:bootstrap_ro.connection_sharing=1",
+                "--conf-set-option",
+                "connection_pool.idle_timeout=60",
+                "--conf-set-option",
+                "connection_pool.max_idle_server_connections=1000",
             ])
         return command
 
@@ -352,7 +356,7 @@ class RunningWorkload(Workload):
         if not self._container.router_config_file.exists():
             return False
         return self._parse_connection_sharing_from_config(
-            self._container.router_config_file.read_text()
+            self._container.router_config_file.read_text(),
         )
 
     @property
@@ -361,7 +365,9 @@ class RunningWorkload(Workload):
 
         During bootstrap, MySQL Router creates a config file which includes a generated username.
         """
-        return self._parse_username_from_config(self._container.router_config_file.read_text())
+        return self._parse_username_from_config(
+            self._container.router_config_file.read_text(),
+        )
 
     def _restart(self, *, event, tls: bool) -> None:
         """Restart MySQL Router to enable or disable TLS."""
@@ -445,14 +451,14 @@ class RunningWorkload(Workload):
 
         # Check if connection sharing config has changed
         connection_sharing_config = bool(self._charm.config.get("connection-sharing"))
-        connection_sharing_changed = (
-            self._container.mysql_router_service_enabled
-            and connection_sharing_config != self._router_connection_sharing_enabled
-        )
+        connection_sharing_changed = all((
+            self._container.mysql_router_service_enabled,
+            self._router_connection_sharing_enabled != connection_sharing_config,
+        ))
         if connection_sharing_changed:
             logger.info(
-                f"Connection sharing config changed to {connection_sharing_config}, "
-                "rebootstrapping router"
+                f"Connection sharing config changed to {connection_sharing_config}. "
+                "Restarting router"
             )
 
         # If the router is not in the cluster set, disable to restart it

@@ -15,7 +15,7 @@ options:
       variables, temporary tables, and prepared statements may not work as expected
       or will prevent connection pooling until the connection is reset.
 
-      See https://dev.mysql.com/doc/mysql-router/8.0/en/mysql-router-general-features-connection-sharing.html
+      See https://dev.mysql.com/doc/mysql-router/8.4/en/mysql-router-general-features-connection-sharing.html
     type: boolean
     default: false
 

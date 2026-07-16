@@ -8,12 +8,6 @@ To summarize:
 * [View MySQLRouter traces on Grafana](#heading--view)
 
 
-[note type="caution"]
-**Warning:** This is feature is in development. It is **not recommended** for production environments. 
-
-This feature is available for Charmed MySQL Router revision 208+ only.
-[/note]
-
 ## Prerequisites
 Enabling tracing with Tempo requires that you:
 - Have deployed a Charmed MySQL application
@@ -80,8 +74,8 @@ juju find-offers <k8s_controller_name>:
 Below is a sample output where `k8s` is the K8s controller name and `cos` is the model where `cos-lite` and `tempo-k8s` are deployed:
 
 ```shell
-Store  URL                            Access  Interfaces
-k8s    admin/cos.tempo-k8s            admin   tracing:tracing
+Store  URL                  Access  Interfaces
+k8s    admin/cos.tempo-k8s  admin   tracing:tracing
 ```
 
 Next, consume this offer so that it is reachable from the current model:
@@ -119,17 +113,17 @@ Machine  State    Address        Inst id        Base          AZ  Message
 0        started  10.205.193.72  juju-7f1fdf-0  ubuntu@26.04      Running
 1        started  10.205.193.43  juju-7f1fdf-1  ubuntu@26.04      Running
 
-Integration provider                           Requirer                                       Interface                    Type         Message
-mysql-router:cos                               mysql-router:cos                               cos                          peer         
-mysql-router:database                          mysql-test-app:database                        mysql_client                 subordinate  
-mysql-router:tls                               mysql-router:tls                               tls                          peer         
-mysql-router:upgrade-version-a                 mysql-router:upgrade-version-a                 upgrade                      peer         
-mysql-test-app:application-peers               mysql-test-app:application-peers               application-peers            peer         
-mysql:database                                 mysql-router:backend-database                  mysql_client                 regular      
-mysql:database-peers                           mysql:database-peers                           mysql_peers                  peer         
-mysql:restart                                  mysql:restart                                  rolling_op                   peer         
-mysql:upgrade                                  mysql:upgrade                                  upgrade                      peer         
-tempo-k8s:tracing                              mysql-router:tracing                           tracing                      regular 
+Integration provider              Requirer                          Interface          Type         Message
+mysql-router:cos                  mysql-router:cos                  cos                peer
+mysql-router:database             mysql-test-app:database           mysql_client       subordinate
+mysql-router:tls                  mysql-router:tls                  tls                peer
+mysql-router:refresh-v-three      mysql-router:refresh-v-three      refresh            peer
+mysql-test-app:application-peers  mysql-test-app:application-peers  application-peers  peer
+mysql:database                    mysql-router:backend-database     mysql_client       regular
+mysql:database-peers              mysql:database-peers              mysql_peers        peer
+mysql:rolling_ops                 mysql:rolling_ops                 rolling_op         peer
+mysql:refresh-v-three             mysql:refresh-v-three             refresh            peer
+tempo-k8s:tracing                 mysql-router:tracing              tracing            regular
 ```
 
 [note]

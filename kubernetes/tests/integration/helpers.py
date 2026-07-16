@@ -16,18 +16,20 @@ from .connector import MySQLConnector
 
 
 def execute_queries_against_unit(
-    unit_address: str,
     username: str,
     password: str,
+    host: str,
+    port: int,
     queries: list[str],
     commit: bool = False,
 ) -> list:
     """Execute given MySQL queries on a unit.
 
     Args:
-        unit_address: The public IP address of the unit to execute the queries on
         username: The MySQL username
         password: The MySQL password
+        host: The host to connect to in order to execute queries
+        port: The port to connect to in order to execute queries
         queries: A list of queries to execute
         commit: A keyword arg indicating whether there are any writes queries
 
@@ -35,7 +37,8 @@ def execute_queries_against_unit(
         A list of rows that were potentially queried
     """
     connection = mysql.connector.connect(
-        host=unit_address,
+        host=host,
+        port=port,
         user=username,
         password=password,
     )

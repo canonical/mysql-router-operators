@@ -1,0 +1,35 @@
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju version --format json
+[32mINFO    [0m root:test_hacluster.py:45 Deploying all the applications
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju deploy --model testing mysql mysql --base ubuntu@22.04 --channel 8.0/edge --config profile=testing
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju deploy --model testing ./mysql-router_ubuntu@22.04-amd64.charm mysql-router --base ubuntu@22.04
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju deploy --model testing data-integrator data-integrator --base ubuntu@22.04 --channel latest/stable --config database-name=test_database --num-units 4
+[32mINFO    [0m root:test_hacluster.py:69 Relating the applications
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju integrate --model testing mysql:database mysql-router:backend-database
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju integrate --model testing data-integrator:mysql mysql-router:database
+[32mINFO    [0m root:test_hacluster.py:79 Wait for applications to become active
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json data-integrator/3 get-credentials
+[32mINFO    [0m root:test_hacluster.py:107 Ensure the database is accessible externally
+[32mINFO    [0m root:test_hacluster.py:110 Ensure provided host in a data-integrator IP
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m root:test_hacluster.py:116 Deploying HACluster
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju deploy --model testing hacluster hacluster --base ubuntu@22.04 --channel 2.4/stable
+[32mINFO    [0m root:test_hacluster.py:125 Relating HACluster
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju integrate --model testing data-integrator:juju-info hacluster:juju-info
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju integrate --model testing mysql-router:ha hacluster:ha
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m root:test_hacluster.py:138 Configuring MySQL Router VIP
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju config --model testing mysql-router vip=10.174.78.170
+[32mINFO    [0m root:test_hacluster.py:149 Ensuring MySQL Server is accessible via VIP
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json data-integrator/3 get-credentials
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m root:test_hacluster.py:154 Configuring MySQL Router VIP
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju config --model testing mysql-router vip=10.174.78.171
+[32mINFO    [0m root:test_hacluster.py:165 Ensuring MySQL Server is accessible via VIP
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json data-integrator/3 get-credentials

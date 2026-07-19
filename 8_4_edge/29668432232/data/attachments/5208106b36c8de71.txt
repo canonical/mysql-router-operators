@@ -1,0 +1,17 @@
+[32mINFO    [0m root:test_upgrade.py:83 Ensure continuous writes are incrementing
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju run --model testing --format json mysql-k8s/0 get-cluster-status --wait 300s --params /root/snap/juju/common/tmp4bwhqroe
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju run --model testing --format json mysql-k8s/0 get-password --params /root/snap/juju/common/tmp0o3pjfmw
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju run --model testing --format json mysql-k8s/0 get-password --params /root/snap/juju/common/tmp_zrogw7l
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju status --model testing --format json
+[32mINFO    [0m root:test_upgrade.py:90 Refresh the charm
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju refresh --model testing mysql-router-k8s --path ./mysql-router-k8s_ubuntu@26.04-amd64.charm --resource mysql-router-image=ghcr.io/canonical/charmed-mysql@sha256:8562333ec3933935bf7742ecf11306ef6fbf6265767ce24538b05475b9ca0853
+[32mINFO    [0m root:test_upgrade.py:99 Wait for refresh to start
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju status --model testing --format json
+[32mINFO    [0m root:test_upgrade.py:119 Wait for first unit to upgrade
+[32mINFO    [0m root:test_upgrade.py:127 Resume upgrade
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju run --model testing --format json mysql-router-k8s/0 resume-refresh --wait 300s
+[32mINFO    [0m root:test_upgrade.py:134 Wait for upgrade to complete

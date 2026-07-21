@@ -12,6 +12,7 @@ from ..helpers_new import (
     MINUTE_SECS,
     check_router_metrics_endpoint,
     get_app_leader,
+    get_unit_address,
     get_unit_certificate_issuer,
     wait_for_apps_status,
 )
@@ -22,8 +23,6 @@ MYSQL_TEST_APP_NAME = "mysql-test-app"
 OTEL_COLLECTOR_APP_NAME = "opentelemetry-collector"
 
 TLS_APP_NAME = "self-signed-certificates"
-
-MYSQL_ROUTER_SOCKET = "/var/snap/charmed-mysql/common/run/mysqlrouter/mysql.sock"
 
 
 def test_exporter_endpoint(juju: Juju, charm: str, ubuntu_base: str) -> None:
@@ -88,7 +87,8 @@ def test_exporter_endpoint(juju: Juju, charm: str, ubuntu_base: str) -> None:
     )
 
     router_leader = get_app_leader(juju, MYSQL_ROUTER_APP_NAME)
-    router_issuer = get_unit_certificate_issuer(juju, router_leader, socket=MYSQL_ROUTER_SOCKET)
+    router_address = get_unit_address(juju, MYSQL_ROUTER_APP_NAME, router_leader)
+    router_issuer = get_unit_certificate_issuer(juju, router_leader, router_address, 6446)
     assert "CN=MySQL_Router_Auto_Generated_CA_Certificate" in router_issuer
 
     logging.info("Deploying TLS application")
@@ -142,7 +142,7 @@ def test_exporter_endpoint(juju: Juju, charm: str, ubuntu_base: str) -> None:
     ):
         with attempt:
             assert "CN=Test CA" in (
-                get_unit_certificate_issuer(juju, router_leader, socket=MYSQL_ROUTER_SOCKET)
+                get_unit_certificate_issuer(juju, router_leader, router_address, 6446)
             )
 
     logging.info("Unrelating TLS application")
@@ -158,5 +158,5 @@ def test_exporter_endpoint(juju: Juju, charm: str, ubuntu_base: str) -> None:
     ):
         with attempt:
             assert "CN=MySQL_Router_Auto_Generated_CA_Certificate" in (
-                get_unit_certificate_issuer(juju, router_leader, socket=MYSQL_ROUTER_SOCKET)
+                get_unit_certificate_issuer(juju, router_leader, router_address, 6446)
             )

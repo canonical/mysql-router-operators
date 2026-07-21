@@ -10,6 +10,7 @@ from tenacity import Retrying, stop_after_delay, wait_fixed
 from ..helpers_new import (
     MINUTE_SECS,
     get_app_leader,
+    get_unit_address,
     get_unit_certificate_issuer,
     wait_for_apps_status,
 )
@@ -19,8 +20,6 @@ MYSQL_SERVER_APP_NAME = "mysql"
 MYSQL_TEST_APP_NAME = "mysql-test-app"
 
 TLS_APP_NAME = "self-signed-certificates"
-
-MYSQL_ROUTER_SOCKET = "/var/snap/charmed-mysql/common/run/mysqlrouter/mysql.sock"
 
 
 def test_deploy_and_relate(juju: Juju, charm: str, ubuntu_base: str) -> None:
@@ -80,6 +79,7 @@ def test_deploy_and_relate(juju: Juju, charm: str, ubuntu_base: str) -> None:
 def test_connected_encryption(juju: Juju) -> None:
     """Test encryption when backend database is using TLS."""
     router_leader = get_app_leader(juju, MYSQL_ROUTER_APP_NAME)
+    router_address = get_unit_address(juju, MYSQL_ROUTER_APP_NAME, router_leader)
 
     for attempt in Retrying(
         stop=stop_after_delay(5 * MINUTE_SECS),
@@ -88,7 +88,7 @@ def test_connected_encryption(juju: Juju) -> None:
     ):
         with attempt:
             assert "CN=MySQL_Router_Auto_Generated_CA_Certificate" in (
-                get_unit_certificate_issuer(juju, router_leader, socket=MYSQL_ROUTER_SOCKET)
+                get_unit_certificate_issuer(juju, router_leader, router_address, 6446)
             )
 
     logging.info("Relating TLS application")
@@ -104,7 +104,7 @@ def test_connected_encryption(juju: Juju) -> None:
     ):
         with attempt:
             assert "CN=Test CA" in (
-                get_unit_certificate_issuer(juju, router_leader, socket=MYSQL_ROUTER_SOCKET)
+                get_unit_certificate_issuer(juju, router_leader, router_address, 6446)
             )
 
     logging.info("Unrelating TLS application")
@@ -120,5 +120,5 @@ def test_connected_encryption(juju: Juju) -> None:
     ):
         with attempt:
             assert "CN=MySQL_Router_Auto_Generated_CA_Certificate" in (
-                get_unit_certificate_issuer(juju, router_leader, socket=MYSQL_ROUTER_SOCKET)
+                get_unit_certificate_issuer(juju, router_leader, router_address, 6446)
             )

@@ -377,6 +377,29 @@ class RunningWorkload(Workload):
         )
         logger.debug("Enabled MySQL Router exporter service")
 
+    def _router_running_correctly(self, event) -> bool:
+        """Determine whether the router is running correctly for the current connectivity mode."""
+        charm_port_exposed = self._charm.is_externally_accessible(event=event)
+        socket_file_exists = self._container.path("/run/mysqlrouter/mysql.sock").exists()
+
+        # - Kubernetes (charm_port_exposed=None):
+        #   There is no socket/TCP distinction at the charm level, so the service enabled state is used.
+        #
+        # - Machines TCP mode (charm_port_exposed=True):
+        #   MySQL Router never creates socket files in this mode, so socket file existence
+        #   cannot be used as a proxy. Instead, "service enabled AND no stale socket file" is used.
+        #   Without the stale-socket-file check, a switch from socket→TCP would not trigger a re-bootstrap.
+        #
+        # - Machines socket mode (charm_port_exposed=False):
+        #   The socket file at /run/mysqlrouter/mysql.sock is created by MySQL Router on startup and
+        #   removed on clean shutdown, making it reliable proxy for "router is running in socket mode".
+        if charm_port_exposed is None:
+            return self._container.mysql_router_service_enabled
+        elif charm_port_exposed:
+            return self._container.mysql_router_service_enabled and not socket_file_exists
+        else:
+            return socket_file_exists
+
     def reconcile(
         self,
         *,
@@ -394,11 +417,6 @@ class RunningWorkload(Workload):
                 "`key`, `certificate`, and `certificate_authority` arguments required when tls=True"
             )
 
-        # If the host or port changes, MySQL Router will receive a topology change notification.
-        # Therefore, if the host or port changes, we do not need to restart MySQL Router.
-        is_charm_exposed = self._charm.is_externally_accessible(event=event)
-        socket_file_exists = self._container.path("/run/mysqlrouter/mysql.sock").exists()
-
         # If the router is not in the cluster set, disable to restart it
         # This can happen when the server is scaled to zero and back
         try:
@@ -411,8 +429,12 @@ class RunningWorkload(Workload):
                 "Disabling router"
             )
 
+        # If the router is NOT running correctly, _disable_router() is called to wipe the data
+        # and config directories before the subsequent _enable_router() re-bootstraps.
+        # This is essential: a failed bootstrap may write partial keyring data that causes
+        # the next bootstrap attempt to fail with "Error: Keyring decryption failed".
         if any((
-            is_charm_exposed == socket_file_exists,
+            self._router_running_correctly(event) is False,
             self._router_id not in cluster_set_routers,
         )):
             self._disable_router()

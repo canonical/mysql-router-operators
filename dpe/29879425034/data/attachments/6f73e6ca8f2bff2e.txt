@@ -1,0 +1,13 @@
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju version --format json
+[32mINFO    [0m root:test_exporter_with_tls.py:41 Deploying all the applications
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju deploy --model testing mysql mysql --base ubuntu@22.04 --channel 8.0/edge --config profile=testing
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju deploy --model testing ./mysql-router_ubuntu@22.04-amd64.charm mysql-router --base ubuntu@22.04
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju deploy --model testing mysql-test-app mysql-test-app --base ubuntu@22.04 --channel latest/edge
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju deploy --model testing grafana-agent grafana-agent --base ubuntu@22.04 --channel 1/stable
+[32mINFO    [0m root:test_exporter_with_tls.py:71 Relating the applications
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju integrate --model testing mysql:database mysql-router:backend-database
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju integrate --model testing mysql-test-app:database mysql-router:database
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju integrate --model testing grafana-agent:juju-info mysql-test-app:juju-info
+[32mINFO    [0m root:test_exporter_with_tls.py:85 Wait for applications to become active
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing mysql-router/0 'openssl s_client -showcerts -starttls mysql -unix /var/snap/charmed-mysql/common/run/mysqlrouter/mysql.sock < /dev/null | openssl x509 -text | grep Issuer'

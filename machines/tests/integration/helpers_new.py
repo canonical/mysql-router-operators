@@ -119,13 +119,11 @@ def get_unit_address(juju: Juju, app_name: str, unit_name: str) -> str:
     raise Exception("No application unit found")
 
 
-def get_unit_certificate_issuer(juju: Juju, unit_name: str, address=None, socket=None) -> str:
+def get_unit_certificate_issuer(juju: Juju, unit_name: str, host: str, port: int) -> str:
     """Get the TLS certificate issuer string."""
-    connect_args = f"-connect {address}" if address else f"-unix {socket}"
-
     output = juju.ssh(
         command=(
-            f"openssl s_client -showcerts -starttls mysql {connect_args} < /dev/null "
+            f"openssl s_client -showcerts -starttls mysql -connect {host}:{port} < /dev/null "
             f"| openssl x509 -text "
             f"| grep Issuer"
         ),

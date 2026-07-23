@@ -91,16 +91,16 @@ def test_external_connectivity_with_ha_cluster(juju: Juju, charm: str, ubuntu_ba
     data_integrator_leader = get_app_leader(juju, DATA_INTEGRATOR_APP_NAME)
     data_integrator_creds = juju.run(unit=data_integrator_leader, action="get-credentials")
 
-    mysql_user = data_integrator_creds.results["mysql"]["username"]
-    mysql_pass = data_integrator_creds.results["mysql"]["password"]
-    mysql_host = data_integrator_creds.results["mysql"]["endpoints"].split(",")[0].split(":")[0]
-    mysql_port = data_integrator_creds.results["mysql"]["endpoints"].split(",")[0].split(":")[1]
+    router_user = data_integrator_creds.results["mysql"]["username"]
+    router_pass = data_integrator_creds.results["mysql"]["password"]
+    router_host = data_integrator_creds.results["mysql"]["endpoints"].split(",")[0].split(":")[0]
+    router_port = data_integrator_creds.results["mysql"]["endpoints"].split(",")[0].split(":")[1]
 
     databases = execute_queries_against_unit(
-        username=mysql_user,
-        password=mysql_pass,
-        host=mysql_host,
-        port=mysql_port,
+        username=router_user,
+        password=router_pass,
+        host=router_host,
+        port=router_port,
         queries=["SHOW DATABASES;"],
     )
 
@@ -108,7 +108,7 @@ def test_external_connectivity_with_ha_cluster(juju: Juju, charm: str, ubuntu_ba
     assert TEST_DATABASE_NAME in databases
 
     logging.info("Ensure provided host in a data-integrator IP")
-    assert mysql_host in [
+    assert router_host in [
         get_unit_machine_address(juju, DATA_INTEGRATOR_APP_NAME, unit)
         for unit in get_app_units(juju, DATA_INTEGRATOR_APP_NAME)
     ]
@@ -133,7 +133,7 @@ def test_external_connectivity_with_ha_cluster(juju: Juju, charm: str, ubuntu_ba
     )
 
     global MYSQL_ROUTER_VIP
-    MYSQL_ROUTER_VIP = generate_next_available_ip(juju, mysql_host, [])
+    MYSQL_ROUTER_VIP = generate_next_available_ip(juju, router_host, [])
 
     logging.info("Configuring MySQL Router VIP")
     juju.config(
@@ -149,7 +149,7 @@ def test_external_connectivity_with_ha_cluster(juju: Juju, charm: str, ubuntu_ba
     logging.info("Ensuring MySQL Server is accessible via VIP")
     check_server_accessible_virtual_ip(juju, MYSQL_ROUTER_VIP)
 
-    MYSQL_ROUTER_VIP = generate_next_available_ip(juju, mysql_host, [MYSQL_ROUTER_VIP])
+    MYSQL_ROUTER_VIP = generate_next_available_ip(juju, router_host, [MYSQL_ROUTER_VIP])
 
     logging.info("Configuring MySQL Router VIP")
     juju.config(
@@ -209,10 +209,11 @@ def test_router_certificates(juju: Juju) -> None:
         action="get-credentials",
     )
 
-    mysql_addr = data_integrator_creds.results["mysql"]["endpoints"].split(",")[0]
+    router_host = data_integrator_creds.results["mysql"]["endpoints"].split(",")[0].split(":")[0]
+    router_port = data_integrator_creds.results["mysql"]["endpoints"].split(",")[0].split(":")[1]
 
     router_leader = get_app_leader(juju, MYSQL_ROUTER_APP_NAME)
-    router_issuer = get_unit_certificate_issuer(juju, router_leader, address=mysql_addr)
+    router_issuer = get_unit_certificate_issuer(juju, router_leader, router_host, router_port)
     assert "CN = MySQL_Router_Auto_Generated_CA_Certificate" in router_issuer
 
     logging.info("Deploying TLS")
@@ -250,7 +251,7 @@ def test_router_certificates(juju: Juju) -> None:
     ):
         with attempt:
             assert "CN = Test CA" in (
-                get_unit_certificate_issuer(juju, router_leader, address=mysql_addr)
+                get_unit_certificate_issuer(juju, router_leader, router_host, router_port)
             )
 
     logging.info("Unrelating TLS application")
@@ -266,7 +267,7 @@ def test_router_certificates(juju: Juju) -> None:
     ):
         with attempt:
             assert "CN = MySQL_Router_Auto_Generated_CA_Certificate" in (
-                get_unit_certificate_issuer(juju, router_leader, address=mysql_addr)
+                get_unit_certificate_issuer(juju, router_leader, router_host, router_port)
             )
 
     logging.info("Ensuring MySQL Server is accessible via VIP")

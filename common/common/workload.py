@@ -344,7 +344,6 @@ class RunningWorkload(Workload):
         """Check if connection sharing is enabled in the router config file."""
         config = configparser.ConfigParser()
         config.read_string(config_file_text)
-        # Check if connection_sharing is set to 1 in routing:bootstrap_rw section
         try:
             return config.get("routing:bootstrap_rw", "connection_sharing") == "1"
         except (configparser.NoSectionError, configparser.NoOptionError):
@@ -458,7 +457,7 @@ class RunningWorkload(Workload):
         if connection_sharing_changed:
             logger.info(
                 f"Connection sharing config changed to {connection_sharing_config}. "
-                "Restarting router"
+                "Bootstrapping router"
             )
 
         # If the router is not in the cluster set, disable to restart it

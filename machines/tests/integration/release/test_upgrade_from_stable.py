@@ -39,26 +39,26 @@ def continuous_writes(juju: Juju):
 
 
 @markers.amd64_only
-def test_upgrade_from_stable_amd(juju: Juju, charm: str):
+def test_upgrade_from_stable_amd(juju: Juju, charm: str, ubuntu_base: str):
     """Simple test to ensure that all MySQL stable revisions can be upgraded."""
     revision = os.getenv("CHARM_REVISION_AMD64")
     if revision is None:
         pytest.skip(f"No revision for {architecture.architecture} architecture")
 
-    deploy_stable(juju, int(revision))
+    deploy_stable(juju, ubuntu_base, int(revision))
 
     with continuous_writes(juju):
         upgrade_from_stable(juju, charm)
 
 
 @markers.arm64_only
-def test_upgrade_from_stable_arm(juju: Juju, charm: str):
+def test_upgrade_from_stable_arm(juju: Juju, charm: str, ubuntu_base: str):
     """Simple test to ensure that all MySQL stable revisions can be upgraded."""
     revision = os.getenv("CHARM_REVISION_ARM64")
     if revision is None:
         pytest.skip(f"No revision for {architecture.architecture} architecture")
 
-    deploy_stable(juju, int(revision))
+    deploy_stable(juju, ubuntu_base, int(revision))
 
     with continuous_writes(juju):
         upgrade_from_stable(juju, charm)
@@ -67,13 +67,13 @@ def test_upgrade_from_stable_arm(juju: Juju, charm: str):
 # TODO: add s390x test
 
 
-def deploy_stable(juju: Juju, revision: int) -> None:
+def deploy_stable(juju: Juju, ubuntu_base: str, revision: int) -> None:
     """Ensure that the MySQL, MySQL Router and application charms get deployed."""
     logging.info("Deploying all the applications")
     juju.deploy(
         charm=MYSQL_SERVER_APP_NAME,
         app=MYSQL_SERVER_APP_NAME,
-        base="ubuntu@22.04",
+        base=ubuntu_base,
         channel="8.0/stable",
         config={"profile": "testing"},
         num_units=1,
@@ -82,7 +82,7 @@ def deploy_stable(juju: Juju, revision: int) -> None:
     juju.deploy(
         charm=MYSQL_ROUTER_APP_NAME,
         app=MYSQL_ROUTER_APP_NAME,
-        base="ubuntu@22.04",
+        base=ubuntu_base,
         channel="dpe/candidate",
         revision=revision,
         num_units=1,
@@ -91,7 +91,7 @@ def deploy_stable(juju: Juju, revision: int) -> None:
     juju.deploy(
         charm=MYSQL_TEST_APP_NAME,
         app=MYSQL_TEST_APP_NAME,
-        base="ubuntu@22.04",
+        base=ubuntu_base,
         channel="latest/edge",
         num_units=3,
     )

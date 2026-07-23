@@ -185,10 +185,11 @@ def get_mysql_max_written_value(juju: Juju, app_name: str, unit_name: str) -> in
     credentials = get_mysql_server_credentials(juju, unit_name, "charmed-operator")
 
     output = execute_queries_against_unit(
-        get_unit_address(juju, app_name, unit_name),
-        credentials["username"],
-        credentials["password"],
-        ["SELECT MAX(number) FROM `continuous_writes`.`data`;"],
+        username=credentials["username"],
+        password=credentials["password"],
+        host=get_unit_address(juju, app_name, unit_name),
+        port=3306,
+        queries=["SELECT MAX(number) FROM `continuous_writes`.`data`;"],
     )
     return output[0]
 
@@ -264,10 +265,11 @@ def verify_mysql_test_data(juju: Juju, app_name: str, table_name: str, value: st
     ):
         with attempt:
             output = execute_queries_against_unit(
-                get_unit_address(juju, app_name, mysql_app_leader),
-                credentials["username"],
-                credentials["password"],
-                select_queries,
+                username=credentials["username"],
+                password=credentials["password"],
+                host=get_unit_address(juju, app_name, mysql_app_leader),
+                port=3306,
+                queries=select_queries,
             )
             assert output[0] == value
 

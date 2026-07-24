@@ -10,6 +10,7 @@ import pytest
 from jubilant_backports import Juju
 
 from .. import architecture, markers
+from ..conftest import continuous_writes
 from ..helpers_new import (
     METADATA,
     MINUTE_SECS,
@@ -23,21 +24,7 @@ MYSQL_ROUTER_APP_NAME = "mysql-router-k8s"
 MYSQL_SERVER_APP_NAME = "mysql-k8s"
 MYSQL_TEST_APP_NAME = "mysql-test-app"
 
-
-@contextmanager
-def continuous_writes(juju: Juju):
-    """Starts continuous writes to the MySQL cluster for a test and clear the writes at the end."""
-    test_app_leader = get_app_leader(juju, MYSQL_TEST_APP_NAME)
-
-    logging.info("Clearing continuous writes")
-    juju.run(test_app_leader, "clear-continuous-writes")
-    logging.info("Starting continuous writes")
-    juju.run(test_app_leader, "start-continuous-writes")
-
-    yield
-
-    logging.info("Clearing continuous writes")
-    juju.run(test_app_leader, "clear-continuous-writes")
+CONTINUOUS_WRITES_CTX = contextmanager(continuous_writes)
 
 
 @markers.amd64_only
@@ -50,7 +37,7 @@ def test_upgrade_from_stable_amd(juju: Juju, charm: str, ubuntu_base: str):
 
     deploy_stable(juju, ubuntu_base, int(revision), image)
 
-    with continuous_writes(juju):
+    with CONTINUOUS_WRITES_CTX(juju):
         upgrade_from_stable(juju, charm)
 
 
@@ -64,7 +51,7 @@ def test_upgrade_from_stable_arm(juju: Juju, charm: str, ubuntu_base: str):
 
     deploy_stable(juju, ubuntu_base, int(revision), image)
 
-    with continuous_writes(juju):
+    with CONTINUOUS_WRITES_CTX(juju):
         upgrade_from_stable(juju, charm)
 
 

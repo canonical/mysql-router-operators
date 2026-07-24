@@ -11,12 +11,12 @@ The charmhub track `8.0` is currently used by [the legacy charm](/t/15370?channe
 
 ## Revisions:
 
-|  Channel  | amd64 | arm64 |
-|:---------|:-----:|:-----:|
-| `dpe/candidate` | [355 (`jammy`) / 356 (`focal`)](/t/15360?channel=dpe/candidate) |   [354 (`jammy`)](/t/15360?channel=dpe/candidate)   |
-|                                  | [223 (`jammy`) / 224 (`focal`)](/t/15360?channel=dpe/candidate) |   [225 (`jammy`)](/t/15360?channel=dpe/candidate)   |
-|                                  | [198 (`jammy`) / 197 (`focal`)](/t/14073?channel=dpe/candidate) |   -   |
-|                                  | [119 (`jammy`) / 118 (`focal`)](/t/12319?channel=dpe/candidate) |   -   |
+| Channel         |                 amd64                 |                      arm64                      |
+|:----------------|:-------------------------------------:|:-----------------------------------------------:|
+| `dpe/candidate` | [355](/t/15360?channel=dpe/candidate) | [354 (`jammy`)](/t/15360?channel=dpe/candidate) |
+|                 | [223](/t/15360?channel=dpe/candidate) | [225 (`jammy`)](/t/15360?channel=dpe/candidate) |
+|                 | [198](/t/14073?channel=dpe/candidate) |                        -                        |
+|                 | [119](/t/12319?channel=dpe/candidate) |                        -                        |
 
 [note]
 Due to the [subordinate nature](https://juju.is/docs/sdk/charm-taxonomy#heading--subordinate-charms) of this charm, several [revisions](https://juju.is/docs/sdk/revision) have been released simultaneously to the different [bases/series](https://juju.is/docs/juju/base) using the same charm code.

@@ -59,6 +59,23 @@ jobs:
     permissions:
       actions: read
 
+  release-test:
+    name: Release tests
+    needs:
+      - build
+    strategy:
+      fail-fast: false
+      matrix:
+        path:
+          - kubernetes
+          - machines
+    uses: ./.github/workflows/release_test.yaml
+    with:
+      artifact-prefix: ${{ needs.build.outputs.artifact-prefix }}
+      path-to-charm-directory: ${{ matrix.path }}
+    permissions:
+      actions: read
+
   release:
     strategy:
       matrix:
@@ -72,6 +89,7 @@ jobs:
       - tag
       - build
       - integration-test
+      - release-test
     uses: canonical/data-platform-workflows/.github/workflows/release_charm_edge.yaml@v49
     with:
       track: ${{ matrix.charm.track }}

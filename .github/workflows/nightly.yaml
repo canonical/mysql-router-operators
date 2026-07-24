@@ -19,10 +19,11 @@ jobs:
         path:
           - kubernetes
           - machines
-    uses: canonical/data-platform-workflows/.github/workflows/build_charm.yaml@v50
+    uses: ./.github/workflows/_build_charm.yaml
     with:
       path-to-charm-directory: ${{ matrix.path }}
     permissions:
+      actions: read
       contents: read
 
   integration-test:

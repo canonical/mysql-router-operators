@@ -1,0 +1,23 @@
+[32mINFO    [0m root:test_expose_external.py:35 Deploying all the applications
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju deploy --model testing mysql-k8s mysql-k8s --base ubuntu@26.04 --channel 8.4/edge --config profile=testing --trust
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju deploy --model testing ./mysql-router-k8s_ubuntu@26.04-amd64.charm mysql-router-k8s --base ubuntu@26.04 --resource mysql-router-image=ghcr.io/canonical/charmed-mysql@sha256:8562333ec3933935bf7742ecf11306ef6fbf6265767ce24538b05475b9ca0853 --trust
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju deploy --model testing data-integrator data-integrator --base ubuntu@24.04 --channel latest/stable --config database-name=test_database
+[32mINFO    [0m root:test_expose_external.py:62 Relating the applications
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju integrate --model testing mysql-k8s:database mysql-router-k8s:backend-database
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju integrate --model testing data-integrator:mysql mysql-router-k8s:database
+[32mINFO    [0m root:test_expose_external.py:72 Wait for applications to become active
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju model-config --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju model-config --model testing update-status-hook-interval=60s
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju config --model testing mysql-router-k8s expose-external=false
+[32mINFO    [0m root:test_expose_external.py:173 Testing endpoint when expose-external=false (default)
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju run --model testing --format json data-integrator/0 get-credentials
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju config --model testing mysql-router-k8s expose-external=nodeport
+[32mINFO    [0m root:test_expose_external.py:185 Testing endpoint when expose-external=nodeport
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju run --model testing --format json data-integrator/0 get-credentials
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju config --model testing mysql-router-k8s expose-external=loadbalancer
+[32mINFO    [0m root:test_expose_external.py:197 Testing endpoint when expose-external=loadbalancer
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju run --model testing --format json data-integrator/0 get-credentials
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju model-config --model testing update-status-hook-interval=5m

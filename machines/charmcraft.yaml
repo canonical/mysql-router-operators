@@ -25,8 +25,16 @@ parts:
       python3 -m pip install --user --break-system-packages poetry-plugin-export==1.9.0
 
       ln -sf "$HOME/.local/bin/poetry" /usr/local/bin/poetry
-
-      python3 -m pip install --user --break-system-packages charmcraftlocal
+  # Build and stages the common lib
+  common-lib:
+    source: ../common
+    plugin: nil
+    after:
+      - poetry-deps
+    override-build:
+      poetry build --format wheel --output ${CRAFT_PART_INSTALL}
+    stage:
+      - common*.whl
   # "charm-poetry" part name is arbitrary; use for consistency
   # Avoid using "charm" part name since that has special meaning to charmcraft
   charm-poetry:
@@ -40,16 +48,23 @@ parts:
     source: .
     after:
       - poetry-deps
+      - common-lib
     poetry-export-extra-args: ['--only', 'main,charm-libs', '--without-hashes']
     build-packages:
       - libffi-dev
       - libssl-dev
       - pkg-config
       - rustc
+      - git
     override-build: |
-      "$HOME/.local/bin/charmcraftlocal" update-lock -v
+      poetry lock
 
       craftctl default
+
+      python3 -m pip install \
+        --target ${CRAFT_PART_INSTALL}/venv/lib/python3.14/site-packages \
+        --upgrade \
+        ${CRAFT_STAGE}/common*.whl
 
       # Include requirements.txt in *.charm artifact for easier debugging
       cp requirements.txt "$CRAFT_PART_INSTALL/requirements.txt"
@@ -68,6 +83,8 @@ parts:
       # Create venv in `/tmp` so that git working tree is not dirty
       python3 -m venv /tmp/refresh-version-venv
       source /tmp/refresh-version-venv/bin/activate
+
+      poetry lock
       poetry install --only build-refresh-version
       write-charm-version
 

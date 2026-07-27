@@ -1,0 +1,13 @@
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju ssh --model testing mysql-router/0 'openssl s_client -showcerts -starttls mysql -connect 10.242.45.202:6446 < /dev/null | openssl x509 -text | grep Issuer'
+[32mINFO    [0m root:test_tls.py:94 Relating TLS application
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju integrate --model testing mysql-router:certificates self-signed-certificates:certificates
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju ssh --model testing mysql-router/0 'openssl s_client -showcerts -starttls mysql -connect 10.242.45.202:6446 < /dev/null | openssl x509 -text | grep Issuer'
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju ssh --model testing mysql-router/0 'openssl s_client -showcerts -starttls mysql -connect 10.242.45.202:6446 < /dev/null | openssl x509 -text | grep Issuer'
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju ssh --model testing mysql-router/0 'openssl s_client -showcerts -starttls mysql -connect 10.242.45.202:6446 < /dev/null | openssl x509 -text | grep Issuer'
+[32mINFO    [0m root:test_tls.py:110 Unrelating TLS application
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju remove-relation --model testing mysql-router:certificates self-signed-certificates:certificates
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju ssh --model testing mysql-router/0 'openssl s_client -showcerts -starttls mysql -connect 10.242.45.202:6446 < /dev/null | openssl x509 -text | grep Issuer'
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju ssh --model testing mysql-router/0 'openssl s_client -showcerts -starttls mysql -connect 10.242.45.202:6446 < /dev/null | openssl x509 -text | grep Issuer'
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju ssh --model testing mysql-router/0 'openssl s_client -showcerts -starttls mysql -connect 10.242.45.202:6446 < /dev/null | openssl x509 -text | grep Issuer'

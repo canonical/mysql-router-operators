@@ -1,0 +1,23 @@
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json data-integrator/0 get-credentials
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing mysql-router/0 'openssl s_client -showcerts -starttls mysql -connect 10.218.130.253:6446 < /dev/null | openssl x509 -text | grep Issuer'
+[32mINFO    [0m root:test_hacluster.py:219 Deploying TLS
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju deploy --model testing self-signed-certificates self-signed-certificates --base ubuntu@24.04 --channel 1/stable --config 'ca-common-name=Test CA'
+[32mINFO    [0m root:test_hacluster.py:238 Ensuring MySQL Server is accessible via VIP
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json data-integrator/0 get-credentials
+[32mINFO    [0m root:test_hacluster.py:241 Relating TLS application
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju integrate --model testing mysql-router:certificates self-signed-certificates:certificates
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing mysql-router/0 'openssl s_client -showcerts -starttls mysql -connect 10.218.130.253:6446 < /dev/null | openssl x509 -text | grep Issuer'
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing mysql-router/0 'openssl s_client -showcerts -starttls mysql -connect 10.218.130.253:6446 < /dev/null | openssl x509 -text | grep Issuer'
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing mysql-router/0 'openssl s_client -showcerts -starttls mysql -connect 10.218.130.253:6446 < /dev/null | openssl x509 -text | grep Issuer'
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing mysql-router/0 'openssl s_client -showcerts -starttls mysql -connect 10.218.130.253:6446 < /dev/null | openssl x509 -text | grep Issuer'
+[32mINFO    [0m root:test_hacluster.py:257 Unrelating TLS application
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju remove-relation --model testing mysql-router:certificates self-signed-certificates:certificates
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing mysql-router/0 'openssl s_client -showcerts -starttls mysql -connect 10.218.130.253:6446 < /dev/null | openssl x509 -text | grep Issuer'
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing mysql-router/0 'openssl s_client -showcerts -starttls mysql -connect 10.218.130.253:6446 < /dev/null | openssl x509 -text | grep Issuer'
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing mysql-router/0 'openssl s_client -showcerts -starttls mysql -connect 10.218.130.253:6446 < /dev/null | openssl x509 -text | grep Issuer'
+[32mINFO    [0m root:test_hacluster.py:273 Ensuring MySQL Server is accessible via VIP
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json data-integrator/0 get-credentials

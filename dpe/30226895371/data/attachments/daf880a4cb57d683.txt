@@ -1,0 +1,34 @@
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju version --format json
+[32mINFO    [0m root:test_log_rotation.py:28 Deploying all the applications
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju deploy --model testing mysql mysql --base ubuntu@22.04 --channel 8.0/edge --config profile=testing
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju deploy --model testing ./mysql-router_ubuntu@22.04-amd64.charm mysql-router --base ubuntu@22.04
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju deploy --model testing mysql-test-app mysql-test-app --base ubuntu@22.04 --channel latest/edge
+[32mINFO    [0m root:test_log_rotation.py:51 Relating the applications
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju integrate --model testing mysql:database mysql-router:backend-database
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju integrate --model testing mysql-test-app:database mysql-router:database
+[32mINFO    [0m root:test_log_rotation.py:61 Wait for applications to become active
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m root:test_log_rotation.py:70 Removing the cron file
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing mysql-router/0 'sudo find /etc/cron.d/flush_mysqlrouter_logs -maxdepth 1 -delete'
+[32mINFO    [0m root:test_log_rotation.py:77 Removing existing archive directory
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing mysql-router/0 'sudo find /var/snap/charmed-mysql/common/var/log/mysqlrouter/archive_mysqlrouter -maxdepth 1 -delete'
+[32mINFO    [0m root:test_log_rotation.py:84 Writing some data mysqlrouter log file
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju scp --model testing -- /root/tmpoc7ofznt mysql-router/0:/tmp/file
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju exec --model testing --format json --unit mysql-router/0 -- 'sudo mv /tmp/file /var/snap/charmed-mysql/common/var/log/mysqlrouter/mysqlrouter.log'
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju exec --model testing --format json --unit mysql-router/0 -- 'sudo chown snap_daemon:snap_daemon /var/snap/charmed-mysql/common/var/log/mysqlrouter/mysqlrouter.log'
+[32mINFO    [0m root:test_log_rotation.py:92 Ensuring only log file exist
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing mysql-router/0 'sudo ls -la /var/snap/charmed-mysql/common/var/log/mysqlrouter'
+[32mINFO    [0m root:test_log_rotation.py:103 Executing logrotate
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing mysql-router/0 'sudo -u snap_daemon logrotate -f -s /tmp/logrotate.status /etc/logrotate.d/flush_mysqlrouter_logs'
+[32mINFO    [0m root:test_log_rotation.py:109 Ensuring log file and archive directories exist
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing mysql-router/0 'sudo ls -la /var/snap/charmed-mysql/common/var/log/mysqlrouter'
+[32mINFO    [0m root:test_log_rotation.py:120 Ensuring log file was rotated
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju exec --model testing --format json --unit mysql-router/0 -- 'sudo cp /var/snap/charmed-mysql/common/var/log/mysqlrouter/mysqlrouter.log /tmp/file'
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju exec --model testing --format json --unit mysql-router/0 -- 'sudo chown ubuntu:ubuntu /tmp/file'
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju scp --model testing -- mysql-router/0:/tmp/file /root/tmpdxxgn8pi
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju exec --model testing --format json --unit mysql-router/0 -- 'sudo rm /tmp/file'
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing mysql-router/0 'sudo ls -la /var/snap/charmed-mysql/common/var/log/mysqlrouter/archive_mysqlrouter'
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju exec --model testing --format json --unit mysql-router/0 -- 'sudo cp /var/snap/charmed-mysql/common/var/log/mysqlrouter/archive_mysqlrouter/mysqlrouter.log-20260727_00:39 /tmp/file'
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju exec --model testing --format json --unit mysql-router/0 -- 'sudo chown ubuntu:ubuntu /tmp/file'
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju scp --model testing -- mysql-router/0:/tmp/file /root/tmpwi7ko26m
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju exec --model testing --format json --unit mysql-router/0 -- 'sudo rm /tmp/file'

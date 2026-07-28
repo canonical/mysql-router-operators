@@ -16,7 +16,7 @@ on:
 jobs:
   lint-workflows:
     name: Lint workflows
-    uses: canonical/data-platform-workflows/.github/workflows/lint_workflows.yaml@v49
+    uses: canonical/data-platform-workflows/.github/workflows/lint_workflows.yaml@v50
     permissions:
       contents: read
 
@@ -32,7 +32,7 @@ jobs:
     permissions: {}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Install terraform
@@ -60,7 +60,7 @@ jobs:
     permissions: {}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Install tox & poetry
@@ -78,7 +78,7 @@ jobs:
           - kubernetes
           - machines
     name: Build charm | ${{ matrix.path }}
-    uses: canonical/data-platform-workflows/.github/workflows/build_charm.yaml@v49
+    uses: canonical/data-platform-workflows/.github/workflows/build_charm.yaml@v50
     with:
       path-to-charm-directory: ${{ matrix.path }}
     permissions:

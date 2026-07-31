@@ -1,0 +1,9 @@
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m root:test_hacluster.py:177 Stopping LXC container
+[32mINFO    [0m root:test_hacluster.py:187 Ensuring MySQL Server is accessible via VIP
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json data-integrator/2 get-credentials
+[32mINFO    [0m root:test_hacluster.py:190 Starting LXC container
+[32mINFO    [0m root:test_hacluster.py:196 Waiting till machine is stopped

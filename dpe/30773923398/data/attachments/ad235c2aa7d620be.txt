@@ -1,0 +1,14 @@
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json data-integrator/0 get-credentials
+[32mINFO    [0m root:test_data_integrator.py:125 Ensuring no data exists in the test database
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing mysql-router/0 'openssl s_client -showcerts -starttls mysql -connect 10.56.78.220:6446 < /dev/null | openssl x509 -text | grep Issuer'
+[32mINFO    [0m root:test_data_integrator.py:139 Relating TLS application
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju integrate --model testing mysql-router:certificates self-signed-certificates:certificates
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing mysql-router/0 'openssl s_client -showcerts -starttls mysql -connect 10.56.78.220:6446 < /dev/null | openssl x509 -text | grep Issuer'
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing mysql-router/0 'openssl s_client -showcerts -starttls mysql -connect 10.56.78.220:6446 < /dev/null | openssl x509 -text | grep Issuer'
+[32mINFO    [0m root:test_data_integrator.py:176 Unrelating TLS application
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju remove-relation --model testing mysql-router:certificates self-signed-certificates:certificates
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing mysql-router/0 'openssl s_client -showcerts -starttls mysql -connect 10.56.78.220:6446 < /dev/null | openssl x509 -text | grep Issuer'
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing mysql-router/0 'openssl s_client -showcerts -starttls mysql -connect 10.56.78.220:6446 < /dev/null | openssl x509 -text | grep Issuer'
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing mysql-router/0 'openssl s_client -showcerts -starttls mysql -connect 10.56.78.220:6446 < /dev/null | openssl x509 -text | grep Issuer'

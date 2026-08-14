@@ -14,7 +14,7 @@ on:
 
 jobs:
   tics:
-    runs-on: [self-hosted, linux, amd64, tiobe, noble]
+    runs-on: [self-hosted, linux, tiobe, ubuntu-24.04]
     strategy:
       fail-fast: false
       matrix:
@@ -36,13 +36,10 @@ jobs:
       - name: Create and activate virtual environment
         run: |
           sudo apt update && sudo apt install -y python3-venv
-          rm -rf .venv
           python3 -m venv .venv
           . .venv/bin/activate
-          pip install --upgrade pip setuptools wheel
-          pip install --upgrade --force-reinstall "packaging>=25.1"
+          pip install --upgrade pip
           pip install flake8 poetry pylint pytest tox
-          python -c "import packaging, packaging.pylock; print('packaging', packaging.__version__, packaging.__file__)"
           echo PATH="$PATH" >> "$GITHUB_ENV"
 
       - name: Install project dependencies
@@ -50,7 +47,6 @@ jobs:
           . .venv/bin/activate
           cd ${{ matrix.operator }}
           poetry install --only main,charm-libs
-          echo "SITE_PACKAGES=$(poetry run python -c 'import site; print(site.getsitepackages()[0])')" >> "$GITHUB_ENV"
 
       - name: Run coverage tests
         run: |
@@ -61,10 +57,13 @@ jobs:
           mkdir -p ${{ matrix.operator }}/.cover
           cp ${{ matrix.operator }}/coverage.xml ${{ matrix.operator }}/.cover/cobertura.xml
 
+      - name: Install TICS dependencies
+        run: |
+          . .venv/bin/activate
+          pip install --target=common "mysql-shell-client[contrib]>=1.0.0"
+
       - name: TICS GitHub Action
         uses: tiobe/tics-github-action@v3
-        env:
-          PYTHONPATH: ${{ env.SITE_PACKAGES }}
         with:
           mode: qserver
           project: ${{ matrix.project }}

@@ -50,6 +50,7 @@ jobs:
           . .venv/bin/activate
           cd ${{ matrix.operator }}
           poetry install --only main,charm-libs
+          echo "SITE_PACKAGES=$(poetry run python -c 'import site; print(site.getsitepackages()[0])')" >> "$GITHUB_ENV"
 
       - name: Run coverage tests
         run: |
@@ -62,6 +63,8 @@ jobs:
 
       - name: TICS GitHub Action
         uses: tiobe/tics-github-action@v3
+        env:
+          PYTHONPATH: ${{ env.SITE_PACKAGES }}
         with:
           mode: qserver
           project: ${{ matrix.project }}

@@ -14,7 +14,7 @@ on:
 
 jobs:
   tics:
-    runs-on: [self-hosted, linux, tiobe, ubuntu-24.04]
+    runs-on: [self-hosted, linux, amd64, tiobe, noble]
     strategy:
       fail-fast: false
       matrix:

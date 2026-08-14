@@ -42,7 +42,9 @@ jobs:
           sudo apt update && sudo apt install -y python3-venv
           python3 -m venv .venv
           . .venv/bin/activate
+          pip install --upgrade pip
           pip install flake8 poetry pylint pytest tox
+          pip install --upgrade "packaging>=25.1"
           echo PATH="$PATH" >> "$GITHUB_ENV"
 
       - name: Install project dependencies

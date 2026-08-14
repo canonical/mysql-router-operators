@@ -40,11 +40,13 @@ jobs:
       - name: Create and activate virtual environment
         run: |
           sudo apt update && sudo apt install -y python3-venv
+          rm -rf .venv
           python3 -m venv .venv
           . .venv/bin/activate
-          pip install --upgrade pip
+          pip install --upgrade pip setuptools wheel
+          pip install --upgrade --force-reinstall "packaging>=25.1"
           pip install flake8 poetry pylint pytest tox
-          pip install --upgrade "packaging>=25.1"
+          python -c "import packaging, packaging.pylock; print('packaging', packaging.__version__, packaging.__file__)"
           echo PATH="$PATH" >> "$GITHUB_ENV"
 
       - name: Install project dependencies

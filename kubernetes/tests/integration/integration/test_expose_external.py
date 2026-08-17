@@ -53,8 +53,8 @@ def test_expose_external(juju: Juju, charm: str) -> None:
     juju.deploy(
         charm=DATA_INTEGRATOR_APP_NAME,
         app=DATA_INTEGRATOR_APP_NAME,
-        base="ubuntu@24.04",
-        channel="latest/stable",
+        base="ubuntu@26.04",
+        channel="latest/edge",
         config={"database-name": TEST_DATABASE_NAME},
         num_units=1,
     )

@@ -2,8 +2,6 @@ summary: test_data_integrator.py
 environment:
   TEST_MODULE: test_data_integrator.py
 execute: |
-  # TODO: Uncomment when data-integrator gets built for Ubuntu 26.04
-  # tox run -e integration -- "tests/integration/integration/$TEST_MODULE" --alluredir="$SPREAD_TASK/allure-results"
-  exit 0
+  tox run -e integration -- "tests/integration/integration/$TEST_MODULE" --alluredir="$SPREAD_TASK/allure-results"
 artifacts:
   - allure-results

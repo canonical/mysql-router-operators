@@ -2,8 +2,6 @@ summary: test_upgrade.py
 environment:
   TEST_MODULE: test_upgrade.py
 execute: |
-  # TODO: Uncomment when the stability is improved (ARM64 variant fails constantly)
-  # tox run -e integration -- "tests/integration/integration/$TEST_MODULE" --alluredir="$SPREAD_TASK/allure-results"
-  exit 0
+  tox run -e integration -- "tests/integration/integration/$TEST_MODULE" --alluredir="$SPREAD_TASK/allure-results"
 artifacts:
   - allure-results

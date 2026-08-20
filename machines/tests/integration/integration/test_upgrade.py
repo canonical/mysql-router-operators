@@ -8,6 +8,7 @@ from contextlib import suppress
 from pathlib import Path
 
 import jubilant
+import tenacity
 import tomli
 import tomli_w
 from jubilant import Juju
@@ -125,11 +126,27 @@ def test_upgrade_from_edge(juju: Juju, charm: str, continuous_writes) -> None:
             wait=5 * MINUTE_SECS,
         )
 
-    logging.info("Wait for upgrade to complete")
-    juju.wait(
-        ready=wait_for_apps_status(jubilant.all_active, MYSQL_ROUTER_APP_NAME),
-        timeout=20 * MINUTE_SECS,
-    )
+    # Wait for the upgrade to complete, resolving any units that error
+    # (e.g. the router was not ready within the 30-second timeout after a snap refresh)
+    # Resolving a unit makes Juju re-run the failed hook, which starts a fresh timeout window
+    def _resolve_errored_units(_) -> None:
+        for unit in get_app_units(juju, MYSQL_ROUTER_APP_NAME):
+            unit_status = juju.status().get_units(MYSQL_ROUTER_APP_NAME).get(unit)
+            if unit_status and unit_status.workload_status.current == "error":
+                logging.info(f"Unit {unit} is in error state, resolving and retrying")
+                juju.cli("resolved", unit)
+
+    for attempt in tenacity.Retrying(
+        stop=tenacity.stop_after_delay(2 * MINUTE_SECS),
+        retry=tenacity.retry_if_exception_type(TimeoutError),
+        after=_resolve_errored_units,
+        reraise=True,
+    ):
+        with attempt:
+            juju.wait(
+                ready=wait_for_apps_status(jubilant.all_active, MYSQL_ROUTER_APP_NAME),
+                timeout=30,
+            )
 
     logging.info("Ensure continuous writes are incrementing")
     check_server_writes_increment(juju, MYSQL_SERVER_APP_NAME)

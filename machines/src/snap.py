@@ -179,7 +179,17 @@ class Snap(common.container.Container):
             if router_is_running:
                 self._snap.restart([self._SERVICE_NAME])
             else:
-                self._snap.start([self._SERVICE_NAME], enable=True)
+                # Retry snap start: after a snap refresh, the mysqlrouter service
+                # can crash repeatedly and hit systemd's StartLimitBurst limit.
+                # Waiting briefly and retrying lets the rate-limit window expire.
+                for attempt in tenacity.Retrying(
+                    stop=tenacity.stop_after_delay(60),
+                    wait=tenacity.wait_fixed(10),
+                    retry=tenacity.retry_if_exception_type(snap_lib.SnapError),
+                    reraise=True,
+                ):
+                    with attempt:
+                        self._snap.start([self._SERVICE_NAME], enable=True)
         else:
             self._snap.stop([self._SERVICE_NAME], disable=True)
 

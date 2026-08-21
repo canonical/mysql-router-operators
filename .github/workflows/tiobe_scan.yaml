@@ -33,6 +33,7 @@ jobs:
           persist-credentials: false
           sparse-checkout: |
             ${{ inputs.operator }}
+            common
           ref: ${{ inputs.ref }}
 
       - name: Create and activate virtual environment
@@ -55,6 +56,10 @@ jobs:
         run: |
           mkdir -p "$OPERATOR/.cover"
           cp "$OPERATOR/coverage.xml" "$OPERATOR/.cover/cobertura.xml"
+          # Common module coverage report (consumed by the machines TICS project,
+          # which includes both the common and machines modules).
+          mkdir -p common/.cover
+          cp common/coverage.xml common/.cover/cobertura.xml
 
       - name: TICS GitHub Action
         uses: tiobe/tics-github-action@v3

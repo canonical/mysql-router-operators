@@ -73,6 +73,10 @@ optional = true
 
 [tool.coverage.run]
 branch = true
+omit = [
+    # Vendored charm libs (measured via the common module) should not count
+    "*/_charm_libs/*",
+]
 
 [tool.coverage.report]
 show_missing = true

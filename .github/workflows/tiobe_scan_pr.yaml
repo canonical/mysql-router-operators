@@ -56,6 +56,10 @@ jobs:
         run: |
           mkdir -p ${{ matrix.operator }}/.cover
           cp ${{ matrix.operator }}/coverage.xml ${{ matrix.operator }}/.cover/cobertura.xml
+          # Common module coverage report (consumed by the machines TICS project,
+          # which includes both the common and machines modules).
+          mkdir -p common/.cover
+          cp common/coverage.xml common/.cover/cobertura.xml
 
       - name: Install TICS dependencies
         run: |

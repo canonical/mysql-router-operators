@@ -1,0 +1,17 @@
+[32mINFO    [0m root:test_database.py:24 Deploying all the applications
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju deploy --model testing mysql mysql --base ubuntu@26.04 --channel 8.4/edge --config profile=testing
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju deploy --model testing ./mysql-router_ubuntu@26.04-amd64.charm mysql-router --base ubuntu@26.04
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju deploy --model testing mysql-test-app mysql-test-app --base ubuntu@26.04 --channel latest/edge
+[32mINFO    [0m root:test_database.py:47 Relating the applications
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju integrate --model testing mysql:database mysql-router:backend-database
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju integrate --model testing mysql-test-app:database mysql-router:database
+[32mINFO    [0m root:test_database.py:57 Wait for applications to become active
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju run --model testing --format json mysql-test-app/0 get-inserted-data
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju run --model testing --format json mysql/0 get-password --params /root/snap/juju/common/tmplrk871yo
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju add-unit --model testing mysql-test-app
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju remove-unit --model testing --no-prompt mysql-test-app/1

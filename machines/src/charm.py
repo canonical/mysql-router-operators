@@ -24,6 +24,7 @@ import common.relations.cos
 import common.relations.database_provides
 import common.relations.database_requires
 import common.relations.tls
+import common.server_exceptions
 import common.workload
 import ops.log
 import tenacity
@@ -230,8 +231,10 @@ class MachineSubordinateRouterCharm(common.abstract_charm.MySQLRouterCharm):
                             with socket.socket(socket.AF_UNIX) as s:
                                 assert s.connect_ex(str(self._container.path(socket_file))) == 0
         except AssertionError:
-            logger.exception("Unable to connect to MySQL Router")
-            raise
+            logger.warning("Unable to connect to MySQL Router")
+            raise common.server_exceptions.Error(
+                ops.WaitingStatus("MySQL Router not ready")
+            ) from None
         else:
             logger.debug("MySQL Router is ready")
 

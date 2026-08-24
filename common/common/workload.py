@@ -433,7 +433,7 @@ class RunningWorkload(Workload):
                 return False
             try:
                 self._charm.wait_until_mysql_router_ready(event=event)
-            except AssertionError:
+            except server_exceptions.Error:
                 return False
             return True
         else:

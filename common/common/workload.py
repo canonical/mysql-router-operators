@@ -431,9 +431,11 @@ class RunningWorkload(Workload):
             # without actually binding to the port
             if not self._container.mysql_router_service_enabled or socket_file_exists:
                 return False
-            with socket.socket() as s:
-                s.settimeout(1)
-                return s.connect_ex(("localhost", self._charm._READ_WRITE_PORT)) == 0
+            try:
+                self._charm.wait_until_mysql_router_ready(event=event)
+            except AssertionError:
+                return False
+            return True
         else:
             return socket_file_exists
 

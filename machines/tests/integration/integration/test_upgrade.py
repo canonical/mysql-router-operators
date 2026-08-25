@@ -14,6 +14,7 @@ from jubilant import Juju
 from ..helpers_new import (
     MINUTE_SECS,
     check_server_writes_increment,
+    get_app_leader,
     get_app_units,
     wait_for_apps_status,
 )
@@ -131,6 +132,55 @@ def test_upgrade_from_edge(juju: Juju, charm: str, continuous_writes) -> None:
 
     logging.info("Ensure continuous writes are incrementing")
     check_server_writes_increment(juju, MYSQL_SERVER_APP_NAME)
+
+
+def test_relation_through_router(juju: Juju) -> None:
+    """Test that a fresh relation routed through mysql-router works after refresh."""
+    logging.info("Removing pre-existing relation between mysql-test-app and mysql-router")
+    juju.remove_relation(
+        f"{MYSQL_TEST_APP_NAME}:database",
+        f"{MYSQL_ROUTER_APP_NAME}:database",
+    )
+
+    logging.info("Waiting for mysql-test-app to be blocked (no database)")
+    juju.wait(
+        ready=wait_for_apps_status(
+            jubilant.all_active, MYSQL_SERVER_APP_NAME, MYSQL_ROUTER_APP_NAME
+        ),
+        timeout=10 * MINUTE_SECS,
+    )
+    juju.wait(
+        ready=wait_for_apps_status(jubilant.all_blocked, MYSQL_TEST_APP_NAME),
+        timeout=10 * MINUTE_SECS,
+    )
+
+    logging.info("Re-relating mysql-test-app and mysql-router")
+    juju.integrate(
+        f"{MYSQL_TEST_APP_NAME}:database",
+        f"{MYSQL_ROUTER_APP_NAME}:database",
+    )
+
+    logging.info("Waiting for all applications to become active")
+    juju.wait(
+        ready=wait_for_apps_status(
+            jubilant.all_active,
+            MYSQL_SERVER_APP_NAME,
+            MYSQL_ROUTER_APP_NAME,
+            MYSQL_TEST_APP_NAME,
+        ),
+        timeout=20 * MINUTE_SECS,
+    )
+
+    logging.info("Start continuous writes through the router-mediated relation")
+    test_app_leader = get_app_leader(juju, MYSQL_TEST_APP_NAME)
+    juju.run(test_app_leader, "clear-continuous-writes")
+    juju.run(test_app_leader, "start-continuous-writes")
+
+    logging.info("Ensure continuous writes are incrementing through the router")
+    check_server_writes_increment(juju, MYSQL_SERVER_APP_NAME)
+
+    logging.info("Clearing continuous writes")
+    juju.run(test_app_leader, "clear-continuous-writes")
 
 
 def test_fail_and_rollback(juju: Juju, charm: str, continuous_writes) -> None:

@@ -4,7 +4,6 @@
 import logging
 import shutil
 import zipfile
-from contextlib import suppress
 from pathlib import Path
 
 import jubilant
@@ -103,27 +102,26 @@ def test_upgrade_from_edge(juju: Juju, charm: str, continuous_writes) -> None:
     # Refresh will be incompatible on PR CI (not edge CI)
     # since unreleased charm versions are always marked as incompatible
     if router_status.current == "blocked" and "incompatible" in router_status.message:
-        with suppress(jubilant.TaskError):
-            logging.info("Application upgrade is blocked due to incompatibility")
-            juju.run(
-                unit=router_app_units[0],
-                action="force-refresh-start",
-                params={"check-compatibility": False},
-                wait=5 * MINUTE_SECS,
-            )
-
-        logging.info("Wait for first unit to upgrade")
-        juju.wait(
-            ready=jubilant.all_agents_idle,
-            timeout=5 * MINUTE_SECS,
-        )
-
-        logging.info("Resume upgrade")
+        logging.info("Application upgrade is blocked due to incompatibility")
         juju.run(
-            unit=router_app_units[1],
-            action="resume-refresh",
+            unit=router_app_units[0],
+            action="force-refresh-start",
+            params={"check-compatibility": False},
             wait=5 * MINUTE_SECS,
         )
+
+    logging.info("Wait for first unit to upgrade")
+    juju.wait(
+        ready=jubilant.all_agents_idle,
+        timeout=5 * MINUTE_SECS,
+    )
+
+    logging.info("Resume upgrade")
+    juju.run(
+        unit=router_app_units[1],
+        action="resume-refresh",
+        wait=5 * MINUTE_SECS,
+    )
 
     logging.info("Wait for upgrade to complete")
     juju.wait(

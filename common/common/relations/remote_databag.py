@@ -30,7 +30,13 @@ class RemoteDatabag(dict):
         interface: data_interfaces.DatabaseRequires | data_interfaces.DatabaseProvides,
         relation: ops.Relation,
     ) -> None:
-        super().__init__(interface.fetch_relation_data()[relation.id])
+        try:
+            data = interface.fetch_relation_data()[relation.id]
+        except KeyError:
+            # Breaking relation excluded from data_interfaces lib (ops 2.10+ PR #1091).
+            # Access the remote app databag directly from the relation object.
+            data = relation.data[relation.app]
+        super().__init__(data)
         self._app_name = relation.app.name
         self._endpoint_name = relation.name
 

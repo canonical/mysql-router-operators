@@ -1,8 +1,25 @@
 # Copyright 2023 Canonical Ltd.
 # See LICENSE file for licensing details.
 
+import logging
+
+import ops.log
 import pytest
 from charms.tempo_coordinator_k8s.v0.charm_tracing import charm_tracing_disabled
+
+
+@pytest.fixture(autouse=True)
+def _clear_juju_log_handlers():
+    """Remove stale JujuLogHandler instances added by scenario/ops on each context.run().
+
+    ops.log.setup_root_logging() unconditionally calls logger.addHandler() on every charm
+    instantiation, but nothing ever removes them. Across thousands of context.run() calls
+    (e.g. the heavily-parametrized scenario tests), handlers accumulate on the root logger,
+    making every log call O(N) and retaining references to dead Context.juju_log lists.
+    """
+    yield
+    root = logging.getLogger()
+    root.handlers[:] = [h for h in root.handlers if not isinstance(h, ops.log.JujuLogHandler)]
 
 
 @pytest.fixture(autouse=True)

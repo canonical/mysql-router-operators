@@ -100,8 +100,8 @@ SAAS       Status  Store  URL
 tempo-k8s  active  uk8s   admin/cos.tempo-k8s
 
 App             Version  Status  Scale  Charm           Channel      Rev  Exposed  Message
-mysql           8.4.7    active      1  mysql           8.4/edge     253  no       
-mysql-router    8.4.7    active      1  mysql-router    8.4/edge     216  no       
+mysql           8.4.10   active      1  mysql           8.4/stable        no       
+mysql-router    8.4.10   active      1  mysql-router    8.4/stable        no       
 mysql-test-app  0.0.2    active      1  mysql-test-app  latest/edge   46  no       Last written value=54713
 
 Unit               Workload  Agent  Machine  Public address  Ports           Message

@@ -91,11 +91,11 @@ grafana     active  k8s    admin/cos.grafana
 loki        active  k8s    admin/cos.loki
 prometheus  active  k8s    admin/cos.prometheus
 
-App                      Version  Status  Scale  Charm                    Channel   Rev  Exposed  Message
-mysql                    8.4.7    active      1  mysql                    8.4/edge  196  no
-mysql-router             8.4.7    active      1  mysql-router             8.4/edge  153  no
-mysql-test-app           0.0.2    active      1  mysql-test-app           stable     36  no
-opentelemetry-collector           active      1  opentelemetry-collector  2/stable  316  no
+App                      Version  Status  Scale  Charm                    Channel     Rev  Exposed  Message
+mysql                    8.4.10   active      1  mysql                    8.4/stable       no
+mysql-router             8.4.10   active      1  mysql-router             8.4/stable       no
+mysql-test-app           0.0.2    active      1  mysql-test-app           stable       36  no
+opentelemetry-collector           active      1  opentelemetry-collector  2/stable    316  no
 
 Unit                          Workload  Agent  Machine  Public address  Ports           Message
 mysql-test-app/0*             active    idle         1  10.205.193.82

@@ -18,8 +18,8 @@ There are [a lot of test types](https://en.wikipedia.org/wiki/Software_testing) 
 ```shell
 juju add-model smoke-test
 
-juju deploy mysql --channel 8.4/edge --config profile=testing
-juju deploy mysql-router --channel 8.4/edge
+juju deploy mysql --channel 8.4/stable --config profile=testing
+juju deploy mysql-router --channel 8.4/stable
 juju relate mysql mysql-router
 
 juju add-unit mysql -n 2 # (optional)

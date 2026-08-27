@@ -7,8 +7,8 @@ This is part of the [MySQL Router Tutorial](/t/12332). Please refer to this page
 To deploy Charmed MySQL + MySQL Router, all you need to do is run the following commands:
 
 ```shell
-juju deploy mysql --channel 8.4
-juju deploy mysql-router --channel 8.4/edge
+juju deploy mysql --channel 8.4/stable
+juju deploy mysql-router --channel 8.4/stable
 ```
 Juju will now fetch charms from [Charmhub](https://charmhub.io/) and begin deploying it to the LXD VMs. This process can take several minutes depending on how provisioned (RAM, CPU, etc) your machine is. You can track the progress by running:
 ```shell

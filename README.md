@@ -51,8 +51,8 @@ Relations are defined in `metadata.yaml` are:
 To build the charms:
 
 ```
-cd kubernetes && charmcraftlocal pack
-cd machines && charmcraftlocal pack
+cd kubernetes && charmcraft pack
+cd machines && charmcraft pack
 ```
 
 Please see the [Juju SDK docs](https://juju.is/docs/sdk) for guidelines on

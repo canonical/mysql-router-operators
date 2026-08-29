@@ -326,6 +326,11 @@ class KubernetesRouterCharm(common.abstract_charm.MySQLRouterCharm):
                 router_read_write_endpoints=self._read_write_endpoints(event=event),
                 router_read_only_endpoints=self._read_only_endpoints(event=event),
             )
+            # Service is connectable, clear the "creating" flag so that _status does not
+            # report "Waiting for K8s service connectivity" on future reconcile events
+            self._peer_data.set_value(
+                common.relations.secrets.APP_SCOPE, self._K8S_SERVICE_CREATING_KEY, None
+            )
 
     def wait_until_mysql_router_ready(self, *, event=None) -> None:
         logger.debug("Waiting until MySQL Router is ready")

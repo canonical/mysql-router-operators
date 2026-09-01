@@ -25,15 +25,15 @@ lint = [
 unit = [
     "pytest~=8.4",
     "pytest-xdist~=3.8",
-    "pytest-cov~=6.2",
-    "ops-scenario==6.0.3",  # 6.0.4 requires ops >= 2.12
+    "pytest-cov~=7.1",
+    "ops-scenario==8.8.2",  # 6.0.4 requires ops >= 2.12
 ]
 integration = [
     "pytest~=8.4",
     "requests~=2.32",
     "juju~=3.6",
     "jubilant~=1.4.0",
-    "mysql-connector-python~=9.5",
+    "mysql-connector-python~=26.7",
     "tenacity~=9.1",
     "ops~=2.9",
     "allure-pytest-default-results~=0.1.3",

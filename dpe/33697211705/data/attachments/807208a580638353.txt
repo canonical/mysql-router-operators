@@ -1,0 +1,12 @@
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing mysql-router/0 'openssl s_client -showcerts -starttls mysql -connect 10.11.231.30:6446 < /dev/null | openssl x509 -text | grep Issuer'
+[32mINFO    [0m root:test_tls.py:101 Relating TLS application
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju integrate --model testing mysql-router:certificates self-signed-certificates:certificates
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing mysql-router/0 'openssl s_client -showcerts -starttls mysql -connect 10.11.231.30:6446 < /dev/null | openssl x509 -text | grep Issuer'
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing mysql-router/0 'openssl s_client -showcerts -starttls mysql -connect 10.11.231.30:6446 < /dev/null | openssl x509 -text | grep Issuer'
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing mysql-router/0 'openssl s_client -showcerts -starttls mysql -connect 10.11.231.30:6446 < /dev/null | openssl x509 -text | grep Issuer'
+[32mINFO    [0m root:test_tls.py:117 Unrelating TLS application
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju remove-relation --model testing mysql-router:certificates self-signed-certificates:certificates
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing mysql-router/0 'openssl s_client -showcerts -starttls mysql -connect 10.11.231.30:6446 < /dev/null | openssl x509 -text | grep Issuer'
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing mysql-router/0 'openssl s_client -showcerts -starttls mysql -connect 10.11.231.30:6446 < /dev/null | openssl x509 -text | grep Issuer'

@@ -60,6 +60,9 @@ class RelationSecrets:
             raise ValueError("Unknown secret scope")
 
         peers = self._charm.model.get_relation(self._relation_name)
+        if peers is None:
+            # Relation is gone (e.g. called from a *-relation-broken hook during scale-in)
+            return None
         return self._peer_relation_data(scope).fetch_my_relation_field(peers.id, key)
 
     def set_value(self, scope: Scopes, key: str, value: str | None) -> str | None:
@@ -71,6 +74,9 @@ class RelationSecrets:
             return self._remove_value(scope, key)
 
         peers = self._charm.model.get_relation(self._relation_name)
+        if peers is None:
+            # Relation is gone (e.g. called from a *-relation-broken hook during scale-in)
+            return None
         self._peer_relation_data(scope).update_relation_data(peers.id, {key: value})
 
     def _remove_value(self, scope: Scopes, key: str) -> None:
@@ -79,4 +85,7 @@ class RelationSecrets:
             raise ValueError("Unknown secret scope")
 
         peers = self._charm.model.get_relation(self._relation_name)
+        if peers is None:
+            # Relation is gone (e.g. called from a *-relation-broken hook during scale-in)
+            return
         self._peer_relation_data(scope).delete_relation_data(peers.id, [key])

@@ -56,9 +56,6 @@ jobs:
         run: |
           mkdir -p "$OPERATOR/.cover"
           cp "$OPERATOR/coverage.xml" "$OPERATOR/.cover/cobertura.xml"
-          # Also include common module coverage report
-          mkdir -p common/.cover
-          cp common/coverage.xml common/.cover/cobertura.xml
 
       - name: TICS GitHub Action
         uses: tiobe/tics-github-action@v3

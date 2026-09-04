@@ -70,6 +70,7 @@ optional = true
 
 [tool.coverage.run]
 branch = true
+source = ["src", "../common/common"]
 omit = [
     # Vendored charm libs (measured via the common module) should not count
     "*/_charm_libs/*",

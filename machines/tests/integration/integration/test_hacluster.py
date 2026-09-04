@@ -51,7 +51,7 @@ def test_external_connectivity_with_ha_cluster(juju: Juju, charm: str, ubuntu_ba
         charm=DATA_INTEGRATOR_APP_NAME,
         app=DATA_INTEGRATOR_APP_NAME,
         base=ubuntu_base,
-        channel="latest/stable",
+        channel="latest/edge",
         config={"database-name": TEST_DATABASE_NAME},
         num_units=4,
     )

@@ -46,7 +46,7 @@ def test_data_integrator_connectivity(juju: Juju, charm: str, ubuntu_base: str) 
         charm=DATA_INTEGRATOR_APP_NAME,
         app=DATA_INTEGRATOR_APP_NAME,
         base=ubuntu_base,
-        channel="latest/stable",
+        channel="latest/edge",
         config={"database-name": TEST_DATABASE_NAME},
         num_units=1,
     )

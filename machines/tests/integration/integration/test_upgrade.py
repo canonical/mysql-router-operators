@@ -197,9 +197,9 @@ def create_valid_upgrade_charm(charm_file: str | Path) -> None:
             versions = tomli.load(file)
 
     # charm needs to refresh snap to be able to avoid no-op when upgrading.
-    versions["snap"]["revisions"]["x86_64"] = "171"
-    versions["snap"]["revisions"]["aarch64"] = "170"
-    versions["workload"] = "8.4.7"
+    versions["snap"]["revisions"]["x86_64"] = "237"
+    versions["snap"]["revisions"]["aarch64"] = "236"
+    versions["workload"] = "8.4.10"
 
     with zipfile.ZipFile(charm_file, mode="a") as charm_zip:
         charm_zip.writestr("refresh_versions.toml", tomli_w.dumps(versions))

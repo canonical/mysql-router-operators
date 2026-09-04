@@ -78,7 +78,7 @@ def test_deploy_edge(juju: Juju) -> None:
     )
 
 
-def test_upgrade_from_edge(juju: Juju, charm: str) -> None:
+def test_upgrade_from_edge(juju: Juju, charm: str, continuous_writes) -> None:
     """Upgrade mysqlrouter while ensuring continuous writes incrementing."""
     logging.info("Ensure continuous writes are incrementing")
     check_server_writes_increment(juju, MYSQL_SERVER_APP_NAME)

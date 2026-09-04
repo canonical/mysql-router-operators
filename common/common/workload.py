@@ -427,7 +427,15 @@ class RunningWorkload(Workload):
         if charm_port_exposed is None:
             return self._container.mysql_router_service_enabled
         elif charm_port_exposed:
-            return self._container.mysql_router_service_enabled and not socket_file_exists
+            # After a snap refresh the service may be "enabled"
+            # without actually binding to the port
+            if not self._container.mysql_router_service_enabled or socket_file_exists:
+                return False
+            try:
+                self._charm.wait_until_mysql_router_ready(event=event)
+            except server_exceptions.Error:
+                return False
+            return True
         else:
             return socket_file_exists
 

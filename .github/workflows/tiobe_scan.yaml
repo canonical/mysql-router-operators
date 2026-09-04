@@ -56,8 +56,7 @@ jobs:
         run: |
           mkdir -p "$OPERATOR/.cover"
           cp "$OPERATOR/coverage.xml" "$OPERATOR/.cover/cobertura.xml"
-          # Common module coverage report (consumed by the machines TICS project,
-          # which includes both the common and machines modules).
+          # Also include common module coverage report
           mkdir -p common/.cover
           cp common/coverage.xml common/.cover/cobertura.xml
 

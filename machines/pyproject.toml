@@ -56,6 +56,8 @@ ops = "^2.9.0, <2.10"
 tenacity = "^9.1.2"
 charm-refresh = "^3.1.0.2"
 charmlibs-snap = "^1.0.1"
+# packaging.pylock (PEP 771) added in 25.1; required by tox at import time
+packaging = ">=25.1"
 
 [tool.poetry.group.format]
 optional = true
@@ -68,6 +70,11 @@ optional = true
 
 [tool.coverage.run]
 branch = true
+source = ["src", "../common/common"]
+omit = [
+    # Vendored charm libs (measured via the common module) should not count
+    "*/_charm_libs/*",
+]
 
 [tool.coverage.report]
 show_missing = true

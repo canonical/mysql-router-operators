@@ -95,7 +95,7 @@ After the Router upgrade is completed, upgrade the Server:
 juju refresh mysql-k8s --channel 8.4/edge --trust
 
 # example with specific revision selection
-juju refresh mysql-k8s --revision=89
+juju refresh mysql-k8s --revision=109
 ```
 
 > **:information_source: IMPORTANT:** The Server upgrade will execute only on the highest ordinal unit, for the running example `mysql-k8s/2`, the `juju status` will look like*:
@@ -121,8 +121,8 @@ Model    Controller  Cloud/Region        Version  SLA          Timestamp
 upgrade  microk8s    microk8s/localhost  3.6.19   unsupported  15:56:25+02:00
 
 App               Version  Status   Scale  Charm             Channel   Rev  Address         Exposed  Message
-mysql-k8s         8.4.7    waiting    3/4  mysql-k8s         8.4/edge  109  10.152.183.238  no       installing agent
-mysql-router-k8s  8.4.7    active       4  mysql-router-k8s  8.4/edge   69  10.152.183.184  no       
+mysql-k8s         8.4.8    waiting    3/4  mysql-k8s         8.4/edge  109  10.152.183.238  no       installing agent
+mysql-router-k8s  8.4.8    active       4  mysql-router-k8s  8.4/edge   89  10.152.183.184  no       
 mysql-test-app    0.0.2    active       1  mysql-test-app    stable     26  10.152.183.36   no       
 
 Unit                 Workload     Agent  Address     Ports  Message

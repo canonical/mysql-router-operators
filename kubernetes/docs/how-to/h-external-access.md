@@ -13,8 +13,8 @@ database  uk8s-3-6-1  microk8s/localhost  3.6.19   unsupported  14:39:08Z
 
 App               Version  Status  Scale  Charm             Channel        Rev  Address         Exposed  Message
 data-integrator            active      1  data-integrator   latest/stable   78  10.152.183.44   no       
-mysql-k8s         8.4.7    active      1  mysql-k8s         8.4/edge       210  10.152.183.143  no       
-mysql-router-k8s  8.4.7    active      1  mysql-router-k8s  8.4/edge       531  10.152.183.201  no       
+mysql-k8s         8.4.10   active      1  mysql-k8s         8.4/stable          10.152.183.143  no       
+mysql-router-k8s  8.4.10   active      1  mysql-router-k8s  8.4/stable          10.152.183.201  no       
 
 Unit                 Workload  Agent  Address       Ports  Message
 data-integrator/0*   active    idle   10.1.241.219         
@@ -48,7 +48,7 @@ mysql:
 ok: "True"
 ```
 
-The following shows a mysql client connecting to the the provided endpoints from the data integrator unit (which is deployed in the same K8s namespace, i.e. the same juju model, as MySQL Router K8s):
+The following shows a mysql client connecting to the provided endpoints from the data integrator unit (which is deployed in the same K8s namespace, i.e. the same juju model, as MySQL Router K8s):
 
 ```shell
 $ juju ssh data-integrator/0 bash 

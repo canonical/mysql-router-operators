@@ -23,8 +23,8 @@ Model           Controller  Cloud/Region        Version  SLA          Timestamp
 wordpress-demo  microk8s    microk8s/localhost  3.6.19   unsupported  14:39:27+02:00
 
 App               Version  Status   Scale  Charm             Channel     Rev  Address         Exposed  Message
-mysql-k8s         8.4.7    active       1  mysql-k8s         8.4/stable   99  10.152.183.189  no       
-mysql-router-k8s  8.4.7    blocked      1  mysql-router-k8s  8.4/stable   69  10.152.183.81   no       Missing relation: database
+mysql-k8s         8.4.10   active       1  mysql-k8s         8.4/stable   99  10.152.183.189  no       
+mysql-router-k8s  8.4.10   blocked      1  mysql-router-k8s  8.4/stable   69  10.152.183.81   no       Missing relation: database
 
 Unit                 Workload  Agent  Address     Ports  Message
 mysql-k8s/0*         active    idle   10.1.12.61         Primary

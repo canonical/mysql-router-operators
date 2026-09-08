@@ -27,16 +27,16 @@ juju deploy self-signed-certificates --config ca-common-name="Tutorial CA"
 ```
 
 Wait until the `self-signed-certificates` is up and active, then use `juju status –watch 1s` to monitor the progress:
-
+    
 ```
 Model 	Controller  Cloud/Region     	Version  SLA      	Timestamp
 database  lxd     	localhost/localhost  3.6.19	 unsupported  18:47:51Z
 
-App                   	Version  Status  Scale  Charm                 	  Channel 	  Rev  Exposed  Message
-mysql                 	8.4.7    active  	1   mysql                 	  8.4/stable  196  no  	 
-mysql-router          	8.4.7    active  	1   mysql-router                          103  no  	 
-mysql-test-app        	0.0.2    active  	1   mysql-test-app        	  stable   	  36   no  	 
-self-signed-certificates         active  	1   self-signed-certificates  stable   	  72   no  	 
+App                   	  Version  Status  Scale  Charm                 	Channel 	Rev  Exposed  Message
+mysql                 	  8.4.10   active  	   1  mysql                     8.4/stable       no  	  
+mysql-router          	  8.4.10   active  	   1  mysql-router              8.4/stable       no  	  
+mysql-test-app        	  0.0.2    active  	   1  mysql-test-app            stable      36   no  	  
+self-signed-certificates           active  	   1  self-signed-certificates  stable      72   no  	  
 
 Unit                     	 Workload  Agent  Machine  Public address  Ports       	   Message
 mysql-test-app/0*        	 active	   idle         1  10.205.193.227             	 

@@ -4,6 +4,7 @@
 import logging
 import shutil
 import zipfile
+from contextlib import suppress
 from pathlib import Path
 
 import jubilant
@@ -39,7 +40,7 @@ def test_deploy_edge(juju: Juju, ubuntu_base: str) -> None:
         app=MYSQL_ROUTER_APP_NAME,
         base=ubuntu_base,
         channel="8.4/edge",
-        num_units=1,
+        num_units=1,  # router is a subordinate charm
     )
     juju.deploy(
         charm=MYSQL_TEST_APP_NAME,
@@ -103,12 +104,15 @@ def test_upgrade_from_edge(juju: Juju, charm: str, continuous_writes) -> None:
     # since unreleased charm versions are always marked as incompatible
     if router_status.current == "blocked" and "incompatible" in router_status.message:
         logging.info("Application upgrade is blocked due to incompatibility")
-        juju.run(
-            unit=router_app_units[0],
-            action="force-refresh-start",
-            params={"check-compatibility": False},
-            wait=5 * MINUTE_SECS,
-        )
+        # The force-refresh-start action restarts the workload, which may kill the charm's
+        # websocket connection before the action result is returned, causing a TaskError
+        with suppress(jubilant.TaskError):
+            juju.run(
+                unit=router_app_units[0],
+                action="force-refresh-start",
+                params={"check-compatibility": False},
+                wait=5 * MINUTE_SECS,
+            )
 
     logging.info("Wait for first unit to upgrade")
     juju.wait(
@@ -116,12 +120,14 @@ def test_upgrade_from_edge(juju: Juju, charm: str, continuous_writes) -> None:
         timeout=5 * MINUTE_SECS,
     )
 
-    logging.info("Resume upgrade")
-    juju.run(
-        unit=router_app_units[1],
-        action="resume-refresh",
-        wait=5 * MINUTE_SECS,
-    )
+    # If leader is next to refresh, charm will be killed before action can succeed
+    with suppress(jubilant.TaskError):
+        logging.info("Resume upgrade")
+        juju.run(
+            unit=router_app_units[1],
+            action="resume-refresh",
+            wait=5 * MINUTE_SECS,
+        )
 
     logging.info("Wait for upgrade to complete")
     juju.wait(

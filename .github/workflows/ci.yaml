@@ -16,7 +16,7 @@ on:
 jobs:
   lint-workflows:
     name: Lint workflows
-    uses: canonical/data-platform-workflows/.github/workflows/lint_workflows.yaml@v49
+    uses: canonical/data-platform-workflows/.github/workflows/lint_workflows.yaml@v52
     permissions:
       contents: read
 
@@ -78,11 +78,10 @@ jobs:
           - kubernetes
           - machines
     name: Build charm | ${{ matrix.path }}
-    uses: canonical/data-platform-workflows/.github/workflows/build_charm.yaml@v49
+    uses: canonical/data-platform-workflows/.github/workflows/build_charm.yaml@v52
     with:
       path-to-charm-directory: ${{ matrix.path }}
     permissions:
-      actions: read
       contents: read
 
   integration-test:

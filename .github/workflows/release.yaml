@@ -46,7 +46,7 @@ jobs:
         path:
           - kubernetes
           - machines
-    uses: ./.github/workflows/integration_test.yaml
+    uses: $/.github/workflows/integration_test.yaml
     with:
       artifact-prefix: ${{ needs.build.outputs.artifact-prefix }}
       path-to-charm-directory: ${{ matrix.path }}

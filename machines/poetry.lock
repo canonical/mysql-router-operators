@@ -575,7 +575,7 @@ charm-api = ">=0.1.2"
 charm-refresh = ">=3.1.0.2"
 jinja2 = ">=3.1.6"
 mysql-shell-client = {version = ">=1.0.0", extras = ["contrib"]}
-ops = ">=2.9.0"
+ops = ">=2.15.0"
 requests = ">=2.33.0"
 tenacity = ">=9.1.2"
 
@@ -1424,35 +1424,41 @@ typing-extensions = ">=4.5.0"
 
 [[package]]
 name = "ops"
-version = "2.9.0"
+version = "2.15.0"
 description = "The Python library behind great charms"
 optional = false
 python-versions = ">=3.8"
 groups = ["main", "charm-libs", "integration", "unit"]
 files = [
-    {file = "ops-2.9.0-py3-none-any.whl", hash = "sha256:1d443e4d45e0c2443b8334d37a177287f22a12ee0cb02a30cf7c3159316cb643"},
-    {file = "ops-2.9.0.tar.gz", hash = "sha256:d3c541659eded56f42f9c18270408cc6313895968f1360b3f1de75c99cc99ada"},
+    {file = "ops-2.15.0-py3-none-any.whl", hash = "sha256:8e47ab8a814301776b0ff42b32544ebdece7f1639168d2c86dc7a25930d2e493"},
+    {file = "ops-2.15.0.tar.gz", hash = "sha256:f3bad7417e98e8f390523fad097702eed16e99b38a25e9fe856aad226474b057"},
 ]
 
 [package.dependencies]
 PyYAML = "==6.*"
 websocket-client = "==1.*"
 
+[package.extras]
+docs = ["canonical-sphinx-extensions", "furo", "linkify-it-py", "myst-parser", "pyspelling", "sphinx (==6.2.1)", "sphinx-autobuild", "sphinx-copybutton", "sphinx-design", "sphinx-notfound-page", "sphinx-tabs", "sphinxcontrib-jquery", "sphinxext-opengraph"]
+
 [[package]]
 name = "ops-scenario"
-version = "6.0.3"
+version = "6.1.7"
 description = "Python library providing a state-transition testing API for Operator Framework charms."
 optional = false
 python-versions = ">=3.8"
 groups = ["unit"]
 files = [
-    {file = "ops-scenario-6.0.3.tar.gz", hash = "sha256:b729b7bb4677ff271bc5696e99a54b56c2be04119f3daaeaedbefa904625db1b"},
-    {file = "ops_scenario-6.0.3-py3-none-any.whl", hash = "sha256:94215895aea55410a4b5eda222ab22284e6921f61c9f3cc6b77eae09e9dc5087"},
+    {file = "ops_scenario-6.1.7-py3-none-any.whl", hash = "sha256:ba128c0281da4352f559d11e3aab426581b954c0ed7557dda102457060fb7393"},
+    {file = "ops_scenario-6.1.7.tar.gz", hash = "sha256:e6fb4b898e047ba69270aafbd63d78af42dc33e4ab45221e6d5919b139db8a71"},
 ]
 
 [package.dependencies]
-ops = ">=2.6"
+ops = ">=2.12,<=2.16"
 PyYAML = ">=6.0.1"
+
+[package.extras]
+docs = ["canonical-sphinx-extensions", "furo", "linkify-it-py", "myst-parser", "pyspelling", "sphinx (==6.2.1)", "sphinx-autobuild", "sphinx-copybutton", "sphinx-design", "sphinx-notfound-page", "sphinx-tabs", "sphinxcontrib-jquery", "sphinxext-opengraph"]
 
 [[package]]
 name = "packaging"
@@ -2510,4 +2516,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "100182946c9f5c84f6cb2097e18954d62ca78d13799809f8ecfa7754fecf0a64"
+content-hash = "7e6b0785b4edc86c8469d53a4828279ae3d8cde7b10249179e91ab6c7b7404c1"

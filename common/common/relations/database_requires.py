@@ -70,13 +70,17 @@ class CompleteConnectionInformation(ConnectionInformation):
     """
 
     def __init__(self, *, interface: data_interfaces.DatabaseRequires, event) -> None:
-        relations = interface.relations
         endpoint_name = interface.relation_name
+        # ops 2.10+ (PR #1091) excludes the breaking relation from interface.relations.
+        relations = interface.relations
+        if isinstance(event, ops.RelationBrokenEvent) and event.relation.name == endpoint_name:
+            relations = [*relations, event.relation]
+
         if not relations:
             raise _MissingRelation(endpoint_name=endpoint_name)
         assert len(relations) == 1
         relation = relations[0]
-        if isinstance(event, ops.RelationBrokenEvent) and event.relation.id == relation.id:
+        if not relation.active:
             # Relation will be broken after the current event is handled
             raise _RelationBreaking(endpoint_name=endpoint_name)
         # MySQL charm databag

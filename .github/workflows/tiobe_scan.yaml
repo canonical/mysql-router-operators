@@ -33,6 +33,7 @@ jobs:
           persist-credentials: false
           sparse-checkout: |
             ${{ inputs.operator }}
+            common
           ref: ${{ inputs.ref }}
 
       - name: Create and activate virtual environment

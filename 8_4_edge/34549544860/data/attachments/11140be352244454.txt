@@ -1,0 +1,1 @@
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju deploy --model testing ./mysql-router-k8s_ubuntu@26.04-arm64.charm mysql-router-k8s --base ubuntu@26.04 --resource mysql-router-image=ghcr.io/canonical/charmed-mysql@sha256:8562333ec3933935bf7742ecf11306ef6fbf6265767ce24538b05475b9ca0853

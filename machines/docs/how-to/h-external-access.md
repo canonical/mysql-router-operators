@@ -13,9 +13,9 @@ The steps below show you how to deploy and set up MySQL, MySQL Router, and Data 
 
 First, deploy all the charms:
 ```shell
-juju deploy mysql --channel 8.4/edge --trust
+juju deploy mysql --channel 8.4/stable --trust
+juju deploy mysql-router --channel 8.4/stable
 juju deploy data-integrator --config database-name=test_database
-juju deploy mysql-router --channel dpe/edge
 ```
 > Feel free to change `test_database` to your name of choice
 
@@ -77,9 +77,9 @@ The steps below show you how to deploy and set up MySQL, MySQL Router, Data Inte
 
 First, deploy all the charms
 ```shell
-juju deploy mysql --channel 8.4/edge --trust
-juju deploy -n 3 data-integrator --config database-name=test_database
-juju deploy mysql-router --channel dpe/edge
+juju deploy mysql --channel 8.4/stable --trust
+juju deploy mysql-router --channel 8.4/stable
+juju deploy data-integrator --config database-name=test_database -n 3 
 juju deploy hacluster
 ```
 > Note that the `data-integrator` requires a minimum of 3 nodes for this HACluster setup to work

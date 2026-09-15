@@ -19,6 +19,7 @@ jobs:
     uses: canonical/data-platform-workflows/.github/workflows/lint_workflows.yaml@v53
     permissions:
       contents: read
+    cache-mode: none
 
   lint:
     strategy:
@@ -47,6 +48,7 @@ jobs:
         run: |
           tox run -e lint
           tox run -e lint-terraform
+    cache-mode: none
 
   unit-test:
     strategy:
@@ -70,6 +72,7 @@ jobs:
       - name: Run tests
         working-directory: ${{ matrix.path }}
         run: tox run -e unit
+    cache-mode: none
 
   build:
     strategy:
@@ -83,6 +86,7 @@ jobs:
       path-to-charm-directory: ${{ matrix.path }}
     permissions:
       contents: read
+    cache-mode: none
 
   integration-test:
     name: Integration tests
@@ -106,3 +110,4 @@ jobs:
       LANDSCAPE_ACCOUNT_NAME: ${{ secrets.LANDSCAPE_ACCOUNT_NAME }}
       LANDSCAPE_REGISTRATION_KEY: ${{ secrets.LANDSCAPE_REGISTRATION_KEY }}
     permissions: {}
+    cache-mode: none

@@ -19,6 +19,7 @@ jobs:
       track: '8.4'
     permissions:
       contents: write  # Needed to create git tag
+    cache-mode: none
 
   build:
     name: Build charm | ${{ matrix.path }}
@@ -35,6 +36,7 @@ jobs:
       path-to-charm-directory: ${{ matrix.path }}
     permissions:
       contents: read
+    cache-mode: none
 
   integration-test:
     name: Integration tests
@@ -55,6 +57,7 @@ jobs:
       LANDSCAPE_ACCOUNT_NAME: ${{ secrets.LANDSCAPE_ACCOUNT_NAME }}
       LANDSCAPE_REGISTRATION_KEY: ${{ secrets.LANDSCAPE_REGISTRATION_KEY }}
     permissions: {}
+    cache-mode: none
 
   release:
     strategy:
@@ -75,3 +78,4 @@ jobs:
       charmhub-token: ${{ secrets.CHARMHUB_TOKEN }}
     permissions:
       contents: write  # Needed to create git tags
+    cache-mode: none

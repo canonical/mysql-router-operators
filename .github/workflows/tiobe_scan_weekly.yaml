@@ -35,3 +35,4 @@ jobs:
       project: ${{ matrix.project }}
     secrets:
       TICSAUTHTOKEN: ${{ secrets.TICSAUTHTOKEN }}
+    cache-mode: none

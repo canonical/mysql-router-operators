@@ -57,7 +57,7 @@ jobs:
           cp "$OPERATOR/coverage.xml" "$OPERATOR/.cover/cobertura.xml"
 
       - name: TICS GitHub Action
-        uses: tiobe/tics-github-action@v3
+        uses: tiobe/tics-github-action@v4
         with:
           mode: qserver
           project: ${{ inputs.project }}

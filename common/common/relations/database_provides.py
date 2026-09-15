@@ -77,7 +77,7 @@ class _RelationThatRequestedUser(_Relation):
     ) -> None:
         super().__init__(relation=relation, interface=interface)
         self._interface = interface
-        if not relation.active and event.relation.id == self._id:
+        if isinstance(event, ops.RelationBrokenEvent) and event.relation.id == self._id:
             raise _RelationBreaking
         self._database: str = self._databag["database"]
         if self._databag.get("extra-user-roles"):
@@ -146,14 +146,9 @@ class _RelationWithSharedUser(_Relation):
     ) -> None:
         super().__init__(relation=relation, interface=interface)
         self._interface = interface
-        try:
-            self._local_databag = self._interface.fetch_my_relation_data([relation.id])[
-                relation.id
-            ]
-        except KeyError:
-            # Breaking relation excluded from data_interfaces lib (ops 2.10+ PR #1091).
-            # Access the local app databag directly from the relation object.
-            self._local_databag = relation.data[interface._model.app]
+        self._local_databag = self._interface.fetch_my_relation_data([relation.id]).get(
+            relation.id, relation.data[interface._model.app]
+        )
         for key in ("database", "username", "password", "endpoints", "read-only-endpoints"):
             if key not in self._local_databag:
                 raise _UserNotShared
@@ -177,13 +172,7 @@ class _RelationWithSharedUser(_Relation):
     def delete_databag(self) -> None:
         """Remove connection information from databag."""
         logger.debug(f"Deleting databag {self._id=}")
-        try:
-            self._interface.delete_relation_data(self._id, list(self._local_databag))
-        except Exception:
-            # Breaking relation excluded from data_interfaces lib (ops 2.10+ PR #1091).
-            # Clear the local databag directly.
-            for key in list(self._local_databag):
-                del self._local_databag[key]
+        self._interface.delete_relation_data(self._id, list(self._local_databag))
         logger.debug(f"Deleted databag {self._id=}")
 
     def delete_user(self, *, shell: mysql_shell.Shell) -> None:
@@ -204,16 +193,10 @@ class RelationEndpoint:
         self._interface = data_interfaces.DatabaseProvides(charm_, relation_name=self._NAME)
         charm_.framework.observe(self._interface.on.database_requested, charm_.reconcile)
 
-    def _relations(self, event=None) -> list[ops.Relation]:
-        """interface.relations + breaking relation (ops 2.10+ PR #1091)"""
-        relations = self._interface.relations
-        if isinstance(event, ops.RelationBrokenEvent) and event.relation.name == self._NAME:
-            relations = [*relations, event.relation]
-        return relations
-
-    def _shared_users(self, event=None) -> list[_RelationWithSharedUser]:
+    @property
+    def _shared_users(self) -> list[_RelationWithSharedUser]:
         shared_users = []
-        for relation in self._relations(event):
+        for relation in self._interface.relations:
             try:
                 shared_users.append(
                     _RelationWithSharedUser(relation=relation, interface=self._interface)
@@ -228,7 +211,7 @@ class RelationEndpoint:
         Only used on machines charm
         """
         requested_users = []
-        for relation in self._relations(event):
+        for relation in self._interface.relations:
             try:
                 requested_users.append(
                     _RelationThatRequestedUser(
@@ -250,7 +233,7 @@ class RelationEndpoint:
         router_read_only_endpoints: str,
     ) -> None:
         """Update endpoints in the databags."""
-        for relation in self._shared_users():
+        for relation in self._shared_users:
             relation.update_endpoints(
                 router_read_write_endpoints=router_read_write_endpoints,
                 router_read_only_endpoints=router_read_only_endpoints,
@@ -274,7 +257,7 @@ class RelationEndpoint:
             f"Reconciling users {event=}, {router_read_write_endpoints=}, {router_read_only_endpoints=}"
         )
         requested_users = []
-        for relation in self._relations(event):
+        for relation in self._interface.relations:
             try:
                 requested_users.append(
                     _RelationThatRequestedUser(
@@ -287,16 +270,15 @@ class RelationEndpoint:
                 _UnsupportedExtraUserRole,
             ):
                 pass
-        shared_users = self._shared_users(event)
-        logger.debug(f"State of reconcile users {requested_users=}, {shared_users=}")
+        logger.debug(f"State of reconcile users {requested_users=}, {self._shared_users=}")
         for relation in requested_users:
-            if relation not in shared_users:
+            if relation not in self._shared_users:
                 relation.create_database_and_user(
                     router_read_write_endpoints=router_read_write_endpoints,
                     router_read_only_endpoints=router_read_only_endpoints,
                     shell=shell,
                 )
-        for relation in shared_users:
+        for relation in self._shared_users:
             if relation not in requested_users:
                 try:
                     relation.delete_user(shell=shell)
@@ -306,9 +288,27 @@ class RelationEndpoint:
                         "Cleaning up databag only"
                     )
                     relation.delete_databag()
+        if isinstance(event, ops.RelationBrokenEvent) and event.relation.name == self._NAME:
+            self._delete_breaking_user(event=event, shell=shell)
         logger.debug(
             f"Reconciled users {event=}, {router_read_write_endpoints=}, {router_read_only_endpoints=}"
         )
+
+    def _delete_breaking_user(self, *, event, shell: mysql_shell.Shell) -> None:
+        """Delete the user of the breaking relation."""
+        try:
+            breaking_user = _RelationWithSharedUser(
+                relation=event.relation, interface=self._interface
+            )
+            breaking_user.delete_user(shell=shell)
+        except _UserNotShared:
+            pass
+        except ExecutionError:
+            logger.warning(
+                "Failed to delete user (credentials may have been revoked by MySQL). "
+                "Cleaning up databag only"
+            )
+            breaking_user.delete_databag()
 
     def delete_all_databags(self) -> None:
         """Remove connection information from all databags.
@@ -319,7 +319,7 @@ class RelationEndpoint:
         will need to be created.
         """
         logger.debug("Deleting all application databags")
-        for relation in self._shared_users():
+        for relation in self._shared_users:
             # MySQL charm will delete user; just delete databag
             relation.delete_databag()
         logger.debug("Deleted all application databags")
@@ -332,7 +332,7 @@ class RelationEndpoint:
             remote_databag.IncompleteDatabag,
         )
         exceptions: list[status_exception.StatusException] = []
-        for relation in self._relations(event):
+        for relation in self._interface.relations:
             try:
                 requested_users.append(
                     _RelationThatRequestedUser(

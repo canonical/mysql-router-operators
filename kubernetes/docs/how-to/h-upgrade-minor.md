@@ -69,10 +69,10 @@ Wait for the new unit up and ready.
 
 ## Step 3: Prepare
 
-After the application has settled, it’s necessary to run the `pre-upgrade-check` action against the leader unit (for the MySQL Server only):
+After the application has settled, it’s necessary to run the `pre-refresh-check` action against the leader unit (for the MySQL Server only):
 
 ```shell
-juju run mysql-k8s/leader pre-upgrade-check
+juju run mysql-k8s/leader pre-refresh-check
 ```
 
 The action will configure the charm to minimize the amount of primary switchover, among other preparations for the upgrade process. After successful execution, charms are ready to be upgraded.

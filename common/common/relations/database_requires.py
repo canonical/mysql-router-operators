@@ -72,6 +72,8 @@ class CompleteConnectionInformation(ConnectionInformation):
     def __init__(self, *, interface: data_interfaces.DatabaseRequires, event) -> None:
         relations = interface.relations
         endpoint_name = interface.relation_name
+        if isinstance(event, ops.RelationBrokenEvent) and event.relation.name == endpoint_name:
+            relations = [*relations, event.relation]
         if not relations:
             raise _MissingRelation(endpoint_name=endpoint_name)
         assert len(relations) == 1

@@ -27,6 +27,7 @@ import common.relations.cos
 import common.relations.database_provides
 import common.relations.database_requires
 import common.relations.secrets
+import common.server_exceptions
 import common.workload
 import lightkube
 import lightkube.models.core_v1
@@ -351,8 +352,10 @@ class KubernetesRouterCharm(common.abstract_charm.MySQLRouterCharm):
                         with socket.socket() as s:
                             assert s.connect_ex(("localhost", port)) == 0
         except AssertionError:
-            logger.exception("Unable to connect to MySQL Router")
-            raise
+            logger.warning("Unable to connect to MySQL Router")
+            raise common.server_exceptions.Error(
+                ops.WaitingStatus("MySQL Router not ready")
+            ) from None
         else:
             logger.debug("MySQL Router is ready")
 

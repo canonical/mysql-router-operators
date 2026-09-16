@@ -33,6 +33,7 @@ jobs:
           persist-credentials: false
           sparse-checkout: |
             ${{ inputs.operator }}
+            common
           ref: ${{ inputs.ref }}
 
       - name: Create and activate virtual environment
@@ -42,6 +43,14 @@ jobs:
           . .venv/bin/activate
           pip install flake8 poetry pylint pytest tox
           echo PATH="$PATH" >> "$GITHUB_ENV"
+
+      - name: Install project dependencies
+        env:
+          OPERATOR: ${{ inputs.operator }}
+        run: |
+          . .venv/bin/activate
+          cd "$OPERATOR"
+          poetry install --only main,charm-libs
 
       - name: Run coverage tests
         env:

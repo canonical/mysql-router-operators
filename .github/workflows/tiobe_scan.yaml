@@ -44,6 +44,14 @@ jobs:
           pip install flake8 poetry pylint pytest tox
           echo PATH="$PATH" >> "$GITHUB_ENV"
 
+      - name: Install project dependencies
+        env:
+          OPERATOR: ${{ inputs.operator }}
+        run: |
+          . .venv/bin/activate
+          cd "$OPERATOR"
+          poetry install --only main,charm-libs
+
       - name: Run coverage tests
         env:
           OPERATOR: ${{ inputs.operator }}

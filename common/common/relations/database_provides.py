@@ -146,7 +146,9 @@ class _RelationWithSharedUser(_Relation):
     ) -> None:
         super().__init__(relation=relation, interface=interface)
         self._interface = interface
-        self._local_databag = self._interface.fetch_my_relation_data([relation.id])[relation.id]
+        self._local_databag = self._interface.fetch_my_relation_data([relation.id]).get(
+            relation.id, relation.data[interface._model.app]
+        )
         for key in ("database", "username", "password", "endpoints", "read-only-endpoints"):
             if key not in self._local_databag:
                 raise _UserNotShared
@@ -286,9 +288,27 @@ class RelationEndpoint:
                         "Cleaning up databag only"
                     )
                     relation.delete_databag()
+        if isinstance(event, ops.RelationBrokenEvent) and event.relation.name == self._NAME:
+            self._delete_breaking_user(event=event, shell=shell)
         logger.debug(
             f"Reconciled users {event=}, {router_read_write_endpoints=}, {router_read_only_endpoints=}"
         )
+
+    def _delete_breaking_user(self, *, event, shell: mysql_shell.Shell) -> None:
+        """Delete the user of the breaking relation."""
+        try:
+            breaking_user = _RelationWithSharedUser(
+                relation=event.relation, interface=self._interface
+            )
+            breaking_user.delete_user(shell=shell)
+        except _UserNotShared:
+            pass
+        except ExecutionError:
+            logger.warning(
+                "Failed to delete user (credentials may have been revoked by MySQL). "
+                "Cleaning up databag only"
+            )
+            breaking_user.delete_databag()
 
     def delete_all_databags(self) -> None:
         """Remove connection information from all databags.

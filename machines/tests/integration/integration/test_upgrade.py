@@ -40,7 +40,7 @@ def test_deploy_edge(juju: Juju, ubuntu_base: str) -> None:
         app=MYSQL_ROUTER_APP_NAME,
         base=ubuntu_base,
         channel="8.4/edge",
-        num_units=1,  # router is a subordinate charm
+        num_units=1,
     )
     juju.deploy(
         charm=MYSQL_TEST_APP_NAME,

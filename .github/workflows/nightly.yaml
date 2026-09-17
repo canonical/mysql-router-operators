@@ -19,11 +19,12 @@ jobs:
         path:
           - kubernetes
           - machines
-    uses: canonical/data-platform-workflows/.github/workflows/build_charm.yaml@v52
+    uses: canonical/data-platform-workflows/.github/workflows/build_charm.yaml@v53
     with:
       path-to-charm-directory: ${{ matrix.path }}
     permissions:
       contents: read
+    cache-mode: none
 
   integration-test:
     name: Integration tests
@@ -44,6 +45,7 @@ jobs:
       LANDSCAPE_ACCOUNT_NAME: ${{ secrets.LANDSCAPE_ACCOUNT_NAME }}
       LANDSCAPE_REGISTRATION_KEY: ${{ secrets.LANDSCAPE_REGISTRATION_KEY }}
     permissions: {}
+    cache-mode: none
 
   release-test:
     name: Release tests
@@ -60,6 +62,7 @@ jobs:
       artifact-prefix: ${{ needs.build.outputs.artifact-prefix }}
       path-to-charm-directory: ${{ matrix.path }}
     permissions: {}
+    cache-mode: none
 
   allure-report:
     name: Publish Allure report
@@ -227,3 +230,4 @@ jobs:
           git commit -m "Allure report ${{ github.run_id }}"
           # Uses token set in checkout step
           git push origin gh-pages-beta
+    cache-mode: none

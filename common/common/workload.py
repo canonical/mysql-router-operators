@@ -425,7 +425,15 @@ class RunningWorkload(Workload):
         #   The socket file at /run/mysqlrouter/mysql.sock is created by MySQL Router on startup and
         #   removed on clean shutdown, making it reliable proxy for "router is running in socket mode".
         if charm_port_exposed is None:
-            return self._container.mysql_router_service_enabled
+            # The K8s service may be "enabled"
+            # without the router actually binding to its ports
+            if not self._container.mysql_router_service_enabled:
+                return False
+            try:
+                self._charm.wait_until_mysql_router_ready(event=event)
+            except server_exceptions.Error:
+                return False
+            return True
         elif charm_port_exposed:
             # After a snap refresh the service may be "enabled"
             # without actually binding to the port

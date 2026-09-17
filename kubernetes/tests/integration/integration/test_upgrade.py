@@ -101,6 +101,12 @@ def test_upgrade_from_edge(juju: Juju, charm: str, continuous_writes) -> None:
         ready=wait_for_apps_status(jubilant.any_blocked, MYSQL_ROUTER_APP_NAME),
         timeout=5 * MINUTE_SECS,
     )
+    # The app goes blocked ("Refreshing...") before the unit evaluates incompatibility.
+    # Wait for the unit to actually reach "blocked" before checking its status below.
+    juju.wait(
+        ready=wait_for_unit_status(MYSQL_ROUTER_APP_NAME, router_app_units[0], "blocked"),
+        timeout=5 * MINUTE_SECS,
+    )
 
     router_status = juju.status().apps[MYSQL_ROUTER_APP_NAME]
     router_unit_status = router_status.units[router_app_units[0]].workload_status
@@ -109,12 +115,15 @@ def test_upgrade_from_edge(juju: Juju, charm: str, continuous_writes) -> None:
     # since unreleased charm versions are always marked as incompatible
     if router_unit_status.current == "blocked" and "incompatible" in router_unit_status.message:
         logging.info("Application upgrade is blocked due to incompatibility")
-        juju.run(
-            unit=router_app_units[0],
-            action="force-refresh-start",
-            params={"check-compatibility": False},
-            wait=5 * MINUTE_SECS,
-        )
+        # The force-refresh-start action restarts the workload, which may kill the charm's
+        # websocket connection before the action result is returned, causing a TaskError
+        with suppress(jubilant.TaskError):
+            juju.run(
+                unit=router_app_units[0],
+                action="force-refresh-start",
+                params={"check-compatibility": False},
+                wait=5 * MINUTE_SECS,
+            )
 
     logging.info("Wait for first unit to upgrade")
     juju.wait(
@@ -190,6 +199,13 @@ def test_fail_and_rollback(juju: Juju, charm: str, continuous_writes) -> None:
     juju.wait(
         ready=wait_for_apps_status(jubilant.any_blocked, MYSQL_ROUTER_APP_NAME),
         timeout=10 * MINUTE_SECS,
+    )
+
+    # Wait for the first unit to finish refreshing before resuming, otherwise resume-refresh
+    # may be called before there is a next unit to refresh
+    juju.wait(
+        ready=jubilant.all_agents_idle,
+        timeout=5 * MINUTE_SECS,
     )
 
     # If leader is next to refresh, charm will be killed before action can succeed

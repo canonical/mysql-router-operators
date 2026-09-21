@@ -349,7 +349,11 @@ class MySQLRouterCharm(ops.CharmBase, abc.ABC):
                     )
                     self._update_endpoints(event=event)
 
-            if workload_.container_ready:
+            if workload_.container_ready and not self._database_requires.is_relation_departing(
+                event
+            ):
+                # router must not re-bootstrap while the relation is departing.
+                # MySQL charm would've removed the router from the cluster metadata
                 workload_.reconcile(
                     event=event,
                     tls=self._tls_certificate_saved,

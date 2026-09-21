@@ -132,6 +132,14 @@ class RelationEndpoint:
             pass
         return False
 
+    def is_relation_departing(self, event) -> bool:
+        """Whether a remote unit is departing the relation on the current event
+
+        During *-relation-departed, the relation still exists but may be about to be
+        torn down (e.g. `juju remove-relation` or application removal).
+        """
+        return isinstance(event, ops.RelationDepartedEvent) and event.relation.name == self._NAME
+
     def get_status(self, event) -> ops.StatusBase | None:
         """Report non-active status."""
         try:

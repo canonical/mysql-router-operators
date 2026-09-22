@@ -274,6 +274,8 @@ class MySQLRouterCharm(ops.CharmBase, abc.ABC):
         """Wait until a connection to MySQL Router is possible.
 
         Retry every 5 seconds for up to 30 seconds.
+
+        Raises common.server_exceptions.Error if MySQL Router is not ready.
         """
 
     @abc.abstractmethod

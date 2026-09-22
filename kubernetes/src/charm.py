@@ -27,6 +27,7 @@ import common.relations.cos
 import common.relations.database_provides
 import common.relations.database_requires
 import common.relations.secrets
+import common.server_exceptions
 import common.workload
 import lightkube
 import lightkube.models.core_v1
@@ -326,6 +327,11 @@ class KubernetesRouterCharm(common.abstract_charm.MySQLRouterCharm):
                 router_read_write_endpoints=self._read_write_endpoints(event=event),
                 router_read_only_endpoints=self._read_only_endpoints(event=event),
             )
+            # Service is connectable, clear the "creating" flag so that _status does not
+            # report "Waiting for K8s service connectivity" on future reconcile events
+            self._peer_data.set_value(
+                common.relations.secrets.APP_SCOPE, self._K8S_SERVICE_CREATING_KEY, None
+            )
 
     def wait_until_mysql_router_ready(self, *, event=None) -> None:
         logger.debug("Waiting until MySQL Router is ready")
@@ -346,8 +352,10 @@ class KubernetesRouterCharm(common.abstract_charm.MySQLRouterCharm):
                         with socket.socket() as s:
                             assert s.connect_ex(("localhost", port)) == 0
         except AssertionError:
-            logger.exception("Unable to connect to MySQL Router")
-            raise
+            logger.warning("Unable to connect to MySQL Router")
+            raise common.server_exceptions.Error(
+                ops.WaitingStatus("MySQL Router not ready")
+            ) from None
         else:
             logger.debug("MySQL Router is ready")
 

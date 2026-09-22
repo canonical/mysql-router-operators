@@ -1,0 +1,9 @@
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju version --format json
+[32mINFO    [0m root:test_hacluster.py:45 Deploying all the applications
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju deploy --model testing mysql mysql --base ubuntu@22.04 --channel 8.0/edge --config profile=testing
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju deploy --model testing ./mysql-router_ubuntu@22.04-amd64.charm mysql-router --base ubuntu@22.04
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju deploy --model testing data-integrator data-integrator --base ubuntu@22.04 --channel latest/stable --config database-name=test_database --num-units 4
+[32mINFO    [0m root:test_hacluster.py:69 Relating the applications
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju integrate --model testing mysql:database mysql-router:backend-database
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju integrate --model testing data-integrator:mysql mysql-router:database
+[32mINFO    [0m root:test_hacluster.py:79 Wait for applications to become active

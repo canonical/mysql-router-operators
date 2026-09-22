@@ -55,6 +55,8 @@ ops = "^2.15"
 tenacity = "^9.1.2"
 charm-refresh = "^3.1.0.2"
 charmlibs-snap = "^1.0.1"
+# packaging.pylock (PEP 771) added in 26; required by tox at import time
+packaging = ">=26"
 
 [tool.poetry.group.format]
 optional = true

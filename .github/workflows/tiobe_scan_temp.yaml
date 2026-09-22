@@ -1,0 +1,43 @@
+# Copyright 2026 Canonical Ltd.
+# See LICENSE file for licensing details.
+
+name: Temporary TICS scan
+
+on:
+  push:
+    branches:
+      - soundarya/temp-tiobe-trigger
+
+jobs:
+  TICS-k8s-80:
+    name: TICS scan | mysql-router-k8s-80
+    uses: ./.github/workflows/tiobe_scan.yaml
+    with:
+      operator: kubernetes
+      ref: 8.0/edge
+      project: mysql-router-k8s-8.0
+    secrets: inherit
+  TICS-vm-80:
+    name: TICS scan | mysql-router-vm-80
+    uses: ./.github/workflows/tiobe_scan.yaml
+    with:
+      operator: machines
+      ref: 8.0/edge
+      project: mysql-router-vm-8.0
+    secrets: inherit
+  TICS-k8s-84:
+    name: TICS scan | mysql-router-k8s-84
+    uses: ./.github/workflows/tiobe_scan.yaml
+    with:
+      operator: kubernetes
+      ref: fix/address-tiobe-issues
+      project: mysql-router-k8s-8.4
+    secrets: inherit
+  TICS-vm-84:
+    name: TICS scan | mysql-router-vm-84
+    uses: ./.github/workflows/tiobe_scan.yaml
+    with:
+      operator: machines
+      ref: fix/address-tiobe-issues
+      project: mysql-router-vm-8.4
+    secrets: inherit

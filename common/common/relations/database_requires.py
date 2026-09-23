@@ -133,7 +133,7 @@ class RelationEndpoint:
         return False
 
     def is_relation_departing(self, event) -> bool:
-        """Whether a remote unit is departing the relation on the current event
+        """Whether it's a relation departed event
 
         During *-relation-departed, the relation still exists but may be about to be
         torn down (e.g. `juju remove-relation` or application removal).

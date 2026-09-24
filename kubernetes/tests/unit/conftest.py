@@ -63,15 +63,13 @@ def patch(monkeypatch):
         lambda *args, **kwargs: None,
     )
     monkeypatch.setattr("common.workload.RunningWorkload._router_username", "")
+    monkeypatch.setattr("common.shell.Shell._get_mysql_databases", lambda *args, **kwargs: set())
+    monkeypatch.setattr("common.shell.Shell._get_mysql_roles", lambda *args, **kwargs: set())
     monkeypatch.setattr(
-        "common.mysql_shell.Shell._get_mysql_databases", lambda *args, **kwargs: set()
-    )
-    monkeypatch.setattr("common.mysql_shell.Shell._get_mysql_roles", lambda *args, **kwargs: set())
-    monkeypatch.setattr(
-        "common.mysql_shell.Shell.get_mysql_router_user_for_unit", lambda *args, **kwargs: None
+        "common.shell.Shell.get_mysql_router_user_for_unit", lambda *args, **kwargs: None
     )
     monkeypatch.setattr(
-        "common.mysql_shell.Shell.get_routers_in_cluster_set", lambda *args, **kwargs: set()
+        "common.shell.Shell.get_routers_in_cluster_set", lambda *args, **kwargs: set()
     )
     monkeypatch.setattr("charm_refresh.Kubernetes", _MockRefresh)
     monkeypatch.setattr(

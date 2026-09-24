@@ -17,7 +17,7 @@ import requests
 import tenacity
 from mysql_shell.executors.errors import ExecutionError
 
-from . import container, mysql_shell, server_exceptions
+from . import container, server_exceptions, shell
 
 if typing.TYPE_CHECKING:
     from . import abstract_charm, logrotate
@@ -221,9 +221,9 @@ class RunningWorkload(Workload):
         self._charm = charm_
 
     @property
-    def shell(self) -> mysql_shell.Shell:
+    def shell(self) -> shell.Shell:
         """MySQL Shell"""
-        return mysql_shell.Shell(
+        return shell.Shell(
             executor=self._charm.build_shell_executor(
                 self._connection_info,
             ),

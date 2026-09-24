@@ -30,7 +30,7 @@ jobs:
     uses: ./.github/workflows/tiobe_scan.yaml
     with:
       operator: kubernetes
-      ref: fix/address-tiobe-issues
+      ref: 8.4/edge
       project: mysql-router-k8s-8.4
     secrets: inherit
   TICS-vm-84:
@@ -38,6 +38,6 @@ jobs:
     uses: ./.github/workflows/tiobe_scan.yaml
     with:
       operator: machines
-      ref: fix/address-tiobe-issues
+      ref: 8.4/edge
       project: mysql-router-vm-8.4
     secrets: inherit

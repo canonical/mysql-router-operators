@@ -6,8 +6,8 @@ This is part of the [MySQL Router K8s Tutorial](/t/12176). Please refer to this 
 To deploy Charmed MySQL K8s + MySQL Router K8s, all you need to do is run the following commands:
 
 ```shell
-juju deploy mysql-router-k8s --channel 8.4 --trust
-juju deploy mysql-k8s --channel 8.4 --trust
+juju deploy mysql-router-k8s --channel 8.4/stable --trust
+juju deploy mysql-k8s --channel 8.4/stable --trust
 ```
 Note: `--trust` is required to create some K8s resources.
 
@@ -21,9 +21,9 @@ This command is useful for checking the status of Juju applications and gatherin
 Model     Controller  Cloud/Region        Version  SLA          Timestamp
 tutorial  overlord    microk8s/localhost  3.6.19   unsupported  22:33:45+01:00
 
-App               Version  Status   Scale  Charm             Channel   Rev  Address        Exposed  Message
-mysql-k8s         8.4.7    active       1  mysql-k8s         8.4/edge  109  10.152.183.68  no       
-mysql-router-k8s  8.4.7    blocked      1  mysql-router-k8s  8.4/edge   68  10.152.183.52  no       Missing relation: backend-database
+App               Version  Status   Scale  Charm             Channel     Rev  Address        Exposed  Message
+mysql-k8s         8.4.10   active       1  mysql-k8s         8.4/stable       10.152.183.68  no       
+mysql-router-k8s  8.4.10   blocked      1  mysql-router-k8s  8.4/stable       10.152.183.52  no       Missing relation: backend-database
 
 Unit                 Workload  Agent  Address     Ports  Message
 mysql-k8s/0*         active    idle   10.1.12.36         Primary
@@ -49,10 +49,10 @@ In a couple of seconds, the status will be happy for entire model:
 Model     Controller  Cloud/Region        Version  SLA          Timestamp
 tutorial  overlord    microk8s/localhost  3.6.19   unsupported  22:37:41+01:00
 
-App               Version  Status  Scale  Charm             Channel   Rev  Address         Exposed  Message
-data-integrator            active      1  data-integrator   stable     13  10.152.183.142  no       
-mysql-k8s         8.4.7    active      1  mysql-k8s         8.4/edge  109  10.152.183.68   no       
-mysql-router-k8s  8.4.7    active      1  mysql-router-k8s  8.4/edge   68  10.152.183.52   no       
+App               Version  Status  Scale  Charm             Channel     Rev  Address         Exposed  Message
+data-integrator            active      1  data-integrator   stable       13  10.152.183.142  no       
+mysql-k8s         8.4.10   active      1  mysql-k8s         8.4/stable       10.152.183.68   no       
+mysql-router-k8s  8.4.10   active      1  mysql-router-k8s  8.4/stable       10.152.183.52   no       
 
 Unit                 Workload  Agent  Address     Ports  Message
 data-integrator/0*   active    idle   10.1.12.3          
@@ -79,8 +79,8 @@ mysql:
 The host’s IP address can be found with `juju status` (the application hosting the Router MySQL K8s application):
 ```shell
 ...
-App               Version  Status   Scale  Charm             Channel   Rev  Address         Exposed  Message
-mysql-router-k8s  8.4.7    active       1  mysql-router-k8s  8.4/edge   68  10.152.183.52   no  
+App               Version  Status   Scale  Charm             Channel     Rev  Address         Exposed  Message
+mysql-router-k8s  8.4.10   active       1  mysql-router-k8s  8.4/stable       10.152.183.52   no
 ...
 ```
 
@@ -107,11 +107,11 @@ mysql> show databases;
 You can now interact with MySQL directly using any [MySQL Queries](https://dev.mysql.com/doc/refman/8.4/en/entering-queries.html). For example entering `SELECT VERSION(), CURRENT_DATE;` should output something like:
 ```shell
 mysql> SELECT VERSION(), CURRENT_DATE;
-+------------------------+--------------+
-| VERSION()              | CURRENT_DATE |
-+------------------------+--------------+
-| 8.4.7-0ubuntu0.26.04.1 | 2026-01-22   |
-+------------------------+--------------+
++-------------------------+--------------+
+| VERSION()               | CURRENT_DATE |
++-------------------------+--------------+
+| 8.4.10-0ubuntu0.26.04.1 | 2026-01-22   |
++-------------------------+--------------+
 1 row in set (0.00 sec)
 ```
 

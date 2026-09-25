@@ -9,8 +9,8 @@ Wraps modern interface (database_provides.py) and DEPRECATED legacy interface
 
 import typing
 
-import common.mysql_shell
 import common.relations.database_provides
+import common.shell
 import ops
 
 # `as` used to fix type checking circular import
@@ -59,7 +59,7 @@ class RelationEndpoint:
         event,
         router_read_write_endpoints: str,
         router_read_only_endpoints: str,
-        shell: common.mysql_shell.Shell,
+        shell: common.shell.Shell,
     ) -> None:
         """Create requested users and delete inactive users.
 

@@ -79,9 +79,13 @@ class _Path(pathlib.PosixPath, common.container.Path):
         path_str = str(path_obj)
         parent = None
 
-        if path_str.startswith("/etc/mysqlrouter") or path_str.startswith("/var/lib/mysqlrouter"):
+        if path_str.startswith("/etc/mysqlrouter"):
             parent = snap_current
-        if path_str.startswith("/run/mysqlrouter") or path_str.startswith("/var/log/mysqlrouter"):
+        if (
+            path_str.startswith("/var/lib/mysqlrouter")
+            or path_str.startswith("/run/mysqlrouter")
+            or path_str.startswith("/var/log/mysqlrouter")
+        ):
             parent = snap_common
         if path_str.startswith("/tmp") and not path_str.startswith(snap_tmp):
             parent = snap_tmp

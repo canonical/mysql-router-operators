@@ -14,7 +14,7 @@ jobs:
     uses: ./.github/workflows/tiobe_scan.yaml
     with:
       operator: kubernetes
-      ref: 8.0/edge
+      ref: backport/04ae3682-to-dpe
       project: mysql-router-k8s-8.0
     secrets: inherit
   TICS-vm-80:
@@ -22,7 +22,7 @@ jobs:
     uses: ./.github/workflows/tiobe_scan.yaml
     with:
       operator: machines
-      ref: 8.0/edge
+      ref: backport/04ae3682-to-dpe
       project: mysql-router-vm-8.0
     secrets: inherit
   TICS-k8s-84:

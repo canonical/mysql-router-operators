@@ -68,10 +68,8 @@ def test_departing_requires_does_not_contact_mysql(complete_requires, monkeypatc
             "'mysql-k8s-primary.my-model.svc.cluster.local.'"
         )
 
-    monkeypatch.setattr("common.mysql_shell.Shell.get_routers_in_cluster_set", raise_unreachable)
-    monkeypatch.setattr(
-        "common.mysql_shell.Shell.get_mysql_router_user_for_unit", raise_unreachable
-    )
+    monkeypatch.setattr("common.shell.Shell.get_routers_in_cluster_set", raise_unreachable)
+    monkeypatch.setattr("common.shell.Shell.get_mysql_router_user_for_unit", raise_unreachable)
 
     def failing_run_command(self, command, *, timeout=None, input=None):  # noqa: A002
         if "--bootstrap" in command:

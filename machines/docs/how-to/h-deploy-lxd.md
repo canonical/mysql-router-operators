@@ -10,7 +10,7 @@ multipass shell my-vm
 
 juju add-model mysql
 juju deploy mysql --channel 8.4/stable
-juju deploy mysql-router --channel 8.4/edge
+juju deploy mysql-router --channel 8.4/stable
 juju deploy mysql-test-app
 juju integrate mysql mysql-router
 juju integrate mysql-router mysql-test-app:database
@@ -24,8 +24,8 @@ Model  Controller  Cloud/Region         Version  SLA          Timestamp
 mysql  lxd         localhost/localhost  3.6.19   unsupported  11:57:33+02:00
 
 App             Version  Status  Scale  Charm           Channel     Rev  Exposed  Message
-mysql           8.4.7    active      1  mysql           8.4/edge    196  no       
-mysql-router    8.4.7    active      1  mysql-router    8.4/edge    119  no       
+mysql           8.4.10   active      1  mysql           8.4/stable  196  no       
+mysql-router    8.4.10   active      1  mysql-router    8.4/stable  119  no       
 mysql-test-app  0.0.2    active      1  mysql-test-app  stable       26  no       
 
 Unit               Workload  Agent  Machine  Public address  Ports           Message

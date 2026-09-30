@@ -93,8 +93,8 @@ SAAS   Status  Store       URL
 tempo  active  k8s         admin/cos.tempo
 
 App                          Version  Status  Scale  Charm                        Channel        Rev  Address         Exposed  Message
-mysql-k8s                    8.4.7    active      1  mysql-k8s                    8.4/edge       201  10.152.183.58   no
-mysql-router-k8s             8.4.7    active      1  mysql-router-k8s             8.4/edge            10.152.183.50   no
+mysql-k8s                    8.4.10   active      1  mysql-k8s                    8.4/stable          10.152.183.58   no
+mysql-router-k8s             8.4.10   active      1  mysql-router-k8s             8.4/stable          10.152.183.50   no
 mysql-test-app               0.0.2    active      1  mysql-test-app               latest/stable   51  10.152.183.162  no
 opentelemetry-collector-k8s           active      1  opentelemetry-collector-k8s  2/stable       207  10.152.183.164  no
 

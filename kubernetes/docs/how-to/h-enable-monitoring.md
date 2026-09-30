@@ -99,8 +99,8 @@ loki    	active  k8s	   admin/cos.loki
 prometheus  active  k8s	   admin/cos.prometheus
 
 App            	            Version  Status  Scale  Charm           	         Channel 	 Rev  Address     	  Exposed  Message
-mysql-k8s      	             8.4.7   active      1  mysql-k8s      	             8.4/stable  127  10.152.183.105  no
-mysql-router-k8s             8.4.7   active      1  mysql-router-k8s             8.4/edge	 102  10.152.183.92   no
+mysql-k8s      	             8.4.10  active      1  mysql-k8s      	             8.4/stable       10.152.183.105  no
+mysql-router-k8s             8.4.10  active      1  mysql-router-k8s             8.4/stable	      10.152.183.92   no
 mysql-test-app 	             0.0.2   active      1  mysql-test-app 	             stable   	  36  10.152.183.35   no
 opentelemetry-collector-k8s          active      1  opentelemetry-collector-k8s  2/stable     64  10.152.183.141  no
 

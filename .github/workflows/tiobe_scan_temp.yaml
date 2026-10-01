@@ -16,6 +16,7 @@ jobs:
       operator: kubernetes
       ref: backport/04ae3682-to-dpe
       project: mysql-router-k8s-8.0
+      runner: ubuntu-22.04
     secrets: inherit
   TICS-vm-80:
     name: TICS scan | mysql-router-vm-80
@@ -24,6 +25,7 @@ jobs:
       operator: machines
       ref: backport/04ae3682-to-dpe
       project: mysql-router-vm-8.0
+      runner: ubuntu-22.04
     secrets: inherit
   TICS-k8s-84:
     name: TICS scan | mysql-router-k8s-84

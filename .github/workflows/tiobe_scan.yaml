@@ -29,7 +29,7 @@ on:
 
 jobs:
   TICS:
-    runs-on: [${{ inputs.runner }}]
+    runs-on: ${{ inputs.runner }}
     timeout-minutes: 60
     steps:
       - name: Checkout

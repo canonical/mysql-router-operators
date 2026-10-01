@@ -19,20 +19,25 @@ jobs:
           - ref: dpe
             operator: kubernetes
             project: mysql-router-k8s-8.0
+            runner: ubuntu-22.04
           - ref: dpe
             operator: machines
             project: mysql-router-vm-8.0
+            runner: ubuntu-22.04
           - ref: 8.4/edge
             operator: kubernetes
             project: mysql-router-k8s-8.4
+            runner: ubuntu-24.04
           - ref: 8.4/edge
             operator: machines
             project: mysql-router-vm-8.4
+            runner: ubuntu-24.04
     uses: $/.github/workflows/tiobe_scan.yaml
     with:
       operator: ${{ matrix.operator }}
       ref: ${{ matrix.ref }}
       project: ${{ matrix.project }}
+      runner: ${{ matrix.runner }}
     secrets:
       TICSAUTHTOKEN: ${{ secrets.TICSAUTHTOKEN }}
     cache-mode: none

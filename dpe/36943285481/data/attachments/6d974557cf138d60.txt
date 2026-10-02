@@ -1,0 +1,11 @@
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju version --format json
+[32mINFO    [0m root:test_subordinate_charms.py:25 Deploying all the applications
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju deploy --model testing mysql mysql --base ubuntu@22.04 --channel 8.0/edge --config profile=testing
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju deploy --model testing ./mysql-router_ubuntu@22.04-amd64.charm mysql-router --base ubuntu@22.04
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju deploy --model testing mysql-test-app mysql-test-app --base ubuntu@22.04 --channel latest/edge
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju deploy --model testing ubuntu-advantage ubuntu-advantage --base ubuntu@22.04 --channel latest/edge --config token=C1bipjyaJ58dLZABFCxiXrNXSrCKS
+[32mINFO    [0m root:test_subordinate_charms.py:56 Relating the applications
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju integrate --model testing mysql:database mysql-router:backend-database
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju integrate --model testing mysql-test-app:database mysql-router:database
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju integrate --model testing mysql-test-app:juju-info ubuntu-advantage:juju-info
+[32mINFO    [0m root:test_subordinate_charms.py:70 Wait for applications to become active

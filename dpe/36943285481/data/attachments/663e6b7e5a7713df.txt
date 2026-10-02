@@ -1,0 +1,19 @@
+[32mINFO    [0m root:test_expose_external.py:95 Deploying TLS application
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju deploy --model testing self-signed-certificates self-signed-certificates --base ubuntu@24.04 --channel 1/stable --config 'ca-common-name=Test CA'
+[32mINFO    [0m root:test_expose_external.py:109 Relating TLS application
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju integrate --model testing mysql-router-k8s:certificates self-signed-certificates:certificates
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju model-config --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju model-config --model testing update-status-hook-interval=60s
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju config --model testing mysql-router-k8s expose-external=false
+[32mINFO    [0m root:test_expose_external.py:183 Testing endpoint when expose-external=false (default)
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json data-integrator/0 get-credentials
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju config --model testing mysql-router-k8s expose-external=nodeport
+[32mINFO    [0m root:test_expose_external.py:195 Testing endpoint when expose-external=nodeport
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json data-integrator/0 get-credentials
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju config --model testing mysql-router-k8s expose-external=loadbalancer
+[32mINFO    [0m root:test_expose_external.py:207 Testing endpoint when expose-external=loadbalancer
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json data-integrator/0 get-credentials
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju model-config --model testing update-status-hook-interval=5m

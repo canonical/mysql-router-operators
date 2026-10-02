@@ -7,7 +7,6 @@ import logging
 import pathlib
 import shutil
 import subprocess
-import sys
 import typing
 
 import charm_refresh
@@ -22,12 +21,6 @@ if typing.TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 _UNIX_USERNAME = "snap_daemon"
-
-# TODO python3.10 min version: remove when min version >= 3.12
-python_version_after_3_12 = all((
-    sys.version_info[0] == 3,
-    sys.version_info[1] >= 12,
-))
 
 
 def _unique_unit_name(*, unit: ops.Unit, model_uuid: str):
@@ -69,14 +62,7 @@ def uninstall():
 
 
 class _Path(pathlib.PosixPath, common.container.Path):
-    """Snap filesystem path"""
-
-    # TODO python3.10 min version: remove when min version >= 3.12
     def __new__(cls, *args, **kwargs):
-        if python_version_after_3_12:
-            # Python >= 3.12 initializes path parts in __init__ (not __new__)
-            return super().__new__(cls, *args)
-        # Python < 3.12 initializes path parts in __new__
         path = super().__new__(cls, *args, **kwargs)
         snap_name = charm_refresh.snap_name()
 
@@ -91,9 +77,7 @@ class _Path(pathlib.PosixPath, common.container.Path):
                 "/var/log/mysqlrouter"
             ):
                 parent = f"/var/snap/{snap_name}/common"
-            elif str(path).startswith("/tmp") and not str(path).startswith(
-                f"/tmp/snap-private-tmp/snap.{snap_name}"
-            ):
+            elif str(path).startswith("/tmp"):
                 parent = f"/tmp/snap-private-tmp/snap.{snap_name}"
             else:
                 parent = None
@@ -103,38 +87,6 @@ class _Path(pathlib.PosixPath, common.container.Path):
             path._container_parent = parent
 
         return path
-
-    def __init__(self, *args):
-        if not python_version_after_3_12:
-            # Initialized in __new__ (Python < 3.12)
-            return
-        snap_name = charm_refresh.snap_name()
-
-        if args and isinstance(args[0], _Path) and (parent := args[0]._container_parent):
-            super().__init__(*args)
-            self._container_parent = parent
-        else:
-            path = pathlib.PosixPath(*args)
-            if str(path).startswith("/etc/mysqlrouter") or str(path).startswith(
-                "/var/lib/mysqlrouter"
-            ):
-                parent = f"/var/snap/{snap_name}/current"
-            elif str(path).startswith("/run/mysqlrouter") or str(path).startswith(
-                "/var/log/mysqlrouter"
-            ):
-                parent = f"/var/snap/{snap_name}/common"
-            elif str(path).startswith("/tmp") and not str(path).startswith(
-                f"/tmp/snap-private-tmp/snap.{snap_name}"
-            ):
-                parent = f"/tmp/snap-private-tmp/snap.{snap_name}"
-            else:
-                parent = None
-            if parent:
-                assert str(path).startswith("/")
-                super().__init__(parent, path.relative_to("/"))
-            else:
-                super().__init__(*args)
-            self._container_parent = parent
 
     def __truediv__(self, other):
         return type(self)(self, other)

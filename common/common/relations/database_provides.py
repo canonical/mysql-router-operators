@@ -9,7 +9,7 @@ import typing
 import ops
 from mysql_shell.executors.errors import ExecutionError
 
-from .. import mysql_shell, status_exception
+from .. import shell, status_exception
 from .._charm_libs.charms.data_platform_libs.v0 import data_interfaces
 from . import remote_databag
 
@@ -110,7 +110,7 @@ class _RelationThatRequestedUser(_Relation):
         *,
         router_read_write_endpoints: str,
         router_read_only_endpoints: str,
-        shell: mysql_shell.Shell,
+        shell: shell.Shell,
     ) -> None:
         """Create database & user and update databag."""
         username = self._get_username(shell.username)
@@ -175,7 +175,7 @@ class _RelationWithSharedUser(_Relation):
         self._interface.delete_relation_data(self._id, list(self._local_databag))
         logger.debug(f"Deleted databag {self._id=}")
 
-    def delete_user(self, *, shell: mysql_shell.Shell) -> None:
+    def delete_user(self, *, shell: shell.Shell) -> None:
         """Delete user and update databag."""
         self.delete_databag()
         # Delete user if exists
@@ -245,7 +245,7 @@ class RelationEndpoint:
         event,
         router_read_write_endpoints: str,
         router_read_only_endpoints: str,
-        shell: mysql_shell.Shell,
+        shell: shell.Shell,
     ) -> None:
         """Create requested users and delete inactive users.
 
@@ -294,7 +294,7 @@ class RelationEndpoint:
             f"Reconciled users {event=}, {router_read_write_endpoints=}, {router_read_only_endpoints=}"
         )
 
-    def _delete_breaking_user(self, *, event, shell: mysql_shell.Shell) -> None:
+    def _delete_breaking_user(self, *, event, shell: shell.Shell) -> None:
         """Delete the user of the breaking relation."""
         try:
             breaking_user = _RelationWithSharedUser(

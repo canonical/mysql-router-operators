@@ -9,8 +9,8 @@ Uses DEPRECATED "mysql-shared" relation interface
 import logging
 import typing
 
-import common.mysql_shell
 import common.relations.remote_databag as remote_databag
+import common.shell
 import common.status_exception
 import ops
 
@@ -136,7 +136,7 @@ class _RelationThatRequestedUser(_UnitThatNeedsUser):
     def create_database_and_user(
         self,
         *,
-        shell: common.mysql_shell.Shell,
+        shell: common.shell.Shell,
     ) -> None:
         """Create database & user and update databag."""
         # Delete user if exists
@@ -180,7 +180,7 @@ class _RelationWithSharedUser(_Relation):
         self._peer_app_databag.pop(self.peer_databag_password_key)
         logger.debug(f"Deleted databag {self._id=}")
 
-    def delete_user(self, *, shell: common.mysql_shell.Shell) -> None:
+    def delete_user(self, *, shell: common.shell.Shell) -> None:
         """Delete user and update databag."""
         username = self._peer_app_databag[self._peer_databag_username_key]
         logger.debug(f"Deleting user {username=}")
@@ -267,7 +267,7 @@ class RelationEndpoint(ops.Object):
         self,
         *,
         event,
-        shell: common.mysql_shell.Shell,
+        shell: common.shell.Shell,
     ) -> None:
         """Create requested users and delete inactive users.
 

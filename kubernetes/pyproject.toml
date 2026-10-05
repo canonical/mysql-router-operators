@@ -53,7 +53,7 @@ requires-poetry = ">=2.2.0"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-common = {path = "../common", develop = true}
+common = { git = "https://github.com/canonical/mysql-router-operators", branch = "dpe", subdirectory="common" }
 ops = "^2.15"
 lightkube = "^0.17.2"
 tenacity = "^9.1.2"

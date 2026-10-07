@@ -568,7 +568,7 @@ optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = []
-develop = true
+develop = false
 
 [package.dependencies]
 charm-api = ">=0.1.2"
@@ -580,8 +580,11 @@ requests = ">=2.33.0"
 tenacity = ">=9.1.2"
 
 [package.source]
-type = "directory"
-url = "../common"
+type = "git"
+url = "https://github.com/canonical/mysql-router-operators"
+reference = "8.4/edge"
+resolved_reference = "85749cba4f708fd5356897d5dd0fddb93867b7ad"
+subdirectory = "common"
 
 [[package]]
 name = "cosl"
@@ -2516,4 +2519,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "03807c7498139c6590f81f7f9d94624ded4bdb04c1c5c09247e0df8982975266"
+content-hash = "348a5e99327496f14080fe92524f22944488e7e955ae1ed9d244a048844c1699"

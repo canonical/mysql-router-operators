@@ -1,0 +1,23 @@
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju version --format json
+[32mINFO    [0m root:test_log_rotation.py:35 Deploying all the applications
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju deploy --model testing mysql-k8s mysql-k8s --base ubuntu@22.04 --channel 8.0/edge --config profile=testing --trust
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju deploy --model testing ./mysql-router-k8s_ubuntu@22.04-amd64.charm mysql-router-k8s --base ubuntu@22.04 --resource mysql-router-image=ghcr.io/canonical/charmed-mysql@sha256:824b302484f83dbbd2cf4506f620a48e53f20053f6ff3c57aa6123e121705bfc --trust
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju deploy --model testing mysql-test-app mysql-test-app --base ubuntu@22.04 --channel latest/edge
+[32mINFO    [0m root:test_log_rotation.py:61 Relating the applications
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju integrate --model testing mysql-k8s:database mysql-router-k8s:backend-database
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju integrate --model testing mysql-test-app:database mysql-router-k8s:database
+[32mINFO    [0m root:test_log_rotation.py:71 Wait for applications to become active
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m root:test_log_rotation.py:80 Stopping the logrotate executor pebble service
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing --container mysql-router mysql-router-k8s/0 'pebble stop logrotate_executor'
+[32mINFO    [0m root:test_log_rotation.py:87 Removing existing archive directory
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing --container mysql-router mysql-router-k8s/0 'find /var/log/mysqlrouter/archive_mysqlrouter -maxdepth 1 -delete'
+[32mINFO    [0m root:test_log_rotation.py:95 Writing some data mysqlrouter log file
+[32mINFO    [0m root:test_log_rotation.py:104 Ensuring only log file exist
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing --container mysql-router mysql-router-k8s/0 'ls -la /var/log/mysqlrouter'
+[32mINFO    [0m root:test_log_rotation.py:116 Executing logrotate
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing --container mysql-router mysql-router-k8s/0 'su - mysql -c '"'"'logrotate -f -s /tmp/logrotate.status /etc/logrotate.d/flush_mysqlrouter_logs'"'"''
+[32mINFO    [0m root:test_log_rotation.py:123 Ensuring log file and archive directories exist
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing --container mysql-router mysql-router-k8s/0 'ls -la /var/log/mysqlrouter'
+[32mINFO    [0m root:test_log_rotation.py:135 Ensuring log file was rotated
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing --container mysql-router mysql-router-k8s/0 'ls -la /var/log/mysqlrouter/archive_mysqlrouter'

@@ -1,15 +1,15 @@
 # https://canonical-charm-refresh.readthedocs-hosted.com/latest/refresh-versions-toml/
 
 charm_major = 2
-workload = "8.4.8"
+workload = "8.4.10"
 
 [snap]
 name = "charmed-mysql"
 
 [snap.revisions]
-# amd64
-x86_64 = "230"
-# arm64
-aarch64 = "231"
+# amd64 — fixed snap (PR canonical/charmed-mysql-snap#118, channel 8.4/edge/fix-mysqlrouter-data)
+x86_64 = "245"
+# arm64 — fixed snap (same channel)
+aarch64 = "247"
 # s390x
 s390x = "232"

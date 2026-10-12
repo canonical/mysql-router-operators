@@ -1,0 +1,7 @@
+summary: test_router_refresh.py
+environment:
+  TEST_MODULE: test_router_refresh.py
+execute: |
+  tox run -e integration -- "tests/integration/integration/$TEST_MODULE" --alluredir="$SPREAD_TASK/allure-results"
+artifacts:
+  - allure-results

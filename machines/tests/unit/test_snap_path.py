@@ -54,7 +54,7 @@ def test_inside_container():
     ).relative_to_container == pathlib.PurePath("/etc/mysqlrouter/foo.conf")
 
     assert snap._Path("/var/lib/mysqlrouter") == pathlib.Path(
-        "/var/snap/charmed-mysql/current/var/lib/mysqlrouter"
+        "/var/snap/charmed-mysql/common/var/lib/mysqlrouter"
     )
     assert snap._Path("/var/lib/mysqlrouter").relative_to_container == pathlib.PurePath(
         "/var/lib/mysqlrouter"

@@ -12,7 +12,6 @@ status instead of failing the hook—retrying cannot succeed, but crashing block
 import collections.abc
 
 import common.container
-import ops
 import pytest
 import scenario
 from mysql_shell.executors.errors import ExecutionError
@@ -79,8 +78,8 @@ def test_update_status_revoked_credentials_reports_waiting(
 ) -> collections.abc.Iterator[None]:
     """On update-status with revoked credentials, the hook must not crash."""
     context, state = _context_and_state(complete_requires)
-    output = context.run(state.containers[0].update_status_event, state)
-    assert isinstance(output.unit_status, ops.WaitingStatus)
+    output = context.run(scenario.Event("update_status"), state)
+    assert output.unit_status.name == "waiting"
 
 
 def test_update_status_bootstrap_access_denied_reports_waiting(
@@ -88,8 +87,8 @@ def test_update_status_bootstrap_access_denied_reports_waiting(
 ):
     """Bootstrap failing with 1045 must not crash the hook."""
     context, state = _context_and_state(complete_requires)
-    output = context.run(state.containers[0].update_status_event, state)
-    assert isinstance(output.unit_status, ops.WaitingStatus)
+    output = context.run(scenario.Event("update_status"), state)
+    assert output.unit_status.name == "waiting"
 
 
 def test_relation_departed_revoked_credentials_does_not_crash(

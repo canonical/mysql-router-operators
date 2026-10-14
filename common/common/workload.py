@@ -35,6 +35,21 @@ class _NoQuorum(server_exceptions.Error):
         super().__init__(ops.WaitingStatus(self.MESSAGE))
 
 
+class _AccessDenied(server_exceptions.Error):
+    """MySQL Server rejected the charm's credentials
+
+    MySQL server error 1045 (28000)
+    The MySQL charm may have already revoked the backend-database relation user (e.g. during
+    relation teardown or when the server is scaled to zero and back). Retry on the next Juju
+    event instead of failing the hook.
+    """
+
+    MESSAGE = "Access denied by MySQL Server (credentials may have been revoked). Will retry next Juju event"
+
+    def __init__(self):
+        super().__init__(ops.WaitingStatus(self.MESSAGE))
+
+
 class Workload:
     """MySQL Router workload"""
 
@@ -247,7 +262,18 @@ class RunningWorkload(Workload):
         (On Kubernetes, storage is not persisted on container restart—MySQL Router's config file is
         deleted. Therefore, MySQL Router needs to be bootstrapped again.)
         """
-        if user_info := self.shell.get_mysql_router_user_for_unit(self._charm.unit.name):
+        try:
+            user_info = self.shell.get_mysql_router_user_for_unit(self._charm.unit.name)
+        except ExecutionError:
+            # The MySQL charm may have already revoked the connection credentials (e.g. during
+            # relation teardown) so the user to clean up cannot be found. The subsequent MySQL
+            # Shell calls in `_enable_router` will fail as well—they are handled by the caller.
+            logger.warning(
+                "Failed to search instance users (credentials may have been revoked). "
+                "Skipping cleanup after refresh or container restart"
+            )
+            return
+        if user_info:
             logger.debug("Cleaning up after refresh or container restart")
             self.shell.delete_user(user_info.username)
             logger.debug("Cleaned up after refresh or container restart")
@@ -311,13 +337,16 @@ class RunningWorkload(Workload):
             # - "Error: Unable to connect to the metadata server: Error connecting to MySQL server at mysql-k8s-primary.foo3.svc.cluster.local:3306: Unknown MySQL server host 'mysql-k8s-primary.foo3.svc.cluster.local' (-2) (2005)"
             # Codes 2000-2999 are client errors
             # (https://dev.mysql.com/doc/refman/8.0/en/error-message-elements.html#error-code-ranges)
-            elif match := re.fullmatch(r"Error:.*\((?P<code>2[0-9]{3})\)", stderr):
+            elif match := re.fullmatch(r"Error:.*\((?P<code>[0-9]{4})\)", stderr):
                 code = int(match.group("code"))
                 if code == 2003:
                     logger.error(server_exceptions.ConnectionError_.MESSAGE)
                     raise server_exceptions.ConnectionError_ from None
+                elif code == 1045:
+                    logger.error(_AccessDenied.MESSAGE)
+                    raise _AccessDenied from None
                 else:
-                    logger.error(f"Bootstrap failed with MySQL client error {code}")
+                    logger.error(f"Bootstrap failed with MySQL error {code}")
             raise Exception("Failed to bootstrap router") from None
         logger.debug(
             f"Bootstrapped router {tls=}, {self._connection_info.host=}, {self._connection_info.port=}"
@@ -453,7 +482,19 @@ class RunningWorkload(Workload):
                 self._restart(event=event, tls=tls)
 
         if not self._container.mysql_router_service_enabled:
-            self._enable_router(event=event, tls=tls, unit_name=unit_name)
+            try:
+                self._enable_router(event=event, tls=tls, unit_name=unit_name)
+            except _AccessDenied:
+                raise
+            except ExecutionError:
+                # The MySQL charm may have already revoked the connection credentials (e.g.
+                # during relation teardown or server scale-down). Retry on the next Juju event
+                # instead of crashing the hook.
+                logger.warning(
+                    "Failed to enable MySQL Router (credentials may have been revoked). "
+                    "Will retry next Juju event"
+                )
+                raise server_exceptions.ConnectionError_ from None
 
         if (not self._container.mysql_router_exporter_service_enabled and exporter_config) or (
             self._container.mysql_router_exporter_service_enabled

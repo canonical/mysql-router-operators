@@ -1,0 +1,81 @@
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m root:conftest.py:44 Clearing continuous writes
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json mysql-test-app/2 clear-continuous-writes
+[32mINFO    [0m root:conftest.py:46 Starting continuous writes
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json mysql-test-app/2 start-continuous-writes
+[32mINFO    [0m root:test_upgrade.py:72 Ensure continuous writes are incrementing
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json mysql/0 get-cluster-status --wait 300s --params /root/snap/juju/common/tmp2wubrpkz
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json mysql/0 get-password --params /root/snap/juju/common/tmptn2rz7sh
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json mysql/0 get-password --params /root/snap/juju/common/tmpbra7finv
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m root:test_upgrade.py:84 Creating valid upgrade charm
+[32mINFO    [0m root:test_upgrade.py:87 Refresh the charm
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju refresh --model testing mysql-router --path /root/spread_project/tmp/mysql-router_ubuntu@22.04-amd64.charm
+[32mINFO    [0m root:test_upgrade.py:93 Wait for refresh to start
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m root:test_upgrade.py:105 Application upgrade is blocked due to incompatibility
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json mysql-router/2 force-refresh-start --wait 300s --params /root/snap/juju/common/tmp3vxw6094
+[32mINFO    [0m root:test_upgrade.py:113 Wait for first unit to upgrade
+[32mINFO    [0m root:test_upgrade.py:119 Resume upgrade
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json mysql-router/1 resume-refresh --wait 300s
+[32mINFO    [0m root:test_upgrade.py:126 Wait for upgrade to complete
+[32mINFO    [0m root:test_upgrade.py:132 Ensure continuous writes are incrementing
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json mysql/0 get-cluster-status --wait 300s --params /root/snap/juju/common/tmp_cj053x7
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json mysql/0 get-password --params /root/snap/juju/common/tmp_9eszlop
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json mysql/0 get-password --params /root/snap/juju/common/tmp5vmexa9l
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json mysql/0 get-password --params /root/snap/juju/common/tmparsvvqn3
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json mysql/0 get-password --params /root/snap/juju/common/tmprp9houz0
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json mysql/0 get-password --params /root/snap/juju/common/tmpyz1nqwle
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json mysql/0 get-password --params /root/snap/juju/common/tmp2148yo31
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json mysql/0 get-password --params /root/snap/juju/common/tmp5rolb6pq
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json mysql/0 get-password --params /root/snap/juju/common/tmpy750ig8p
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json mysql/0 get-password --params /root/snap/juju/common/tmp2ybpbp_f
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json mysql/0 get-password --params /root/snap/juju/common/tmp0z9_l9an
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json mysql/0 get-password --params /root/snap/juju/common/tmp0prtjvoe
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json mysql/0 get-password --params /root/snap/juju/common/tmpy9t8qutq
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json mysql/0 get-password --params /root/snap/juju/common/tmpx9_1wrly
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json mysql/0 get-password --params /root/snap/juju/common/tmp8n1kih2t
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json mysql/0 get-password --params /root/snap/juju/common/tmpst5l1uhr
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json mysql/0 get-password --params /root/snap/juju/common/tmpv__ir8gg
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json mysql/0 get-password --params /root/snap/juju/common/tmphs_da1fo
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json mysql/0 get-password --params /root/snap/juju/common/tmp3cyzqgcq
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json mysql/0 get-password --params /root/snap/juju/common/tmpqrnpjt67
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json mysql/0 get-password --params /root/snap/juju/common/tmpcke0cckh
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json mysql/0 get-password --params /root/snap/juju/common/tmpclocwk8f
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json mysql/0 get-password --params /root/snap/juju/common/tmpxawa7s7j
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json mysql/0 get-password --params /root/snap/juju/common/tmp4y1c9slk
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json mysql/0 get-password --params /root/snap/juju/common/tmpp6vs6rt4
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json mysql/0 get-password --params /root/snap/juju/common/tmpcrjej4r1
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json mysql/0 get-password --params /root/snap/juju/common/tmp_b9ziwiz
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m root:conftest.py:51 Clearing continuous writes
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju run --model testing --format json mysql-test-app/2 clear-continuous-writes

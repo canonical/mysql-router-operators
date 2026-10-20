@@ -10,7 +10,9 @@ import time
 def main():
     """Main watch and dispatch loop.
 
-    Roughly every 60s at the top of the minute, execute logrotate.
+    Roughly every 60s at the top of the minute, execute logrotate. Do not pass
+    ``-f``: rotation must be driven by the frequency directive and the content
+    of the log file (``notifempty``), not forced on every run.
     """
     # wait till the top of the minute
     time.sleep(60 - (time.time() % 60))
@@ -20,7 +22,6 @@ def main():
         subprocess.run(
             [
                 "logrotate",
-                "-f",
                 "-s",
                 "/tmp/logrotate.status",
                 "/etc/logrotate.d/flush_mysqlrouter_logs",

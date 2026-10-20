@@ -29,8 +29,10 @@ class LogRotate(common.logrotate.LogRotate):
         logger.debug("Adding cron job for logrotate")
 
         # cron needs the file to be owned by root
+        # Run hourly, letting the config's `hourly`/`notifempty` directives
+        # decide when rotation actually happens: do not pass `-f` (mr-234).
         self._cron_file.write_text(
-            "* * * * * snap_daemon logrotate -f -s /tmp/logrotate.status /etc/logrotate.d/flush_mysqlrouter_logs\n\n",
+            "0 * * * * snap_daemon logrotate -s /tmp/logrotate.status /etc/logrotate.d/flush_mysqlrouter_logs\n\n",
             user=ROOT_USER,
             group=ROOT_USER,
         )

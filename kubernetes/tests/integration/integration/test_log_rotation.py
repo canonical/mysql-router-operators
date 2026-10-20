@@ -36,43 +36,46 @@ def deploy_and_relate(juju: Juju, charm: str, ubuntu_base: str) -> str:
     test in this module deployed it; CI runs the module in a single model), the
     deployment is skipped.
     """
-    logging.info("Deploying all the applications")
-    juju.deploy(
-        charm=MYSQL_SERVER_APP_NAME,
-        app=MYSQL_SERVER_APP_NAME,
-        base=ubuntu_base,
-        channel="8.0/edge",
-        config={"profile": "testing"},
-        num_units=1,
-        trust=True,
-    )
-    juju.deploy(
-        charm=charm,
-        app=MYSQL_ROUTER_APP_NAME,
-        base=ubuntu_base,
-        resources={
-            "mysql-router-image": METADATA["resources"]["mysql-router-image"]["upstream-source"]
-        },
-        num_units=1,
-        trust=True,
-    )
-    juju.deploy(
-        charm=MYSQL_TEST_APP_NAME,
-        app=MYSQL_TEST_APP_NAME,
-        base=ubuntu_base,
-        channel="latest/edge",
-        num_units=1,
-    )
+    if MYSQL_ROUTER_APP_NAME not in juju.status().apps:
+        logging.info("Deploying all the applications")
+        juju.deploy(
+            charm=MYSQL_SERVER_APP_NAME,
+            app=MYSQL_SERVER_APP_NAME,
+            base=ubuntu_base,
+            channel="8.0/edge",
+            config={"profile": "testing"},
+            num_units=1,
+            trust=True,
+        )
+        juju.deploy(
+            charm=charm,
+            app=MYSQL_ROUTER_APP_NAME,
+            base=ubuntu_base,
+            resources={
+                "mysql-router-image": METADATA["resources"]["mysql-router-image"][
+                    "upstream-source"
+                ]
+            },
+            num_units=1,
+            trust=True,
+        )
+        juju.deploy(
+            charm=MYSQL_TEST_APP_NAME,
+            app=MYSQL_TEST_APP_NAME,
+            base=ubuntu_base,
+            channel="latest/edge",
+            num_units=1,
+        )
 
-    logging.info("Relating the applications")
-    juju.integrate(
-        f"{MYSQL_SERVER_APP_NAME}:database",
-        f"{MYSQL_ROUTER_APP_NAME}:backend-database",
-    )
-    juju.integrate(
-        f"{MYSQL_TEST_APP_NAME}:database",
-        f"{MYSQL_ROUTER_APP_NAME}:database",
-    )
+        logging.info("Relating the applications")
+        juju.integrate(
+            f"{MYSQL_SERVER_APP_NAME}:database",
+            f"{MYSQL_ROUTER_APP_NAME}:backend-database",
+        )
+        juju.integrate(
+            f"{MYSQL_TEST_APP_NAME}:database",
+            f"{MYSQL_ROUTER_APP_NAME}:database",
+        )
 
     logging.info("Wait for applications to become active")
     juju.wait(

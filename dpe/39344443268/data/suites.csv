@@ -1,0 +1,32 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"Test that exporter endpoint is functional.","414631","test_exporter_endpoint","tests.integration.integration","2026-10-20","passed","2026-10-20","","test_exporter","",""
+"Tries deploying an arm64 charm on amd64 host.","23171","test_arm_charm_on_amd_host","tests.integration.integration","2026-10-20","passed","2026-10-20","","test_architecture","",""
+"Upgrade mysqlrouter from v2 to v3 while ensuring continuous writes incrementing.","136626","test_upgrade_from_v2","tests.integration.integration","2026-10-20","passed","2026-10-20","","test_upgrade_from_v2","",""
+"Tries deploying an amd64 charm on arm64 host.","0","test_amd_charm_on_arm_host","tests.integration.integration","2026-10-20","skipped","2026-10-20","","test_architecture","",""
+"Test log rotation.","120957","test_log_rotation","tests.integration.integration","2026-10-20","passed","2026-10-20","","test_log_rotation","",""
+"Test the expose-external config option.","146003","test_expose_external","tests.integration.integration","2026-10-20","passed","2026-10-20","","test_expose_external","",""
+"Test endpoints when mysql-router-k8s is related to a TLS operator.","61098","test_expose_external_with_tls","tests.integration.integration","2026-10-20","passed","2026-10-20","","test_expose_external","",""
+"Test connectivity when backend database is using TLS.","24598","test_data_integrator_connectivity_with_tls","tests.integration.integration","2026-10-20","passed","2026-10-20","","test_data_integrator","",""
+"Tests Ubuntu pro charm alongside the MySQL charms.","280551","test_ubuntu_pro","tests.integration.integration","2026-10-20","passed","2026-10-20","","test_subordinate_charms","",""
+"Simple test to ensure that mysql, mysqlrouter and application charms deploy.","178670","test_deploy_edge","tests.integration.integration","2026-10-20","passed","2026-10-20","","test_upgrade","",""
+"Test a refresh failure and its rollback.","165153","test_fail_and_rollback","tests.integration.integration","2026-10-20","passed","2026-10-20","","test_upgrade","",""
+"Remove the backend-database relation; the router must not go to error.
+
+    During relation teardown the router must not contact MySQL (which may be
+    unreachable) or try to re-bootstrap, so the hook must succeed and the
+    unit must report the missing relation, not go into error.
+    ","","test_backend_database_relation_removal","tests.integration.integration","","unknown","","","test_backend_database_teardown","",""
+"Tests Landscape client charm alongside the MySQL charms.","1204356","test_landscape_client","tests.integration.integration","2026-10-20","broken","2026-10-20","","test_subordinate_charms","",""
+"Test the certificates of the MySQL Router application.","98022","test_router_certificates","tests.integration.integration","2026-10-20","passed","2026-10-20","","test_hacluster","",""
+"Test connectivity when backend database is using Data integrator.","216466","test_data_integrator_connectivity","tests.integration.integration","2026-10-20","passed","2026-10-20","","test_data_integrator","",""
+"Test the lack of VIP in the MySQL Router application.","56764","test_router_without_vip","tests.integration.integration","2026-10-20","passed","2026-10-20","","test_hacluster","",""
+"Test the database relation.","443883","test_database_relation","tests.integration.integration","2026-10-20","passed","2026-10-20","","test_database","",""
+"Test the failover of the ha-cluster leader.","2574","test_ha_cluster_failover","tests.integration.integration","2026-10-20","passed","2026-10-20","","test_hacluster","",""
+"Test encryption when backend database is using TLS.","47524","test_connected_encryption","tests.integration.integration","2026-10-20","passed","2026-10-20","","test_tls","",""
+"Test that exporter endpoint is functional.","648993","test_exporter_endpoint","tests.integration.integration","2026-10-20","passed","2026-10-20","","test_exporter_with_tls","",""
+"Upgrade mysqlrouter while ensuring continuous writes incrementing.","223899","test_upgrade_from_edge","tests.integration.integration","2026-10-20","passed","2026-10-20","","test_upgrade","",""
+"Test external connectivity with data-integrator ha-cluster.","1062945","test_external_connectivity_with_ha_cluster","tests.integration.integration","2026-10-20","passed","2026-10-20","","test_hacluster","",""
+"Test the shared-db legacy relation.","469334","test_shared_db","tests.integration.integration","2026-10-20","passed","2026-10-20","","test_shared_db","",""
+"Test the database relation.","389517","test_database_relation","tests.integration.integration","2026-10-20","passed","2026-10-20","","test_charm","",""
+"Test encryption when backend database is using TLS.","96842","test_deploy_and_relate","tests.integration.integration","2026-10-20","passed","2026-10-20","","test_tls","",""
+"Simple test to ensure that mysql, mysqlrouter and application charms deploy.","125586","test_deploy_edge","tests.integration.integration","2026-10-20","passed","2026-10-20","","test_upgrade_from_v2","",""

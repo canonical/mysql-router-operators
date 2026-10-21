@@ -4,12 +4,15 @@
 """Workload container (snap or rock/OCI)"""
 
 import abc
+import functools
 import pathlib
 import subprocess
 import typing
 
 import charm_refresh
 import ops
+
+from . import cpu
 
 if typing.TYPE_CHECKING:
     from .relations import cos
@@ -235,6 +238,31 @@ class Container(abc.ABC):
     @abc.abstractmethod
     def path(self, *args) -> Path:
         """Container filesystem path"""
+
+    @property
+    def _mysql_router_cgroup_path(self) -> pathlib.PurePosixPath | None:
+        """cgroup v2 path of MySQL Router service
+
+        If `None`, the cgroup of commands run in the container is used
+        """
+        return None
+
+    def _read_file_as_workload(self, path: str) -> str | None:
+        """Read file from the point of view of a process in the container"""
+        try:
+            return self._run_command(["cat", path], timeout=10)
+        except CalledProcessError:
+            return None
+
+    @functools.cached_property
+    def effective_cpu_count(self) -> int | None:
+        """Number of CPUs available to MySQL Router, considering affinity & cgroup limits
+
+        `None` if it could not be determined
+        """
+        return cpu.effective_cpu_count(
+            self._read_file_as_workload, cgroup_path=self._mysql_router_cgroup_path
+        )
 
     def create_router_rest_api_credentials_file(self) -> None:
         """Creates a credentials file for the router rest api if it does not exist."""

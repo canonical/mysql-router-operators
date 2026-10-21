@@ -10,8 +10,8 @@ import dataclasses
 import logging
 
 from mysql_shell.builders import QueryQuoter
-from mysql_shell.executors import BaseExecutor
 from mysql_shell.clients import ClusterClient, InstanceClient
+from mysql_shell.executors import BaseExecutor
 from mysql_shell.models import User
 from mysql_shell_contrib.builders import CharmAuthorizationQueryBuilder
 
@@ -63,7 +63,7 @@ class Shell:
         databases = self._instance_client.search_instance_databases("%")
         logger.debug(f"MySQL databases found: {len(databases)}")
 
-        return {db for db in databases}
+        return set(databases)
 
     def _get_mysql_roles(self, name_pattern: str) -> set[str]:
         """Returns a set with the MySQL roles."""
@@ -193,11 +193,11 @@ class Shell:
 
     def get_routers_in_cluster_set(self) -> set[str]:
         """Get MySQL Router instances in the current InnoDB ClusterSet."""
-        logger.debug(f"Getting MySQL Routers in cluster set")
+        logger.debug("Getting MySQL Routers in cluster set")
         output = self._cluster_client.list_cluster_set_routers()
-        logger.debug(f"MySQL Routers found for cluster set")
+        logger.debug("MySQL Routers found for cluster set")
 
-        return {router for router in output["routers"].keys()}
+        return set(output["routers"].keys())
 
     def delete_user(self, username: str) -> None:
         """Delete user."""

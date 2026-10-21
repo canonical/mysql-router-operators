@@ -273,6 +273,10 @@ class RunningWorkload(Workload):
             "--conf-set-option",
             "metadata_cache:bootstrap.ttl=5",
         ]
+        # MySQL Router's default (`io.threads=0`) spawns one thread per host CPU, ignoring cgroup
+        # CPU limits
+        if cpu_count := self._container.effective_cpu_count:
+            command.extend(["--conf-set-option", f"io.threads={min(cpu_count, 1024)}"])
         # Add connection sharing options if enabled
         if self._charm.config.get("connection-sharing"):
             command.extend([

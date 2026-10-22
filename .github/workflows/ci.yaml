@@ -78,12 +78,14 @@ jobs:
           - kubernetes
           - machines
     name: Build charm | ${{ matrix.path }}
-    uses: canonical/data-platform-workflows/.github/workflows/build_charm.yaml@v52
+    uses: canonical/data-platform-workflows/.github/workflows/build_charm.yaml@charmcraft-monorepo
     with:
+      cache: false
       path-to-charm-directory: ${{ matrix.path }}
       charmcraft-snap-channel: latest/candidate
     permissions:
       contents: read
+    cache-mode: none
 
   integration-test:
     name: Integration tests

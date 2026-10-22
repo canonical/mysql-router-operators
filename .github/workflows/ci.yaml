@@ -84,6 +84,7 @@ jobs:
     uses: canonical/data-platform-workflows/.github/workflows/build_charm.yaml@v53
     with:
       path-to-charm-directory: ${{ matrix.path }}
+      charmcraft-snap-channel: latest/candidate
     permissions:
       contents: read
     cache-mode: none

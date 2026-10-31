@@ -1,0 +1,12 @@
+[32mINFO    [0m root:test_data_integrator.py:30 Deploying all the applications
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju deploy --model testing mysql mysql --base ubuntu@26.04 --channel 8.4/edge --config profile=testing
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju deploy --model testing ./mysql-router_ubuntu@26.04-amd64.charm mysql-router --base ubuntu@26.04
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju deploy --model testing data-integrator data-integrator --base ubuntu@26.04 --channel latest/edge --config database-name=test_database
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju deploy --model testing self-signed-certificates self-signed-certificates --base ubuntu@24.04 --channel 1/stable --config 'ca-common-name=Test CA'
+[32mINFO    [0m root:test_data_integrator.py:62 Relating the applications
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju integrate --model testing mysql:database mysql-router:backend-database
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju integrate --model testing data-integrator:mysql mysql-router:database
+[32mINFO    [0m root:test_data_integrator.py:72 Wait for applications to become active
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju run --model testing --format json data-integrator/0 get-credentials
+[32mINFO    [0m root:test_data_integrator.py:98 Ensure the database is accessible externally

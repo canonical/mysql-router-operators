@@ -155,7 +155,6 @@ class Workload:
         """Stop and disable MySQL Router exporter service, keeping router enabled."""
         logger.debug("Disabling MySQL Router exporter service")
         self._container.update_mysql_router_exporter_service(enabled=False)
-        self.cleanup_monitoring_user()
         logger.debug("Disabled MySQL Router exporter service")
 
     def _enable_tls(self, *, key: str, certificate: str, certificate_authority: str) -> None:
@@ -377,6 +376,17 @@ class RunningWorkload(Workload):
         # status
         self._charm.set_status(event=None)
 
+    def restart_stuck_router(self, *, event) -> None:
+        """Restart MySQL Router after its RW listener was detected as stuck."""
+        logger.debug("Restarting MySQL Router (stuck RW listener)")
+        assert self._container.mysql_router_service_enabled is True
+        self._container.restart_mysql_router_service()
+        logger.debug("Restarted MySQL Router (stuck RW listener)")
+        self._charm.wait_until_mysql_router_ready(event=event)
+        # wait_until_mysql_router_ready will set WaitingStatus—override it with current charm
+        # status
+        self._charm.set_status(event=None)
+
     def _enable_router(self, *, event, tls: bool, unit_name: str) -> None:
         """Enable router after setting up all the necessary prerequisites."""
         logger.info("Enabling MySQL Router service")
@@ -496,6 +506,8 @@ class RunningWorkload(Workload):
                 )
                 raise server_exceptions.ConnectionError_ from None
 
+        self.ensure_monitoring_user()
+
         if (not self._container.mysql_router_exporter_service_enabled and exporter_config) or (
             self._container.mysql_router_exporter_service_enabled
             and custom_certificate != certificate
@@ -575,6 +587,18 @@ class RunningWorkload(Workload):
             raise
         else:
             logger.debug("Successfully authenticated router HTTP server")
+
+    def ensure_monitoring_user(self) -> None:
+        """Create the router REST API monitoring user if missing (independent of COS)."""
+        if not self._container.mysql_router_rest_api_user_exists(self._cos.MONITORING_USERNAME):
+            try:
+                self.setup_monitoring_user()
+            except (requests.exceptions.RequestException, RuntimeError):
+                # Credentials were already written; the next reconcile sees the user as existing
+                logger.warning(
+                    "Router REST API did not authenticate the monitoring user yet; "
+                    "continuing (watchdog treats auth failures as unknown)"
+                )
 
     def setup_monitoring_user(self) -> None:
         """Set up a router REST API use for mysqlrouter exporter."""

@@ -140,6 +140,10 @@ class Container(abc.ABC):
             assert tls is not None, "`tls` argument required when enabled=True"
 
     @abc.abstractmethod
+    def restart_mysql_router_service(self) -> None:
+        """Restart MySQL Router service without changing its configuration."""
+
+    @abc.abstractmethod
     def update_mysql_router_exporter_service(
         self,
         *,
@@ -230,18 +234,22 @@ class Container(abc.ABC):
             # create empty credentials file
             self.rest_api_credentials_file.write_text("")
 
+    def mysql_router_rest_api_user_exists(self, user: str) -> bool:
+        """Whether `user` exists in the router REST API credentials file."""
+        self.create_router_rest_api_credentials_file()
+        users_credentials = self._run_command([
+            self._mysql_router_password_command,
+            "list",
+            str(self.rest_api_credentials_file),
+        ])
+        return user in users_credentials
+
     def set_mysql_router_rest_api_password(self, *, user: str, password: str | None) -> None:
         """Set REST API credentials using the mysqlrouter_password command."""
         self.create_router_rest_api_credentials_file()
 
-        if not password:
-            users_credentials = self._run_command([
-                self._mysql_router_password_command,
-                "list",
-                str(self.rest_api_credentials_file),
-            ])
-            if user not in users_credentials:
-                return
+        if not password and not self.mysql_router_rest_api_user_exists(user):
+            return
 
         action = "set" if password else "delete"
         self._run_command(

@@ -14,6 +14,8 @@ import ops
 
 from . import container, lifecycle, logrotate, server_exceptions, workload
 from .relations import cos, database_provides, database_requires, tls
+from .watchdog import detect, service
+from .watchdog.main import STUCK_THRESHOLD_S
 
 logger = logging.getLogger(__name__)
 
@@ -61,8 +63,23 @@ class RouterRefresh(charm_refresh.CharmSpecificCommon, abc.ABC):
             return False
 
 
+class RWListenerStuckEvent(ops.EventBase):
+    """MySQL Router RW listener closed while destinations are reachable (BUG#39215253)
+
+    Dispatched by the RW listener watchdog process
+    """
+
+
+class RouterCharmEvents(ops.CharmEvents):
+    """MySQL Router charm events"""
+
+    rw_listener_stuck = ops.EventSource(RWListenerStuckEvent)
+
+
 class MySQLRouterCharm(ops.CharmBase, abc.ABC):
     """MySQL Router charm"""
+
+    on = RouterCharmEvents()
 
     _READ_WRITE_PORT = 6446
     _READ_ONLY_PORT = 6447
@@ -94,9 +111,10 @@ class MySQLRouterCharm(ops.CharmBase, abc.ABC):
 
         # Observe all events (except custom events)
         for bound_event in self.on.events().values():
-            if bound_event.event_type == ops.CollectStatusEvent:
+            if bound_event.event_type in (ops.CollectStatusEvent, RWListenerStuckEvent):
                 continue
             self.framework.observe(bound_event, self.reconcile)
+        self.framework.observe(self.on.rw_listener_stuck, self._on_rw_listener_stuck)
 
     @property
     @abc.abstractmethod
@@ -154,6 +172,51 @@ class MySQLRouterCharm(ops.CharmBase, abc.ABC):
     @abc.abstractmethod
     def _status(self, *, event) -> ops.StatusBase | None:
         """Status of the charm."""
+
+    @property
+    def _watchdog(self) -> service.WatchdogService:
+        """RW listener watchdog (MySQL Router BUG#39215253 mitigation)"""
+        return service.WatchdogService(agent_dir=self.charm_dir.parent)
+
+    def _router_ready_for_watchdog(self, workload_: workload.Workload) -> bool:
+        """Whether MySQL Router is running and may be restarted by the watchdog"""
+        return (
+            isinstance(workload_, workload.RunningWorkload)
+            and workload_.container_ready
+            and self._container.mysql_router_service_enabled
+            and not self.refresh.in_progress
+        )
+
+    def _reconcile_watchdog(self, *, event, workload_: workload.Workload) -> None:
+        """Start or stop the RW listener watchdog
+
+        Errors are logged and do not fail the hook
+        """
+        try:
+            if self._router_ready_for_watchdog(workload_):
+                if isinstance(event, ops.UpgradeCharmEvent):
+                    # Running watchdog process uses code from the previous charm revision
+                    self._watchdog.stop()
+                self._watchdog.ensure_running(
+                    unit_name=self.unit.name,
+                    charm_dir=self.charm_dir,
+                    username=self._cos_relation.MONITORING_USERNAME,
+                    password=self._cos_relation.get_monitoring_password(),
+                )
+            else:
+                self._watchdog.stop()
+        except Exception:
+            logger.warning("Failed to reconcile RW listener watchdog", exc_info=True)
+
+    def _stop_watchdog(self) -> None:
+        """Stop the RW listener watchdog
+
+        Errors are logged and do not fail the hook
+        """
+        try:
+            self._watchdog.stop()
+        except Exception:
+            logger.warning("Failed to stop RW listener watchdog", exc_info=True)
 
     @property
     def _tls_certificate_saved(self) -> bool:
@@ -368,6 +431,8 @@ class MySQLRouterCharm(ops.CharmBase, abc.ABC):
                 ):
                     self._reconcile_ports(event=event)
 
+            self._reconcile_watchdog(event=event, workload_=workload_)
+
             logger.debug(f"{workload_.status=}")
             if not workload_.status:
                 self.refresh.next_unit_allowed_to_refresh = True
@@ -386,6 +451,46 @@ class MySQLRouterCharm(ops.CharmBase, abc.ABC):
             self.set_status(event=event)
         except server_exceptions.Error as e:
             # If not for `unit=False`, another `server_exceptions.Error` could be thrown here
+            self.set_status(event=event, unit=False)
+            self.unit.status = e.status
+            logger.debug(f"Set unit status to {self.unit.status}")
+
+    def _on_rw_listener_stuck(self, event: RWListenerStuckEvent) -> None:
+        """Restart MySQL Router if a RW listener is still stuck (BUG#39215253)."""
+        if not self._reconcile_allowed:
+            logger.debug("RW listener stuck event ignored: reconcile not allowed")
+            return
+        workload_ = self.get_workload(event=event)
+        if not self._router_ready_for_watchdog(workload_):
+            logger.debug("RW listener stuck event ignored: MySQL Router not running")
+            return
+        password = self._cos_relation.get_monitoring_password()
+        stuck_probe = None
+        for route in detect.ROUTES:
+            try:
+                probe = detect.probe_route(
+                    route, username=self._cos_relation.MONITORING_USERNAME, password=password
+                )
+            except Exception:
+                logger.info(
+                    f"Unable to probe route {route}; not treating it as stuck", exc_info=True
+                )
+                continue
+            if probe.result is detect.ProbeResult.STUCK:
+                stuck_probe = probe
+                break
+        if stuck_probe is None:
+            logger.info("RW listener stuck event received but no route is stuck anymore")
+            return
+        destinations = ", ".join(f"{host}:{port}" for host, port in stuck_probe.destinations)
+        logger.warning(
+            f"Restarting MySQL Router: route {stuck_probe.route} listener closed for "
+            f"~{STUCK_THRESHOLD_S:.0f}s while destinations {destinations} are reachable "
+            "(MySQL Router BUG#39215253)"
+        )
+        try:
+            workload_.restart_stuck_router(event=event)
+        except server_exceptions.Error as e:
             self.set_status(event=event, unit=False)
             self.unit.status = e.status
             logger.debug(f"Set unit status to {self.unit.status}")

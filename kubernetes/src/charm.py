@@ -115,6 +115,7 @@ class KubernetesRouterCharm(common.abstract_charm.MySQLRouterCharm):
             # MySQL server charm will clean up users & router metadata when the MySQL Router app or
             # unit(s) tear down
             self.unit.status = ops.MaintenanceStatus("Tearing down")
+            self._stop_watchdog()
             self._reconcile_allowed = False
         except charm_refresh.KubernetesJujuAppNotTrusted:
             self._reconcile_allowed = False

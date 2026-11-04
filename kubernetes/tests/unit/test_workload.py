@@ -1,8 +1,11 @@
 # Copyright 2023 Canonical Ltd.
 # See LICENSE file for licensing details.
 
+import unittest.mock
+
 import common.workload
 import pytest
+import requests
 
 
 @pytest.mark.parametrize(
@@ -187,3 +190,58 @@ def test_parse_username_from_config(config_file_text, username):
     assert (
         common.workload.RunningWorkload._parse_username_from_config(config_file_text) == username
     )
+
+
+def _workload():
+    workload = object.__new__(common.workload.RunningWorkload)
+    workload._container = unittest.mock.MagicMock()
+    workload._cos = unittest.mock.MagicMock()
+    workload._cos.MONITORING_USERNAME = "monitoring"
+    return workload
+
+
+def test_disable_exporter_keeps_monitoring_user():
+    workload = _workload()
+    with unittest.mock.patch.object(workload, "cleanup_monitoring_user") as cleanup:
+        workload._disable_exporter()
+    cleanup.assert_not_called()
+    workload._container.update_mysql_router_exporter_service.assert_called_once_with(enabled=False)
+
+
+def test_ensure_monitoring_user_creates_when_missing():
+    workload = _workload()
+    workload._container.mysql_router_rest_api_user_exists.return_value = False
+    with unittest.mock.patch.object(workload, "setup_monitoring_user") as setup:
+        workload.ensure_monitoring_user()
+    workload._container.mysql_router_rest_api_user_exists.assert_called_once_with("monitoring")
+    setup.assert_called_once_with()
+
+
+def test_ensure_monitoring_user_noop_when_present():
+    workload = _workload()
+    workload._container.mysql_router_rest_api_user_exists.return_value = True
+    with unittest.mock.patch.object(workload, "setup_monitoring_user") as setup:
+        workload.ensure_monitoring_user()
+    setup.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    "exception",
+    [requests.exceptions.HTTPError("401"), requests.exceptions.ConnectionError(), RuntimeError()],
+)
+def test_ensure_monitoring_user_does_not_raise_if_router_not_authenticating(exception):
+    workload = _workload()
+    workload._container.mysql_router_rest_api_user_exists.return_value = False
+    with unittest.mock.patch.object(workload, "setup_monitoring_user", side_effect=exception):
+        workload.ensure_monitoring_user()
+
+
+def test_restart_stuck_router_restarts_and_waits():
+    workload = _workload()
+    workload._charm = unittest.mock.MagicMock()
+    workload._container.mysql_router_service_enabled = True
+    event = unittest.mock.Mock()
+    workload.restart_stuck_router(event=event)
+    workload._container.restart_mysql_router_service.assert_called_once_with()
+    workload._charm.wait_until_mysql_router_ready.assert_called_once_with(event=event)
+    workload._charm.set_status.assert_called_once_with(event=None)

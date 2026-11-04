@@ -46,6 +46,26 @@ def disable_tenacity_retry(monkeypatch):
         monkeypatch.setattr(f"tenacity.{retry_class}.__call__", lambda *args, **kwargs: False)
 
 
+@pytest.fixture(autouse=True)
+def no_router_http_auth_wait(monkeypatch):
+    """Avoid real network call to router REST API when setting up monitoring user."""
+    monkeypatch.setattr(
+        "common.workload.RunningWorkload._wait_until_http_server_authenticates",
+        lambda *args, **kwargs: None,
+    )
+
+
+@pytest.fixture(autouse=True)
+def no_watchdog_process(monkeypatch):
+    """Never spawn or signal the RW listener watchdog process in unit tests."""
+    monkeypatch.setattr(
+        "common.watchdog.service.WatchdogService.ensure_running", lambda *args, **kwargs: None
+    )
+    monkeypatch.setattr(
+        "common.watchdog.service.WatchdogService.stop", lambda *args, **kwargs: None
+    )
+
+
 class _MockRefresh:
     in_progress = False
     next_unit_allowed_to_refresh = True

@@ -162,6 +162,9 @@ class Snap(common.container.Container):
     def mysql_router_exporter_service_enabled(self) -> bool:
         return self._snap.services[self._EXPORTER_SERVICE_NAME]["active"]
 
+    def restart_mysql_router_service(self) -> None:
+        self._snap.restart([self._SERVICE_NAME])
+
     def update_mysql_router_service(self, *, enabled: bool, tls: bool = None) -> None:
         super().update_mysql_router_service(enabled=enabled, tls=tls)
 

@@ -112,6 +112,9 @@ class Rock(common.container.Container):
             return False
         return service.startup == ops.pebble.ServiceStartup.ENABLED
 
+    def restart_mysql_router_service(self) -> None:
+        self._container.restart(self._SERVICE_NAME)
+
     def update_mysql_router_service(self, *, enabled: bool, tls: bool = None) -> None:
         super().update_mysql_router_service(enabled=enabled, tls=tls)
         command = f"mysqlrouter --config {self.router_config_file}"

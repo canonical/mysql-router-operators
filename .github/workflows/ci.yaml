@@ -76,6 +76,7 @@ jobs:
 
   build:
     strategy:
+      fail-fast: false
       matrix:
         path:
           - kubernetes

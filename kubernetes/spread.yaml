@@ -81,17 +81,15 @@ backends:
 
       sudo passwd --delete "$USER"
 
-      sudo systemctl reload ssh || sudo systemctl restart ssh
-
       ADDRESS localhost
     # HACK: spread does not pass environment variables set on runner
     # Manually pass specific environment variables
     environment:
       CI: '$(HOST: echo $CI)'
     systems:
-      - ubuntu-26.04:
+      - ubuntu-24.04:
           username: runner
-      - ubuntu-26.04-arm:
+      - ubuntu-24.04-arm:
           username: runner
 
 suites:

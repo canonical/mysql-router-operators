@@ -85,7 +85,6 @@ jobs:
     with:
       cache: false
       path-to-charm-directory: ${{ matrix.path }}
-      charmcraft-snap-channel: latest/candidate
     permissions:
       contents: read
     cache-mode: none

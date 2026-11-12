@@ -14,11 +14,12 @@ on:
 jobs:
   tag:
     name: Create charm refresh compatibility version git tag
-    uses: canonical/data-platform-workflows/.github/workflows/tag_charm_edge.yaml@v52
+    uses: canonical/data-platform-workflows/.github/workflows/tag_charm_edge.yaml@v56
     with:
       track: 'dpe'
     permissions:
       contents: write  # Needed to create git tag
+    cache-mode: none
 
   build:
     name: Build charm | ${{ matrix.path }}
@@ -30,11 +31,12 @@ jobs:
         path:
           - kubernetes
           - machines
-    uses: canonical/data-platform-workflows/.github/workflows/build_charm.yaml@v52
+    uses: canonical/data-platform-workflows/.github/workflows/build_charm.yaml@v56
     with:
       path-to-charm-directory: ${{ matrix.path }}
     permissions:
       contents: read
+    cache-mode: none
 
   integration-test:
     name: Integration tests
@@ -55,6 +57,7 @@ jobs:
       LANDSCAPE_ACCOUNT_NAME: ${{ secrets.LANDSCAPE_ACCOUNT_NAME }}
       LANDSCAPE_REGISTRATION_KEY: ${{ secrets.LANDSCAPE_REGISTRATION_KEY }}
     permissions: {}
+    cache-mode: none
 
   release-test:
     name: Release tests
@@ -71,6 +74,7 @@ jobs:
       artifact-prefix: ${{ needs.build.outputs.artifact-prefix }}
       path-to-charm-directory: ${{ matrix.path }}
     permissions: {}
+    cache-mode: none
 
   release:
     strategy:
@@ -86,7 +90,7 @@ jobs:
       - build
       - integration-test
       - release-test
-    uses: canonical/data-platform-workflows/.github/workflows/release_charm_edge.yaml@v52
+    uses: canonical/data-platform-workflows/.github/workflows/release_charm_edge.yaml@v56
     with:
       track: ${{ matrix.charm.track }}
       path-to-charm-directory: ${{ matrix.charm.path }}
@@ -95,3 +99,4 @@ jobs:
       charmhub-token: ${{ secrets.CHARMHUB_TOKEN }}
     permissions:
       contents: write  # Needed to create git tags
+    cache-mode: none

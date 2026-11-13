@@ -350,3 +350,10 @@ class Snap(common.container.Container):
 
     def path(self, *args, **kwargs) -> _Path:
         return _Path(*args, **kwargs)
+
+    @property
+    def _mysql_router_cgroup_path(self) -> pathlib.PurePosixPath:
+        # The charm runs in a different cgroup than the snap service
+        return pathlib.PurePosixPath(
+            "/system.slice", f"snap.{self._snap_name}.{self._SERVICE_NAME}.service"
+        )

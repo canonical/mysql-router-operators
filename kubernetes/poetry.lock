@@ -546,7 +546,7 @@ optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = []
-develop = true
+develop = false
 
 [package.dependencies]
 charm-api = ">=0.1.2"
@@ -2629,4 +2629,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "bf5dab4200d50b8933f5552c12ae58d41f20e54e5cf006ade0fda6a618504157"
+content-hash = "a11f5abce0b5f6707900c1c59ee098fecbaf4701743f90ec6150021c0bf49bb9"

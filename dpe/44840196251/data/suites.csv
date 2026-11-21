@@ -1,0 +1,83 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"Remove the backend-database relation; the router must not go to error.
+
+During relation teardown the router must not contact MySQL (which may be
+unreachable) or try to re-bootstrap, so the hook must succeed and the
+unit must report the missing relation, not go into error.
+","","test_backend_database_relation_removal","tests.integration.integration","","unknown","","","test_backend_database_teardown","",""
+"Simple test to ensure that mysql, mysqlrouter and application charms deploy.","129201","test_deploy_edge","tests.integration.integration","2026-11-21","passed","2026-11-21","","test_upgrade_from_v2","",""
+"Test encryption when backend database is using TLS.","23583","test_connected_encryption","tests.integration.integration","2026-11-21","passed","2026-11-21","","test_tls","",""
+"Upgrade mysqlrouter from v2 to v3 while ensuring continuous writes incrementing.","107644","test_upgrade_from_v2","tests.integration.integration","2026-11-21","passed","2026-11-21","","test_upgrade_from_v2","",""
+"Test the database relation.","399431","test_database_relation","tests.integration.integration","2026-11-21","passed","2026-11-21","","test_charm","",""
+"Tries deploying an amd64 charm on arm64 host.","0","test_amd_charm_on_arm_host","tests.integration.integration","2026-11-21","skipped","2026-11-21","","test_architecture","",""
+"Tests Landscape client charm alongside the MySQL charms.","180379","test_landscape_client","tests.integration.integration","2026-11-21","passed","2026-11-21","","test_subordinate_charms","",""
+"Simple test to ensure that mysql, mysqlrouter and application charms deploy.","142110","test_deploy_edge","tests.integration.integration","2026-11-21","passed","2026-11-21","","test_upgrade","",""
+"Regression test for https://github.com/canonical/mysql-router-operators/issues/234.
+
+    The logrotate config used to retain `rotate 10800` files (~7.5 days of
+    per-minute churn), hoarding archive files that promtail then polls. The
+    archive only needs to flush content to Loki, so retention must be bounded
+    to a few hours' worth of files (`rotate 24`).
+    ","14040","test_log_rotation_retention_is_bounded","tests.integration.integration","2026-11-21","passed","2026-11-21","","test_log_rotation","",""
+"Test encryption when backend database is using TLS.","126275","test_deploy_and_relate","tests.integration.integration","2026-11-21","passed","2026-11-21","","test_tls","",""
+"Test the certificates of the MySQL Router application.","143571","test_router_certificates","tests.integration.integration","2026-11-21","passed","2026-11-21","","test_hacluster","",""
+"Test external connectivity with data-integrator ha-cluster.","799822","test_external_connectivity_with_ha_cluster","tests.integration.integration","2026-11-21","passed","2026-11-21","","test_hacluster","",""
+"Test a refresh failure and its rollback.","1277671","test_fail_and_rollback","tests.integration.integration","2026-11-21","broken","2026-11-21","","test_upgrade","",""
+"Test endpoints when mysql-router-k8s is related to a TLS operator.","64692","test_expose_external_with_tls","tests.integration.integration","2026-11-21","passed","2026-11-21","","test_expose_external","",""
+"Tries deploying an arm64 charm on amd64 host.","19542","test_arm_charm_on_amd_host","tests.integration.integration","2026-11-21","passed","2026-11-21","","test_architecture","",""
+"Test log rotation.","133190","test_log_rotation","tests.integration.integration","2026-11-21","passed","2026-11-21","","test_log_rotation","",""
+"Test that the exporter endpoint works when related with TLS","445865","test_exporter_endpoint","tests.integration.integration","2026-11-21","passed","2026-11-21","","test_exporter_with_tls","",""
+"Regression test for https://github.com/canonical/mysql-router-operators/issues/234.
+
+    The executor used to run `logrotate -f` every 60 seconds, forcing rotation
+    on every run regardless of the `hourly` directive and the log content (and
+    firing `kill -HUP` at mysqlrouter on every rotation). Rotation must be
+    driven by the config (`hourly`, `notifempty`), so the shipped executor
+    must not pass `-f`.
+    ","11831","test_logrotate_executor_does_not_force_rotation","tests.integration.integration","2026-11-21","passed","2026-11-21","","test_log_rotation","",""
+"Regression test for https://github.com/canonical/mysql-router-operators/issues/234.
+
+    The cron job used to run `logrotate -f` every minute, forcing rotation on
+    every run regardless of the `hourly` directive and the log content (and
+    firing `kill -HUP` at mysqlrouter on every rotation). Rotation must be
+    driven by the config (`hourly`, `notifempty`), so the shipped cron job
+    must not pass `-f`.
+    ","1","test_logrotate_cron_does_not_force_rotation","tests.integration.integration","2026-11-21","passed","2026-11-21","","test_log_rotation","",""
+"Test the expose-external config option.","349258","test_expose_external","tests.integration.integration","2026-11-21","passed","2026-11-21","","test_expose_external","",""
+"Upgrade mysqlrouter while ensuring continuous writes incrementing.","622156","test_upgrade_from_edge","tests.integration.integration","2026-11-21","failed","2026-11-21","","test_upgrade","",""
+"Test the lack of VIP in the MySQL Router application.","67902","test_router_without_vip","tests.integration.integration","2026-11-21","passed","2026-11-21","","test_hacluster","",""
+"Dynamic counterpart of test_promtail_target_is_non_recursive.
+
+    With a loki-k8s logging relation active, promtail runs in the workload
+    container: creating files in `archive_mysqlrouter/` must not add promtail
+    targets (promtail_files_active_total must stay unchanged).
+
+    loki-k8s is only published for amd64/ubuntu@24.04, so on runners with juju
+    < 3 (no noble series) or non-amd64 architectures the dynamic check is
+    skipped; the static check above still guards the shipped glob.
+    ","222103","test_promtail_does_not_target_rotated_files","tests.integration.integration","2026-11-21","passed","2026-11-21","","test_log_rotation","",""
+"Test the failover of the ha-cluster leader.","15070","test_ha_cluster_failover","tests.integration.integration","2026-11-21","passed","2026-11-21","","test_hacluster","",""
+"Test connectivity when backend database is using Data integrator.","268277","test_data_integrator_connectivity","tests.integration.integration","2026-11-21","passed","2026-11-21","","test_data_integrator","",""
+"Test that exporter endpoint is functional.","412270","test_exporter_endpoint","tests.integration.integration","2026-11-21","passed","2026-11-21","","test_exporter","",""
+"Test connectivity when backend database is using TLS.","23789","test_data_integrator_connectivity_with_tls","tests.integration.integration","2026-11-21","passed","2026-11-21","","test_data_integrator","",""
+"Regression test for https://github.com/canonical/mysql-router-operators/issues/234.
+
+    The promtail target used to be the recursive glob
+    `/var/log/mysqlrouter/**/*log*`, so every rotated file in
+    `archive_mysqlrouter/` became an active promtail target; the vendored
+    promtail v2.9.7 stat-polls each matched file 4x/s forever, making promtail
+    CPU grow linearly with pod age. The shipped promtail target must be
+    non-recursive.
+    ","0","test_promtail_target_is_non_recursive","tests.integration.integration","2026-11-21","passed","2026-11-21","","test_log_rotation","",""
+"Test the shared-db legacy relation.","521255","test_shared_db","tests.integration.integration","2026-11-21","passed","2026-11-21","","test_shared_db","",""
+"Regression test for https://github.com/canonical/mysql-router-operators/issues/234.
+
+    The logrotate config used `ifempty`, so even an empty mysqlrouter.log was
+    rotated into a new archive file on every run of the (then force-rotating)
+    executor, up to 1440 empty files per day. Forcing rotation on an empty log
+    must not create archive files: the config must carry `notifempty`. (The
+    executor separately must not force-rotate per minute, see
+    test_logrotate_executor_does_not_force_rotation.)
+    ","19474","test_log_rotation_does_not_rotate_empty_log_files","tests.integration.integration","2026-11-21","passed","2026-11-21","","test_log_rotation","",""
+"Test the database relation.","424988","test_database_relation","tests.integration.integration","2026-11-21","passed","2026-11-21","","test_database","",""
+"Tests Ubuntu pro charm alongside the MySQL charms.","246349","test_ubuntu_pro","tests.integration.integration","2026-11-21","passed","2026-11-21","","test_subordinate_charms","",""

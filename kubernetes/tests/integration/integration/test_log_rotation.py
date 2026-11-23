@@ -131,7 +131,7 @@ def test_log_rotation(juju: Juju, charm: str) -> None:
     juju.ssh(
         target=router_app_leader,
         container=CONTAINER_NAME,
-        command="su - mysql -c 'logrotate -f -s /tmp/logrotate.status /etc/logrotate.d/flush_mysqlrouter_logs'",
+        command="logrotate -f -s /tmp/logrotate.status /etc/logrotate.d/flush_mysqlrouter_logs",
     )
 
     logging.info("Ensuring log file and archive directories exist")
@@ -210,7 +210,7 @@ def test_log_rotation_does_not_rotate_empty_log_files(juju: Juju, charm: str) ->
     juju.ssh(
         target=router_app_leader,
         container=CONTAINER_NAME,
-        command="su - mysql -c 'logrotate -f -s /tmp/logrotate.status /etc/logrotate.d/flush_mysqlrouter_logs'",
+        command="logrotate -f -s /tmp/logrotate.status /etc/logrotate.d/flush_mysqlrouter_logs",
     )
 
     logging.info("Ensuring the empty log file was not rotated")
@@ -251,7 +251,7 @@ def test_logrotate_executor_does_not_force_rotation(juju: Juju, charm: str) -> N
     script = juju.ssh(
         target=router_app_leader,
         container=CONTAINER_NAME,
-        command="cat /logrotate_executor.py",
+        command="cat /home/mysql/logrotate_executor.py",
     )
 
     assert '"-f"' not in script, "logrotate executor must not force rotation with -f"
@@ -288,11 +288,11 @@ def test_log_rotation_retention_is_bounded(juju: Juju, charm: str) -> None:
         target=router_app_leader,
         container=CONTAINER_NAME,
         command=(
-            "su - mysql -c 'mkdir -p /var/log/mysqlrouter/archive_mysqlrouter && "
+            "mkdir -p /var/log/mysqlrouter/archive_mysqlrouter && "
             "for i in $(seq 1 30); do "
             'ts=$(date -d "$i minutes ago" +%Y%m%d_%H:%M); '
             'touch -d "$i minutes ago" "/var/log/mysqlrouter/archive_mysqlrouter/mysqlrouter.log-$ts"; '
-            "done'"
+            "done"
         ),
     )
 
@@ -300,14 +300,14 @@ def test_log_rotation_retention_is_bounded(juju: Juju, charm: str) -> None:
     juju.ssh(
         target=router_app_leader,
         container=CONTAINER_NAME,
-        command="su - mysql -c 'echo test-retention-content > /var/log/mysqlrouter/mysqlrouter.log'",
+        command="echo test-retention-content > /var/log/mysqlrouter/mysqlrouter.log",
     )
 
     logging.info("Executing logrotate")
     juju.ssh(
         target=router_app_leader,
         container=CONTAINER_NAME,
-        command="su - mysql -c 'logrotate -f -s /tmp/logrotate.status /etc/logrotate.d/flush_mysqlrouter_logs'",
+        command="logrotate -f -s /tmp/logrotate.status /etc/logrotate.d/flush_mysqlrouter_logs",
     )
 
     file_list = list_unit_files(

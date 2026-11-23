@@ -230,13 +230,13 @@ def test_logrotate_cron_does_not_force_rotation(juju: Juju, charm: str) -> None:
     # source (the tree this charm was packed from).
     source = (Path(__file__).parents[3] / "src" / "machine_logrotate.py").read_text()
 
-    assert "logrotate" in source, "logrotate cron setup not found in the shipped charm"
-    cron_line = next(
-        line
-        for line in source.splitlines()
-        if line.strip().startswith(('"* * * * * ', '"0 * * * * ')) and "logrotate" in line
+    cron_lines = [
+        line for line in source.splitlines() if "* * * * *" in line and "logrotate" in line
+    ]
+    assert cron_lines, "logrotate cron job not found in the shipped charm"
+    assert all(" -f" not in line for line in cron_lines), (
+        "logrotate cron job must not force rotation with -f"
     )
-    assert " -f" not in cron_line, "logrotate cron job must not force rotation with -f"
 
 
 def test_log_rotation_retention_is_bounded(juju: Juju, charm: str, ubuntu_base: str) -> None:

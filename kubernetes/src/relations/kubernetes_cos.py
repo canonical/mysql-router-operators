@@ -26,7 +26,10 @@ class COSRelation(common.relations.cos.COSRelation):
 
     _METRICS_RELATION_NAME = "metrics-endpoint"
     _LOGGING_RELATION_NAME = "logging"
-    _ROUTER_LOG_FILES_TARGET = "/var/log/mysqlrouter/**/*log*"
+    # Non-recursive: promtail (v2.9.7) stat-polls every matched file 4x/s forever
+    # (https://github.com/canonical/mysql-router-operators/issues/234)
+    # Rotated content still reaches Loki via the renamed file's open FD
+    _ROUTER_LOG_FILES_TARGET = "/var/log/mysqlrouter/*log*"
 
     _TRACING_RELATION_NAME = "tracing"
 

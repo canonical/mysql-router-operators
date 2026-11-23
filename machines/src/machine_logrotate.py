@@ -26,8 +26,11 @@ class LogRotate(common.logrotate.LogRotate):
         super().enable()
 
         # cron needs the file to be owned by root
+        # Let the config's `hourly`/`notifempty` directives decide when
+        # rotation actually happens: do not pass `-f`
+        # (https://github.com/canonical/mysql-router-operators/issues/234)
         self._cron_file.write_text(
-            f"* * * * * {self._container.unix_user} logrotate -f -s /tmp/logrotate.status /etc/logrotate.d/flush_mysqlrouter_logs\n\n",
+            f"* * * * * {self._container.unix_user} logrotate -s /tmp/logrotate.status /etc/logrotate.d/flush_mysqlrouter_logs\n\n",
             user=ROOT_USER,
             group=ROOT_USER,
         )

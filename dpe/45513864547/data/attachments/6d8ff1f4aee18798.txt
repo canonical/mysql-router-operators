@@ -1,0 +1,13 @@
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m root:test_log_rotation.py:70 Wait for applications to become active
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m root:test_log_rotation.py:173 Removing the cron file
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing mysql-router/0 'sudo find /etc/cron.d/flush_mysqlrouter_logs -maxdepth 1 -delete'
+[32mINFO    [0m root:test_log_rotation.py:180 Removing existing archive directory and emptying the router log file
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing mysql-router/0 'sudo find /var/snap/charmed-mysql/common/var/log/mysqlrouter/archive_mysqlrouter -maxdepth 1 -delete'
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing mysql-router/0 'sudo truncate -s 0 /var/snap/charmed-mysql/common/var/log/mysqlrouter/mysqlrouter.log'
+[32mINFO    [0m root:test_log_rotation.py:191 Forcing logrotate on the empty log file
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing mysql-router/0 'sudo -u snap_daemon logrotate -f -s /tmp/logrotate.status /etc/logrotate.d/flush_mysqlrouter_logs'
+[32mINFO    [0m root:test_log_rotation.py:197 Ensuring the empty log file was not rotated
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing mysql-router/0 'sudo ls -la /var/snap/charmed-mysql/common/var/log/mysqlrouter'
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing mysql-router/0 'sudo ls -la /var/snap/charmed-mysql/common/var/log/mysqlrouter/archive_mysqlrouter'

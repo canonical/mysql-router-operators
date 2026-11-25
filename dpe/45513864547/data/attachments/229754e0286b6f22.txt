@@ -1,0 +1,1 @@
+[32mINFO    [0m root:test_log_rotation.py:227 Reading the shipped logrotate cron configuration

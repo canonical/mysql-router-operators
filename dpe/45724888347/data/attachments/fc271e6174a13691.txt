@@ -1,0 +1,14 @@
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m root:test_log_rotation.py:70 Wait for applications to become active
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m root:test_log_rotation.py:255 Removing the cron file
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing mysql-router/0 'sudo find /etc/cron.d/flush_mysqlrouter_logs -maxdepth 1 -delete'
+[32mINFO    [0m root:test_log_rotation.py:262 Removing existing archive directory
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing mysql-router/0 'sudo find /var/snap/charmed-mysql/common/var/log/mysqlrouter/archive_mysqlrouter -maxdepth 1 -delete'
+[32mINFO    [0m root:test_log_rotation.py:269 Backfilling 30 rotated files, one per minute, as logrotate would create them
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing mysql-router/0 'sudo -u snap_daemon bash -c '"'"'mkdir -p /var/snap/charmed-mysql/common/var/log/mysqlrouter/archive_mysqlrouter && for i in $(seq 1 30); do ts=$(date -d "$i minutes ago" +%Y%m%d_%H:%M); touch -d "$i minutes ago" "/var/snap/charmed-mysql/common/var/log/mysqlrouter/archive_mysqlrouter/mysqlrouter.log-$ts"; done'"'"''
+[32mINFO    [0m root:test_log_rotation.py:282 Writing content to the router log file so that rotation actually happens
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing mysql-router/0 'sudo -u snap_daemon bash -c '"'"'echo test-retention-content > /var/snap/charmed-mysql/common/var/log/mysqlrouter/mysqlrouter.log'"'"''
+[32mINFO    [0m root:test_log_rotation.py:291 Executing logrotate
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing mysql-router/0 'sudo -u snap_daemon logrotate -f -s /tmp/logrotate.status /etc/logrotate.d/flush_mysqlrouter_logs'
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing mysql-router/0 'sudo ls -la /var/snap/charmed-mysql/common/var/log/mysqlrouter/archive_mysqlrouter'

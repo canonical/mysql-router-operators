@@ -1,0 +1,13 @@
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju status --model testing --format json
+[32mINFO    [0m root:test_log_rotation.py:80 Wait for applications to become active
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju status --model testing --format json
+[32mINFO    [0m root:test_log_rotation.py:189 Stopping the logrotate executor pebble service
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju ssh --model testing --container mysql-router mysql-router-k8s/0 'pebble stop logrotate_executor || true'
+[32mINFO    [0m root:test_log_rotation.py:196 Removing existing archive directory and emptying the router log file
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju ssh --model testing --container mysql-router mysql-router-k8s/0 'find /var/log/mysqlrouter/archive_mysqlrouter -maxdepth 1 -delete'
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju ssh --model testing --container mysql-router mysql-router-k8s/0 'truncate -s 0 /var/log/mysqlrouter/mysqlrouter.log'
+[32mINFO    [0m root:test_log_rotation.py:209 Forcing logrotate on the empty log file
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju ssh --model testing --container mysql-router mysql-router-k8s/0 'logrotate -f -s /tmp/logrotate.status /etc/logrotate.d/flush_mysqlrouter_logs'
+[32mINFO    [0m root:test_log_rotation.py:216 Ensuring the empty log file was not rotated
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju ssh --model testing --container mysql-router mysql-router-k8s/0 'ls -la /var/log/mysqlrouter'
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju ssh --model testing --container mysql-router mysql-router-k8s/0 'ls -la /var/log/mysqlrouter/archive_mysqlrouter'

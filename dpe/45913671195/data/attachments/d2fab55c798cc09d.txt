@@ -1,0 +1,5 @@
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m root:test_log_rotation.py:80 Wait for applications to become active
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju status --model testing --format json
+[32mINFO    [0m root:test_log_rotation.py:254 Reading the shipped logrotate executor script
+[32mINFO    [0m jubilant:_juju.py:316 cli: juju ssh --model testing --container mysql-router mysql-router-k8s/0 'cat /logrotate_executor.py'

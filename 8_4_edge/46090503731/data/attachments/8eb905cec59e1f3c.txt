@@ -1,0 +1,17 @@
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju status --model testing --format json
+[32mINFO    [0m root:test_log_rotation.py:80 Wait for applications to become active
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju status --model testing --format json
+[32mINFO    [0m root:test_log_rotation.py:360 Stopping the logrotate executor pebble service
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju ssh --model testing --container mysql-router mysql-router-k8s/0 'pebble stop logrotate_executor || true'
+[32mINFO    [0m root:test_log_rotation.py:367 Removing existing archive files so the measurement starts clean
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju ssh --model testing --container mysql-router mysql-router-k8s/0 'find /var/log/mysqlrouter/archive_mysqlrouter -maxdepth 1 -delete'
+[32mINFO    [0m root:test_log_rotation.py:377 Deploying loki-k8s and relating it to the router
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju status --model testing --format json
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju deploy --model testing loki-k8s loki-k8s --base ubuntu@24.04 --channel 2/stable --trust
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju integrate --model testing mysql-router-k8s:logging loki-k8s:logging
+[32mINFO    [0m root:test_log_rotation.py:401 Waiting for the promtail sidecar to become ready
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju ssh --model testing --container mysql-router mysql-router-k8s/0 'curl -sf http://127.0.0.1:9080/ready || curl -sf '"'"'http://[::1]:9080/ready'"'"' || python3 -c "import urllib.request;print(urllib.request.urlopen('"'"'http://[::1]:9080/ready'"'"').read().decode())"'
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju ssh --model testing --container mysql-router mysql-router-k8s/0 'curl -sf http://127.0.0.1:9080/metrics || curl -sf '"'"'http://[::1]:9080/metrics'"'"' || python3 -c "import urllib.request;print(urllib.request.urlopen('"'"'http://[::1]:9080/metrics'"'"').read().decode())"'
+[32mINFO    [0m root:test_log_rotation.py:415 Creating 10 files in the archive directory
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju ssh --model testing --container mysql-router mysql-router-k8s/0 'mkdir -p /var/log/mysqlrouter/archive_mysqlrouter && for i in $(seq 1 10); do touch "/var/log/mysqlrouter/archive_mysqlrouter/mysqlrouter.log-mr234probe$i"; done'
+[32mINFO    [0m jubilant:_juju.py:308 cli: juju ssh --model testing --container mysql-router mysql-router-k8s/0 'curl -sf http://127.0.0.1:9080/metrics || curl -sf '"'"'http://[::1]:9080/metrics'"'"' || python3 -c "import urllib.request;print(urllib.request.urlopen('"'"'http://[::1]:9080/metrics'"'"').read().decode())"'
